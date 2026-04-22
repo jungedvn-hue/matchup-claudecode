@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 160 10% 97%;
+    --foreground: 160 20% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 160 20% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 20% 8%;
+
+    --primary: 152 60% 36%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 160 12% 92%;
+    --secondary-foreground: 160 20% 15%;
+
+    --muted: 160 8% 94%;
+    --muted-foreground: 160 8% 45%;
+
+    --accent: 64 90% 55%;
+    --accent-foreground: 160 20% 8%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 160 10% 90%;
+    --input: 160 10% 90%;
+    --ring: 152 60% 36%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --court-green: 152 60% 36%;
+    --court-green-light: 152 50% 94%;
+    --neon-yellow: 64 90% 55%;
+    --neon-yellow-light: 64 80% 92%;
+    --sport-orange: 25 95% 55%;
+    --sport-blue: 210 80% 50%;
+    --skill-beginner: 152 50% 50%;
+    --skill-intermediate: 210 70% 50%;
+    --skill-advanced: 25 90% 50%;
+    --skill-pro: 340 75% 50%;
+
+    --shadow-card: 0 2px 12px -2px hsl(160 20% 8% / 0.06);
+    --shadow-elevated: 0 8px 30px -4px hsl(160 20% 8% / 0.1);
+    --gradient-court: linear-gradient(135deg, hsl(152 60% 36%), hsl(152 45% 28%));
+    --gradient-neon: linear-gradient(135deg, hsl(64 90% 55%), hsl(80 80% 45%));
+    --gradient-hero: linear-gradient(180deg, hsl(152 60% 36% / 0.08) 0%, transparent 60%);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 160 15% 7%;
+    --foreground: 160 10% 95%;
+
+    --card: 160 12% 11%;
+    --card-foreground: 160 10% 95%;
+
+    --popover: 160 12% 11%;
+    --popover-foreground: 160 10% 95%;
+
+    --primary: 152 55% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 160 10% 16%;
+    --secondary-foreground: 160 10% 90%;
+
+    --muted: 160 10% 16%;
+    --muted-foreground: 160 8% 55%;
+
+    --accent: 64 85% 55%;
+    --accent-foreground: 160 20% 8%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 160 10% 18%;
+    --input: 160 10% 18%;
+    --ring: 152 55% 45%;
+
+    --court-green: 152 55% 45%;
+    --court-green-light: 152 30% 15%;
+    --neon-yellow: 64 85% 55%;
+    --neon-yellow-light: 64 50% 15%;
+
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
+    --shadow-elevated: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
+
+    --sidebar-background: 160 15% 7%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .skill-badge-beginner {
+    @apply bg-[hsl(var(--skill-beginner)/0.12)] text-[hsl(var(--skill-beginner))];
+  }
+  .skill-badge-intermediate {
+    @apply bg-[hsl(var(--skill-intermediate)/0.12)] text-[hsl(var(--skill-intermediate))];
+  }
+  .skill-badge-advanced {
+    @apply bg-[hsl(var(--skill-advanced)/0.12)] text-[hsl(var(--skill-advanced))];
+  }
+  .skill-badge-pro {
+    @apply bg-[hsl(var(--skill-pro)/0.12)] text-[hsl(var(--skill-pro))];
+  }
+}
