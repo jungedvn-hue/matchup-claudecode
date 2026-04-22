@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, SlidersHorizontal, Users, Trophy, Map, UserCircle } from "lucide-react";
+import { Search, MapPin, SlidersHorizontal, Users, Trophy, Map, UserCircle, CheckCircle2, ChevronRight, Zap } from "lucide-react";
 import GameCard from "@/components/GameCard";
 import EventCard from "@/components/EventCard";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 const filters = ["All Levels", "Beginner", "Intermediate", "Advanced", "< 1 mi", "< 5 mi", "Morning", "Evening"];
@@ -13,7 +14,19 @@ const groups = [
   { name: "Downtown Dinkers", members: 32, location: "SOMA Courts", skill: "beginner" as const, rating: 4.5 },
   { name: "Bay Area Pros", members: 18, location: "Elite Club", skill: "pro" as const, rating: 4.9 },
   { name: "Mission Mixers", members: 60, location: "Mission Rec", skill: "advanced" as const, rating: 4.3 },
+  { name: "Mission Mixers", members: 60, location: "Mission Rec", skill: "advanced" as const, rating: 4.3 },
 ];
+
+const matchRecommendation = {
+  opponent: "Alex Kim",
+  tournament: "Summer City Cup",
+  group: {
+    name: "Sunset Smashers",
+    skill: "intermediate",
+    location: "Sunset Park",
+    matchScore: 92 // "92% Match" based on ELO proximity
+  }
+};
 
 const DiscoverPage = () => {
   const { t } = useLanguage();
@@ -85,6 +98,49 @@ const DiscoverPage = () => {
             </button>
           ))}
         </div>
+
+        {activeCategory === "groups" && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
+            <div className="rounded-2xl p-4 bg-gradient-to-br from-primary/20 via-primary/5 to-background border border-primary/20 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-3 opacity-10">
+                <Trophy className="h-24 w-24" />
+              </div>
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Zap className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                    Gợi ý thông minh
+                  </span>
+                </div>
+                
+                <p className="text-sm text-foreground leading-relaxed">
+                  Bạn vừa có trận đấu ngang tài ngang sức với <strong className="text-primary">@{matchRecommendation.opponent}</strong> tại giải <strong>{matchRecommendation.tournament}</strong>.
+                  <br/>
+                  Alex hiện đang sinh hoạt tại nhóm <strong>{matchRecommendation.group.name}</strong>.
+                </p>
+
+                <div className="flex items-center gap-3 bg-background/50 rounded-xl p-2.5 border border-border/50">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold">{matchRecommendation.group.name}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold flex items-center gap-0.5">
+                        <CheckCircle2 className="h-3 w-3" /> ELO {matchRecommendation.group.matchScore}% Match
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <MapPin className="h-3 w-3" /> {matchRecommendation.group.location}
+                    </span>
+                  </div>
+                  <Button size="sm" className="h-8 text-xs rounded-lg gap-1 shadow-md">
+                    Tham gia nhanh <ChevronRight className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <div className="space-y-2.5">
           {groups.map((group, i) => (

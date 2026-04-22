@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useTournaments } from "@/context/TournamentContext";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import {
   autoAllocatePools,
@@ -43,6 +44,11 @@ const TourManagerControlPage = () => {
   const [poolMode, setPoolMode] = useState<"auto" | "manual">("auto");
   const [manualPools, setManualPools] = useState<Record<string, string[]>>({});
   const [manualPoolCount, setManualPoolCount] = useState(2);
+  const { user } = useAuth();
+
+  const isHost = tournament?.host_id === user?.id || !user; // Allow full access if no user (local dev)
+  const isReferee = tournament?.referees?.some(r => r.userId === user?.id);
+  const myRefereeId = tournament?.referees?.find(r => r.userId === user?.id)?.id;
 
   const allMatches = useMemo(() => {
     if (!tournament) return [];
@@ -301,8 +307,12 @@ const TourManagerControlPage = () => {
     let matches = activeCat?.pools.flatMap((p) => p.matches) || [];
     if (poolFilter !== "all") matches = matches.filter((m) => m.poolId === poolFilter);
     if (matchFilter !== "all") matches = matches.filter((m) => m.status === matchFilter);
+    // If referee, only show their assigned matches
+    if (!isHost && isReferee && myRefereeId) {
+      matches = matches.filter((m) => m.refereeId === myRefereeId);
+    }
     return matches;
-  }, [activeCat, matchFilter, poolFilter]);
+  }, [activeCat, matchFilter, poolFilter, isHost, isReferee, myRefereeId]);
 
   if (!tournament) {
     return (
@@ -387,24 +397,28 @@ const TourManagerControlPage = () => {
               <TabsTrigger value="matches" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
                 <Play className="h-3 w-3 mr-1" /> {t("tm.tab.matches")}
               </TabsTrigger>
-              <TabsTrigger value="standings" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
-                <BarChart3 className="h-3 w-3 mr-1" /> {t("tm.tab.standings")}
-              </TabsTrigger>
-              <TabsTrigger value="bracket" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
-                <Brackets className="h-3 w-3 mr-1" /> {t("tm.tab.bracket")}
-              </TabsTrigger>
-              <TabsTrigger value="stats" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
-                <PieChart className="h-3 w-3 mr-1" /> {t("tm.tab.stats")}
-              </TabsTrigger>
-              <TabsTrigger value="resources" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
-                <Settings2 className="h-3 w-3 mr-1" /> {t("tm.tab.resources")}
-              </TabsTrigger>
-              <TabsTrigger value="players" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
-                <Users className="h-3 w-3 mr-1" /> {t("tm.tab.players")}
-              </TabsTrigger>
-              <TabsTrigger value="budget" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
-                <Calculator className="h-3 w-3 mr-1" /> Ngân sách
-              </TabsTrigger>
+              {(!isReferee || isHost) && (
+                <>
+                  <TabsTrigger value="standings" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
+                    <BarChart3 className="h-3 w-3 mr-1" /> {t("tm.tab.standings")}
+                  </TabsTrigger>
+                  <TabsTrigger value="bracket" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
+                    <Brackets className="h-3 w-3 mr-1" /> {t("tm.tab.bracket")}
+                  </TabsTrigger>
+                  <TabsTrigger value="stats" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
+                    <PieChart className="h-3 w-3 mr-1" /> {t("tm.tab.stats")}
+                  </TabsTrigger>
+                  <TabsTrigger value="resources" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
+                    <Settings2 className="h-3 w-3 mr-1" /> {t("tm.tab.resources")}
+                  </TabsTrigger>
+                  <TabsTrigger value="players" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
+                    <Users className="h-3 w-3 mr-1" /> {t("tm.tab.players")}
+                  </TabsTrigger>
+                  <TabsTrigger value="budget" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
+                    <Calculator className="h-3 w-3 mr-1" /> Ngân sách
+                  </TabsTrigger>
+                </>
+              )}
             </TabsList>
           </div>
 
@@ -562,20 +576,25 @@ const TourManagerControlPage = () => {
 
                 {/* Match cards */}
                 <div className="space-y-2">
-                  {filteredMatches.map((match) => (
-                    <MatchCard
-                      key={match.id}
-                      match={match}
-                      onScoreChange={updateMatchScore}
-                      onComplete={completeMatch}
-                      onResourceChange={updateMatchResource}
-                      referees={tournament.referees || []}
-                      courts={tournament.courts || []}
-                      refereeMap={refereeMap}
-                      courtMap={courtMap}
-                      t={t}
-                    />
-                  ))}
+                  {filteredMatches.map((match) => {
+                    const isMyMatch = isReferee && match.refereeId === myRefereeId;
+                    const readonly = !isHost && (!isMyMatch || match.status === "completed");
+                    return (
+                      <MatchCard
+                        key={match.id}
+                        match={match}
+                        onScoreChange={updateMatchScore}
+                        onComplete={completeMatch}
+                        onResourceChange={isHost ? updateMatchResource : undefined}
+                        referees={tournament.referees || []}
+                        courts={tournament.courts || []}
+                        refereeMap={refereeMap}
+                        courtMap={courtMap}
+                        t={t}
+                        readonly={readonly}
+                      />
+                    );
+                  })}
                   {filteredMatches.length === 0 && (
                     <p className="text-center text-sm text-muted-foreground py-4">{t("tm.noMatches")}</p>
                   )}
@@ -816,31 +835,39 @@ const TourManagerControlPage = () => {
               </CardHeader>
               <CardContent className="p-3 space-y-2">
                 {(tournament.referees || []).map((ref, i) => (
-                  <div key={ref.id} className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground w-5">{i + 1}.</span>
-                    <Input
-                      className="h-7 text-xs flex-1"
-                      value={ref.name}
-                      onChange={(e) => {
-                        const updated = {
-                          ...tournament,
-                          referees: tournament.referees.map((r) =>
-                            r.id === ref.id ? { ...r, name: e.target.value } : r
-                          ),
-                        };
-                        save(updated);
-                      }}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => {
-                        save({ ...tournament, referees: tournament.referees.filter((r) => r.id !== ref.id) });
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3 text-destructive" />
-                    </Button>
+                  <div key={ref.id} className="space-y-1 bg-secondary/20 p-2 rounded-lg border border-border/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground w-5">{i + 1}.</span>
+                      <Input
+                        className="h-7 text-xs flex-1"
+                        value={ref.name}
+                        onChange={(e) => {
+                          const updated = {
+                            ...tournament,
+                            referees: tournament.referees.map((r) =>
+                              r.id === ref.id ? { ...r, name: e.target.value } : r
+                            ),
+                          };
+                          save(updated);
+                        }}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => {
+                          save({ ...tournament, referees: tournament.referees.filter((r) => r.id !== ref.id) });
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
+                    </div>
+                    {ref.accessCode && (
+                      <div className="flex justify-between items-center pl-7 pr-1 text-[10px]">
+                        <span className="text-muted-foreground">Access Code: <strong className="font-mono text-primary bg-primary/10 px-1 py-0.5 rounded select-all">{ref.accessCode}</strong></span>
+                        {ref.userId ? <span className="text-emerald-500 font-bold">✓ Đã tham gia</span> : <span className="text-amber-500">Chờ tham gia</span>}
+                      </div>
+                    )}
                   </div>
                 ))}
                 <Button
@@ -850,7 +877,8 @@ const TourManagerControlPage = () => {
                   onClick={() => {
                     const id = `ref-${Date.now()}`;
                     const name = `Referee ${(tournament.referees?.length || 0) + 1}`;
-                    save({ ...tournament, referees: [...(tournament.referees || []), { id, name }] });
+                    const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    save({ ...tournament, referees: [...(tournament.referees || []), { id, name, accessCode }] });
                   }}
                 >
                   <Plus className="h-3 w-3 mr-1" /> {t("tm.addReferee")}
@@ -940,6 +968,7 @@ function MatchCard({
   courtMap?: Record<string, string>;
   t: (key: string) => string;
   compact?: boolean;
+  readonly?: boolean;
 }) {
   const statusBg = {
     not_started: "bg-muted",
@@ -989,7 +1018,7 @@ function MatchCard({
 
           {/* Score Controls */}
           <div className="flex items-center gap-1.5 bg-secondary/50 rounded-xl p-1 shadow-inner">
-            {match.status !== "completed" ? (
+            {!readonly && match.status !== "completed" ? (
               <>
                 <div className="flex flex-col items-center gap-1">
                   <Button

@@ -1,20 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Search, Trophy, Clock, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trophy, Clock, CheckCircle2, Gavel } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useTournaments } from "@/context/TournamentContext";
+import { useAuth } from "@/context/AuthContext";
 import { getTournamentProgress } from "@/lib/tournament/engine";
+import { toast } from "sonner";
 
 const TourManagerPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { tournaments, deleteTournament } = useTournaments();
+  const { tournaments, updateTournament } = useTournaments();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const [showJoinRef, setShowJoinRef] = useState(false);
+  const [accessCode, setAccessCode] = useState("");
 
   const filtered = tournaments.filter(
     (t) =>
@@ -22,9 +29,42 @@ const TourManagerPage = () => {
       t.location.toLowerCase().includes(search.toLowerCase())
   );
 
-  const active = filtered.filter((t) => t.status === "active");
-  const draft = filtered.filter((t) => t.status === "draft");
-  const completed = filtered.filter((t) => t.status === "completed");
+  const active = filtered.filter((t) => t.status === "active" && t.host_id === user?.id);
+  const draft = filtered.filter((t) => t.status === "draft" && t.host_id === user?.id);
+  const completed = filtered.filter((t) => t.status === "completed" && t.host_id === user?.id);
+  
+  const refereeing = filtered.filter((t) => t.referees?.some(r => r.userId === user?.id));
+
+  const handleJoinRef = () => {
+    if (!user) {
+      toast.error("Vui lòng đăng nhập!");
+      return;
+    }
+    if (!accessCode.trim()) return;
+    const target = tournaments.find(t => t.referees?.some(r => r.accessCode === accessCode.trim().toUpperCase()));
+    if (!target) {
+      toast.error("Không tìm thấy giải đấu!");
+      return;
+    }
+    const ref = target.referees?.find(r => r.accessCode === accessCode.trim().toUpperCase());
+    if (ref?.userId === user.id) {
+      toast.success("Bạn đã tham gia giải này rồi!");
+      setShowJoinRef(false);
+      return;
+    }
+    if (ref?.userId) {
+      toast.error("Mã này đã được người khác sử dụng!");
+      return;
+    }
+    const updated = {
+      ...target,
+      referees: target.referees?.map(r => r.id === ref?.id ? { ...r, userId: user.id } : r)
+    };
+    updateTournament(updated);
+    toast.success("Đã nhận việc Trọng tài thành công!");
+    setShowJoinRef(false);
+    setAccessCode("");
+  };
 
   const statusColor = {
     draft: "secondary" as const,
@@ -96,10 +136,16 @@ const TourManagerPage = () => {
               </h1>
             </div>
           </div>
-          <Button size="sm" onClick={() => navigate("/tour-manager/create")}>
-            <Plus className="h-4 w-4 mr-1" />
-            {t("tm.createNew")}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setShowJoinRef(true)}>
+              <Gavel className="h-4 w-4 mr-1" />
+              Nhập mã Trọng tài
+            </Button>
+            <Button size="sm" onClick={() => navigate("/tour-manager/create")}>
+              <Plus className="h-4 w-4 mr-1" />
+              {t("tm.createNew")}
+            </Button>
+          </div>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -126,10 +172,14 @@ const TourManagerPage = () => {
               <CheckCircle2 className="h-3.5 w-3.5" />
               {t("tm.completed")}
             </TabsTrigger>
+            <TabsTrigger value="refereeing" className="flex-1 gap-1">
+              <Gavel className="h-3.5 w-3.5" />
+              Trọng tài {refereeing.length > 0 && `(${refereeing.length})`}
+            </TabsTrigger>
           </TabsList>
 
-          {(["active", "draft", "completed"] as const).map((tab) => {
-            const list = tab === "active" ? active : tab === "draft" ? draft : completed;
+          {(["active", "draft", "completed", "refereeing"] as const).map((tab) => {
+            const list = tab === "active" ? active : tab === "draft" ? draft : tab === "completed" ? completed : refereeing;
             return (
               <TabsContent key={tab} value={tab} className="space-y-3 mt-3">
                 {list.length === 0 ? (
@@ -156,6 +206,36 @@ const TourManagerPage = () => {
           })}
         </Tabs>
       </div>
+
+      {/* Join Referee Dialog */}
+      <Dialog open={showJoinRef} onOpenChange={setShowJoinRef}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gavel className="h-5 w-5 text-primary" /> Nhận việc Trọng tài
+            </DialogTitle>
+            <DialogDescription>
+              Nhập mã Code do Ban tổ chức cung cấp để bắt đầu điều hành các trận đấu.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label>Access Code</Label>
+              <Input
+                placeholder="Ví dụ: A1B2C3"
+                className="font-mono uppercase"
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value)}
+                maxLength={6}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowJoinRef(false)}>Huỷ</Button>
+            <Button onClick={handleJoinRef}>Xác nhận</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

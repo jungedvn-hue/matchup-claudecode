@@ -27,6 +27,8 @@ export type TournamentEntry = TournamentPlayer | TournamentTeam;
 export interface TournamentReferee {
   id: string;
   name: string;
+  userId?: string;
+  accessCode?: string;
 }
 
 export interface TournamentCourt {
