@@ -72,7 +72,7 @@ const TourManagerPage = () => {
       referees: target.referees?.map(r => r.id === ref?.id ? { ...r, userId: user.id } : r)
     };
     updateTournament(updated);
-    toast.success("Đã nhận việc Trọng tài thành công!");
+    toast.success(t("tm.joinSuccess"));
     setShowJoinRef(false);
     setAccessCode("");
   };
@@ -186,7 +186,7 @@ const TourManagerPage = () => {
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={() => setShowJoinRef(true)}>
               <Gavel className="h-4 w-4 mr-1" />
-              Nhập mã Trọng tài
+              {t("tm.joinReferee")}
             </Button>
             <Button size="sm" onClick={() => navigate("/tour-manager/create")}>
               <Plus className="h-4 w-4 mr-1" />
@@ -221,7 +221,7 @@ const TourManagerPage = () => {
             </TabsTrigger>
             <TabsTrigger value="refereeing" className="flex-1 gap-1">
               <Gavel className="h-3.5 w-3.5" />
-              Trọng tài {refereeing.length > 0 && `(${refereeing.length})`}
+              {t("tm.referee")} {refereeing.length > 0 && `(${refereeing.length})`}
             </TabsTrigger>
           </TabsList>
 
@@ -259,10 +259,10 @@ const TourManagerPage = () => {
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Gavel className="h-5 w-5 text-primary" /> Nhận việc Trọng tài
+              <Gavel className="h-5 w-5 text-primary" /> {t("tm.joinReferee")}
             </DialogTitle>
             <DialogDescription>
-              Nhập mã Code do Ban tổ chức cung cấp để bắt đầu điều hành các trận đấu.
+              {t("tm.refereeJoinDesc") || "Enter the access code provided by the organizer to start managing matches."}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
@@ -278,8 +278,8 @@ const TourManagerPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowJoinRef(false)}>Huỷ</Button>
-            <Button onClick={handleJoinRef}>Xác nhận</Button>
+            <Button variant="outline" onClick={() => setShowJoinRef(false)}>{t("common.cancel")}</Button>
+            <Button onClick={handleJoinRef}>{t("common.confirm")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

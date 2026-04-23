@@ -93,7 +93,7 @@ const TourManagerControlPage = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-medium text-muted-foreground">Syncing with Cloud...</p>
+        <p className="text-sm font-medium text-muted-foreground">{t("tm.syncing") || "Syncing with Cloud..."}</p>
       </div>
     );
   }
@@ -354,7 +354,7 @@ const TourManagerControlPage = () => {
       {isSaving && (
         <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm font-bold animate-pulse">Syncing with Cloud...</p>
+          <p className="text-sm font-bold animate-pulse">{t("tm.syncing") || "Syncing with Cloud..."}</p>
         </div>
       )}
       {/* Header */}
@@ -470,7 +470,7 @@ const TourManagerControlPage = () => {
                     <Users className="h-3 w-3 mr-1" /> {t("tm.tab.players")}
                   </TabsTrigger>
                   <TabsTrigger value="budget" className="text-[10px] py-1.5 px-3 data-[state=active]:bg-background">
-                    <Calculator className="h-3 w-3 mr-1" /> Ngân sách
+                    <Calculator className="h-3 w-3 mr-1" /> {t("tm.tab.budget") || "Budget"}
                   </TabsTrigger>
                 </>
               )}
@@ -578,10 +578,10 @@ const TourManagerControlPage = () => {
                             } : c)
                           };
                           save(updated);
-                          toast.success(courtId === "_none" ? "Unassigned Court" : "Assigned Court to Pool");
+                          toast.success(courtId === "_none" ? t("tm.unassignedCourt") : t("tm.assignedCourt"));
                         }}>
                            <SelectTrigger className="h-7 text-[10px] flex-1 bg-background">
-                             <SelectValue placeholder="Assign Court..." />
+                             <SelectValue placeholder={t("tm.assignCourt") || "Assign Court..."} />
                            </SelectTrigger>
                            <SelectContent>
                              <SelectItem value="_none">None</SelectItem>
@@ -607,10 +607,10 @@ const TourManagerControlPage = () => {
                             } : c)
                           };
                           save(updated);
-                          toast.success(refId === "_none" ? "Unassigned Referee" : "Assigned Referee to Pool");
+                          toast.success(refId === "_none" ? t("tm.unassignedReferee") : t("tm.assignedReferee"));
                         }}>
                            <SelectTrigger className="h-7 text-[10px] flex-1 bg-background">
-                             <SelectValue placeholder="Assign Referee..." />
+                             <SelectValue placeholder={t("tm.assignReferee") || "Assign Referee..."} />
                            </SelectTrigger>
                            <SelectContent>
                              <SelectItem value="_none">None</SelectItem>
