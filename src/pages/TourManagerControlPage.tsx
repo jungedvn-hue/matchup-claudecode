@@ -92,6 +92,22 @@ const TourManagerControlPage = () => {
     return map;
   }, [tournament]);
 
+  const activeCat = useMemo(() => 
+    tournament?.categories.find((c) => c.id === activeCatId) || tournament?.categories[0],
+    [tournament, activeCatId]
+  );
+
+  const filteredMatches = useMemo(() => {
+    let matches = activeCat?.pools?.flatMap((p) => p.matches || []) || [];
+    if (poolFilter !== "all") matches = matches.filter((m) => m.poolId === poolFilter);
+    if (matchFilter !== "all") matches = matches.filter((m) => m.status === matchFilter);
+    // If referee, only show their assigned matches
+    if (!isHost && isReferee && myRefereeId) {
+      matches = matches.filter((m) => m.refereeId === myRefereeId);
+    }
+    return matches;
+  }, [activeCat, matchFilter, poolFilter, isHost, isReferee, myRefereeId]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-3">
@@ -110,7 +126,6 @@ const TourManagerControlPage = () => {
     );
   }
 
-  const activeCat = tournament?.categories.find((c) => c.id === activeCatId) || tournament?.categories[0];
   const progress = getTournamentProgress(allMatches);
 
   // ── Actions ──
@@ -339,16 +354,7 @@ const TourManagerControlPage = () => {
     save(updated);
   };
 
-  const filteredMatches = useMemo(() => {
-    let matches = activeCat?.pools?.flatMap((p) => p.matches || []) || [];
-    if (poolFilter !== "all") matches = matches.filter((m) => m.poolId === poolFilter);
-    if (matchFilter !== "all") matches = matches.filter((m) => m.status === matchFilter);
-    // If referee, only show their assigned matches
-    if (!isHost && isReferee && myRefereeId) {
-      matches = matches.filter((m) => m.refereeId === myRefereeId);
-    }
-    return matches;
-  }, [activeCat, matchFilter, poolFilter, isHost, isReferee, myRefereeId]);
+  const activeCatObj = activeCat; // Use the one moved up
 
   if (!tournament) {
     return (
