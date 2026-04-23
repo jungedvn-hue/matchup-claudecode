@@ -223,7 +223,7 @@ const TourManagerControlPage = () => {
     toast.success(t("tm.matchCompleted"));
   };
 
-  const generateKnockout = () => {
+  const generateKnockout = async () => {
     if (!activeCat || !tournament) return;
     
     // 1. Get Auto-Qualified entries (ranked 1..advancingPerPool)
