@@ -72,10 +72,13 @@ const TourManagerControlPage = () => {
 
   const entryMap = useMemo(() => {
     const map: Record<string, string> = {};
-    const activeCat = tournament?.categories.find((c) => c.id === activeCatId) || tournament?.categories[0];
-    activeCat?.entries.forEach((e) => (map[e.id] = e.name));
+    tournament?.categories.forEach(c => {
+      c.entries.forEach(e => {
+        map[e.id] = e.name;
+      });
+    });
     return map;
-  }, [tournament, activeCatId]);
+  }, [tournament]);
 
   const refereeMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -130,11 +133,17 @@ const TourManagerControlPage = () => {
     if (!activeCat || !tournament) return;
     const targetPlayersPerPool = parseInt(tournament.playersPerPool as string) || 4;
     const poolCount = Math.max(1, Math.ceil(activeCat.entries.length / targetPlayersPerPool));
+    console.log("Generating matches for category:", activeCat.name);
+    console.log("Total entries:", activeCat.entries.length);
     const pools = autoAllocatePools(activeCat.entries, poolCount);
     // Generate RR matches for each pool
+    let totalMatches = 0;
     pools.forEach((pool) => {
       pool.matches = generateRoundRobinMatches(pool, activeCat.id, entryMap);
+      totalMatches += pool.matches.length;
     });
+    console.log("Generated matches count:", totalMatches);
+
     const updated = {
       ...tournament,
       status: "active" as const,
@@ -142,6 +151,8 @@ const TourManagerControlPage = () => {
         c.id === activeCat.id ? { ...c, pools } : c
       ),
     };
+    
+    console.log("Syncing with Supabase...");
     await save(updated);
     toast.success(t("tm.poolsGenerated"));
   };
