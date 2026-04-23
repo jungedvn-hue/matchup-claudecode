@@ -102,7 +102,38 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     fetchTournaments();
 
-    // Setup Real-time listener for Matches
+    // Setup Real-time listener for Matches with batching
+    let updateQueue: any[] = [];
+    let timeout: NodeJS.Timeout | null = null;
+
+    const processQueue = () => {
+      if (updateQueue.length === 0) return;
+      
+      setTournaments(prev => {
+        let next = [...prev];
+        updateQueue.forEach(updatedMatch => {
+          next = next.map(t => ({
+            ...t,
+            categories: (t.categories || []).map(c => ({
+              ...c,
+              pools: (c.pools || []).map(p => ({
+                ...p,
+                matches: (p.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
+              })),
+              bracketRounds: (c.bracketRounds || []).map(r => ({
+                ...r,
+                matches: (r.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
+              }))
+            }))
+          }));
+        });
+        return next;
+      });
+      
+      updateQueue = [];
+      timeout = null;
+    };
+
     const matchSubscription = supabase
       .channel('live-scores')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tour_matches' }, (payload: any) => {
@@ -125,20 +156,9 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           refereeId: raw.referee_id
         };
 
-        setTournaments(prev => prev.map(t => ({
-          ...t,
-          categories: (t.categories || []).map(c => ({
-            ...c,
-            pools: (c.pools || []).map(p => ({
-              ...p,
-              matches: (p.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
-            })),
-            bracketRounds: (c.bracketRounds || []).map(r => ({
-              ...r,
-              matches: (r.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
-            }))
-          }))
-        })));
+        updateQueue.push(updatedMatch);
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(processQueue, 500); // Gộp tất cả update trong 500ms
       })
       .subscribe();
 
@@ -247,11 +267,16 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
         });
       }
 
-      // 3. Perform bulk upsert if matches exist
+      // 3. Perform bulk operations
+      for (const cat of t.categories) {
+        // Delete all existing matches for this category to avoid duplicates
+        await supabase.from('tour_matches').delete().eq('category_id', cat.id);
+      }
+
       if (allMatchesToUpsert.length > 0) {
         const { error: matchError } = await supabase
           .from('tour_matches')
-          .upsert(allMatchesToUpsert);
+          .insert(allMatchesToUpsert); // Use insert instead of upsert since we cleared old ones
         
         if (matchError) throw matchError;
       }

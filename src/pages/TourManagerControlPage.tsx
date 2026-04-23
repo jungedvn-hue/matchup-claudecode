@@ -55,6 +55,7 @@ const TourManagerControlPage = () => {
   const [poolMode, setPoolMode] = useState<"auto" | "manual">("auto");
   const [manualPools, setManualPools] = useState<Record<string, string[]>>({});
   const [manualPoolCount, setManualPoolCount] = useState(2);
+  const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuth();
 
   const isHost = tournament?.host_id === user?.id || !user; // Allow full access if no user (local dev)
@@ -110,7 +111,14 @@ const TourManagerControlPage = () => {
   const progress = getTournamentProgress(allMatches);
 
   // ── Actions ──
-  const save = (updated: Tournament) => updateTournament(updated);
+  const save = async (updated: Tournament) => {
+    setIsSaving(true);
+    try {
+      await updateTournament(updated);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!tournament) return;
@@ -343,6 +351,12 @@ const TourManagerControlPage = () => {
   // ── Render ──
   return (
     <div className="pb-24">
+      {isSaving && (
+        <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-sm font-bold animate-pulse">Syncing with Cloud...</p>
+        </div>
+      )}
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="flex items-center gap-2 mb-2">
