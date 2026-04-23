@@ -170,8 +170,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
   const addTournament = async (t: Tournament) => {
     try {
       if (!user) {
-        toast.error("Bạn cần đăng nhập để tạo giải đấu!");
-        return;
+        throw new Error("Vui lòng đăng nhập để tạo giải đấu");
       }
       
       const { data: tourData, error: tourError } = await supabase

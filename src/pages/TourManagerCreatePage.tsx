@@ -21,6 +21,8 @@ import {
   TournamentCourt,
   RankingCriterion,
 } from "@/lib/tournament/types";
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
 
 const CATEGORY_OPTIONS: { value: CategoryType; label: string }[] = [
   { value: "singles", label: "Singles" },
@@ -43,11 +45,19 @@ const TourManagerCreatePage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { addTournament } = useTournaments();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để sử dụng tính năng này");
+      navigate("/auth");
+    }
+  }, [user, navigate]);
 
   // Step 1
   const [name, setName] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [location, setLocation] = useState("");
   const [format, setFormat] = useState<TournamentFormat>("round_robin");
   const [pointsPerGame, setPointsPerGame] = useState(11);
