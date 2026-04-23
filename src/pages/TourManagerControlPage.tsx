@@ -126,7 +126,7 @@ const TourManagerControlPage = () => {
     navigate("/tour-manager");
   };
 
-  const generatePools = () => {
+  const generatePools = async () => {
     if (!activeCat || !tournament) return;
     const targetPlayersPerPool = parseInt(tournament.playersPerPool as string) || 4;
     const poolCount = Math.max(1, Math.ceil(activeCat.entries.length / targetPlayersPerPool));
@@ -146,7 +146,7 @@ const TourManagerControlPage = () => {
     toast.success(t("tm.poolsGenerated"));
   };
 
-  const confirmManualPools = () => {
+  const confirmManualPools = async () => {
     if (!activeCat || !tournament) return;
     const poolNames = Object.keys(manualPools).sort();
     const unassigned = activeCat.entries.filter(
