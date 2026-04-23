@@ -68,8 +68,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           ...c,
           wildcardCount: c.wildcard_count || 0,
           entries: c.participants || [],
-          pools: [], 
-          bracketRounds: [],
+          pools: c.pools || [], 
+          bracketRounds: c.bracket_rounds || [],
           matches: (c.matches || []).map((m: any) => ({
             id: m.id,
             categoryId: m.category_id,
@@ -206,7 +206,9 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             name: cat.name,
             advancing_per_pool: cat.advancingPerPool,
             wildcard_count: cat.wildcardCount || 0,
-            pool_allocation_mode: cat.poolAllocationMode
+            pool_allocation_mode: cat.poolAllocationMode,
+            pools: cat.pools || [],
+            bracket_rounds: cat.bracketRounds || []
           }])
           .select()
           .single();
@@ -269,6 +271,17 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
 
       // 3. Perform bulk operations
       for (const cat of t.categories) {
+        // Update category structure (pools, brackets)
+        await supabase
+          .from('tour_categories')
+          .update({
+            pools: cat.pools || [],
+            bracket_rounds: cat.bracketRounds || [],
+            pool_allocation_mode: cat.poolAllocationMode,
+            advancing_per_pool: cat.advancingPerPool
+          })
+          .eq('id', cat.id);
+
         // Delete all existing matches for this category to avoid duplicates
         await supabase.from('tour_matches').delete().eq('category_id', cat.id);
       }
