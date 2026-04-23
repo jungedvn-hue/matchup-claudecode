@@ -61,11 +61,13 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       // Transform relational data back to our Frontend Type structure
       const transformed: Tournament[] = (data as any[]).map(t => ({
         ...t,
+        referees: t.referees || [],
+        courts: t.courts || [],
         rankingPriority: t.ranking_priority || ["wins", "head_to_head", "point_diff", "points_scored"],
-        categories: t.categories.map((c: any) => ({
+        categories: (t.categories || []).map((c: any) => ({
           ...c,
           wildcardCount: c.wildcard_count || 0,
-          entries: c.participants,
+          entries: c.participants || [],
           pools: [], 
           bracketRounds: [],
           matches: (c.matches || []).map((m: any) => ({
@@ -164,7 +166,9 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           win_by_two: t.winByTwo,
           status: t.status,
           ranking_priority: t.rankingPriority,
-          host_id: user?.id
+          host_id: user?.id,
+          referees: t.referees || [],
+          courts: t.courts || []
         }])
         .select()
         .single();
@@ -218,7 +222,9 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
         .update({
           name: t.name,
           status: t.status,
-          location: t.location
+          location: t.location,
+          referees: t.referees || [],
+          courts: t.courts || []
         })
         .eq('id', t.id);
 
