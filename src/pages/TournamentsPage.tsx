@@ -171,5 +171,3 @@ const TournamentsPage = () => {
 };
 
 export default TournamentsPage;
-
-export default TournamentsPage;
