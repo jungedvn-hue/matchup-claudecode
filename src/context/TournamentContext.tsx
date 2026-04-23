@@ -271,7 +271,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       // 3. Perform bulk operations
       for (const cat of t.categories) {
         // Update category structure (pools, brackets)
-        await supabase
+        const { error: catError } = await supabase
           .from('tour_categories')
           .update({
             pools: cat.pools || [],
@@ -280,9 +280,18 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             advancing_per_pool: cat.advancingPerPool
           })
           .eq('id', cat.id);
+        
+        if (catError) {
+          console.error(`Category Update Error (${cat.name}):`, catError);
+          throw catError;
+        }
 
         // Delete all existing matches for this category to avoid duplicates
-        await supabase.from('tour_matches').delete().eq('category_id', cat.id);
+        const { error: delError } = await supabase.from('tour_matches').delete().eq('category_id', cat.id);
+        if (delError) {
+          console.error(`Match Delete Error (${cat.name}):`, delError);
+          throw delError;
+        }
       }
 
       if (allMatchesToUpsert.length > 0) {
@@ -290,7 +299,10 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           .from('tour_matches')
           .insert(allMatchesToUpsert); // Use insert instead of upsert since we cleared old ones
         
-        if (matchError) throw matchError;
+        if (matchError) {
+          console.error("Match Insert Error:", matchError);
+          throw matchError;
+        }
       }
 
       setTournaments((prev) => prev.map((x) => (x.id === t.id ? t : x)));

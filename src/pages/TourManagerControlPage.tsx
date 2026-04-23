@@ -854,23 +854,25 @@ const TourManagerControlPage = () => {
                     <span className="text-xs text-muted-foreground w-5">{i + 1}.</span>
                     <Input
                       className="h-7 text-xs flex-1"
-                      value={court.name}
-                      onChange={(e) => {
+                      defaultValue={court.name}
+                      onBlur={async (e) => {
+                        const newName = e.target.value;
+                        if (newName === court.name) return;
                         const updated = {
                           ...tournament,
                           courts: tournament.courts.map((c) =>
-                            c.id === court.id ? { ...c, name: e.target.value } : c
+                            c.id === court.id ? { ...c, name: newName } : c
                           ),
                         };
-                        save(updated);
+                        await save(updated);
                       }}
                     />
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
-                      onClick={() => {
-                        save({ ...tournament, courts: tournament.courts.filter((c) => c.id !== court.id) });
+                      onClick={async () => {
+                        await save({ ...tournament, courts: tournament.courts.filter((c) => c.id !== court.id) });
                       }}
                     >
                       <Trash2 className="h-3 w-3 text-destructive" />
@@ -881,10 +883,10 @@ const TourManagerControlPage = () => {
                   variant="outline"
                   size="sm"
                   className="w-full text-xs"
-                  onClick={() => {
+                  onClick={async () => {
                     const id = `court-${Date.now()}`;
                     const name = `Court ${(tournament.courts?.length || 0) + 1}`;
-                    save({ ...tournament, courts: [...(tournament.courts || []), { id, name }] });
+                    await save({ ...tournament, courts: [...(tournament.courts || []), { id, name }] });
                   }}
                 >
                   <Plus className="h-3 w-3 mr-1" /> {t("tm.addCourt")}
@@ -906,23 +908,25 @@ const TourManagerControlPage = () => {
                       <span className="text-xs text-muted-foreground w-5">{i + 1}.</span>
                       <Input
                         className="h-7 text-xs flex-1"
-                        value={ref.name}
-                        onChange={(e) => {
+                        defaultValue={ref.name}
+                        onBlur={async (e) => {
+                          const newName = e.target.value;
+                          if (newName === ref.name) return;
                           const updated = {
                             ...tournament,
                             referees: tournament.referees.map((r) =>
-                              r.id === ref.id ? { ...r, name: e.target.value } : r
+                              r.id === ref.id ? { ...r, name: newName } : r
                             ),
                           };
-                          save(updated);
+                          await save(updated);
                         }}
                       />
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => {
-                          save({ ...tournament, referees: tournament.referees.filter((r) => r.id !== ref.id) });
+                        onClick={async () => {
+                          await save({ ...tournament, referees: tournament.referees.filter((r) => r.id !== ref.id) });
                         }}
                       >
                         <Trash2 className="h-3 w-3 text-destructive" />
@@ -940,11 +944,11 @@ const TourManagerControlPage = () => {
                   variant="outline"
                   size="sm"
                   className="w-full text-xs"
-                  onClick={() => {
+                  onClick={async () => {
                     const id = `ref-${Date.now()}`;
                     const name = `Referee ${(tournament.referees?.length || 0) + 1}`;
                     const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                    save({ ...tournament, referees: [...(tournament.referees || []), { id, name, accessCode }] });
+                    await save({ ...tournament, referees: [...(tournament.referees || []), { id, name, accessCode }] });
                   }}
                 >
                   <Plus className="h-3 w-3 mr-1" /> {t("tm.addReferee")}
@@ -992,7 +996,7 @@ const TourManagerControlPage = () => {
                               : c
                           ),
                         };
-                        updateTournament(updated);
+                        await save(updated);
                       }}
                     />
                   </div>
