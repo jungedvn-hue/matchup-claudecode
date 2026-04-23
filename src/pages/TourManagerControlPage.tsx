@@ -957,6 +957,7 @@ function MatchCard({
   courtMap,
   t,
   compact,
+  readonly,
 }: {
   match: TournamentMatch;
   onScoreChange: (id: string, a: number, b: number) => void;
