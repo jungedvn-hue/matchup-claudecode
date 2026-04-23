@@ -58,6 +58,25 @@ const TourManagerControlPage = () => {
     ]);
   }, [tournament]);
 
+  const entryMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    const activeCat = tournament?.categories.find((c) => c.id === activeCatId) || tournament?.categories[0];
+    activeCat?.entries.forEach((e) => (map[e.id] = e.name));
+    return map;
+  }, [tournament, activeCatId]);
+
+  const refereeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    tournament?.referees?.forEach((r) => (map[r.id] = r.name));
+    return map;
+  }, [tournament]);
+
+  const courtMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    tournament?.courts?.forEach((c) => (map[c.id] = c.name));
+    return map;
+  }, [tournament]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-3">
@@ -77,26 +96,7 @@ const TourManagerControlPage = () => {
   }
 
   const activeCat = tournament?.categories.find((c) => c.id === activeCatId) || tournament?.categories[0];
-
-  const entryMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    activeCat?.entries.forEach((e) => (map[e.id] = e.name));
-    return map;
-  }, [activeCat]);
-
   const progress = getTournamentProgress(allMatches);
-
-  const refereeMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    tournament?.referees?.forEach((r) => (map[r.id] = r.name));
-    return map;
-  }, [tournament]);
-
-  const courtMap = useMemo(() => {
-    const map: Record<string, string> = {};
-    tournament?.courts?.forEach((c) => (map[c.id] = c.name));
-    return map;
-  }, [tournament]);
 
   // ── Actions ──
   const save = (updated: Tournament) => updateTournament(updated);
