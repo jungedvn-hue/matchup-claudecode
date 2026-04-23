@@ -36,7 +36,7 @@ interface PlayerStats {
 
 export function TournamentStats({ category, entryMap, t }: TournamentStatsProps) {
   const allMatches = useMemo(
-    () => category.pools.flatMap((p) => p.matches),
+    () => (category.pools || []).flatMap((p) => p.matches || []),
     [category]
   );
 

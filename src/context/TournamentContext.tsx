@@ -228,14 +228,14 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       const allMatchesToUpsert: any[] = [];
       for (const cat of t.categories) {
         // Collect matches from pools
-        cat.pools.forEach(p => {
-          p.matches.forEach(m => {
+        cat.pools?.forEach(p => {
+          p.matches?.forEach(m => {
             allMatchesToUpsert.push(transformToDBMatch(m, t.id));
           });
         });
         // Collect matches from bracket rounds
-        cat.bracketRounds.forEach(r => {
-          r.matches.forEach(m => {
+        cat.bracketRounds?.forEach(r => {
+          r.matches?.forEach(m => {
             allMatchesToUpsert.push(transformToDBMatch(m, t.id));
           });
         });

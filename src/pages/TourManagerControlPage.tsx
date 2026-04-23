@@ -52,9 +52,9 @@ const TourManagerControlPage = () => {
 
   const allMatches = useMemo(() => {
     if (!tournament) return [];
-    return tournament.categories.flatMap((c) => [
-      ...c.pools.flatMap((p) => p.matches),
-      ...c.bracketRounds.flatMap((r) => r.matches),
+    return (tournament.categories || []).flatMap((c) => [
+      ...(c.pools || []).flatMap((p) => p.matches || []),
+      ...(c.bracketRounds || []).flatMap((r) => r.matches || []),
     ]);
   }, [tournament]);
 
@@ -176,8 +176,8 @@ const TourManagerControlPage = () => {
     if (!activeCat || !tournament) return;
     
     // 1. Get Auto-Qualified entries (ranked 1..advancingPerPool)
-    const standings = activeCat.pools.flatMap((pool) =>
-      calculateStandings(pool.matches, pool.entryIds, entryMap, activeCat.advancingPerPool, tournament.rankingPriority)
+    const standings = (activeCat.pools || []).flatMap((pool) =>
+      calculateStandings(pool.matches || [], pool.entryIds || [], entryMap, activeCat.advancingPerPool, tournament.rankingPriority)
     );
     const autoQualified = standings.filter((s) => s.qualified);
 
@@ -246,8 +246,8 @@ const TourManagerControlPage = () => {
     
     // Flatten all matches first to assign them across the entire category
     const allCatMatches = [
-      ...activeCat.pools.flatMap((p) => p.matches),
-      ...activeCat.bracketRounds.flatMap((r) => r.matches)
+      ...(activeCat.pools || []).flatMap((p) => p.matches || []),
+      ...(activeCat.bracketRounds || []).flatMap((r) => r.matches || [])
     ];
 
     const filledMatches = autoFillEmptyCourts(
@@ -304,7 +304,7 @@ const TourManagerControlPage = () => {
   };
 
   const filteredMatches = useMemo(() => {
-    let matches = activeCat?.pools.flatMap((p) => p.matches) || [];
+    let matches = activeCat?.pools?.flatMap((p) => p.matches || []) || [];
     if (poolFilter !== "all") matches = matches.filter((m) => m.poolId === poolFilter);
     if (matchFilter !== "all") matches = matches.filter((m) => m.status === matchFilter);
     // If referee, only show their assigned matches

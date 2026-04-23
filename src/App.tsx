@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { TournamentProvider } from "@/context/TournamentContext";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BottomNav from "@/components/BottomNav";
@@ -84,22 +85,54 @@ const AppShell = () => {
   );
 };
 
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <div className="max-w-md w-full bg-card p-6 rounded-xl border border-destructive/50 shadow-2xl">
+            <h2 className="text-xl font-bold text-destructive mb-2">Đã xảy ra lỗi hệ thống</h2>
+            <p className="text-sm text-muted-foreground mb-4">Ứng dụng gặp sự cố bất ngờ. Vui lòng chụp ảnh lỗi này và gửi cho bộ phận hỗ trợ.</p>
+            <pre className="bg-muted p-3 rounded-lg text-[10px] overflow-auto max-h-40 mb-4 border border-border">
+              {this.state.error?.toString()}
+            </pre>
+            <Button onClick={() => window.location.reload()} className="w-full">Tải lại trang</Button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <AuthProvider>
-        <TournamentProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppShell />
-            </BrowserRouter>
-          </TooltipProvider>
-        </TournamentProvider>
-      </AuthProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <AuthProvider>
+          <TournamentProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppShell />
+              </BrowserRouter>
+            </TooltipProvider>
+          </TournamentProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
