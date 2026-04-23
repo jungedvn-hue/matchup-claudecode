@@ -31,16 +31,6 @@ const CATEGORY_OPTIONS: { value: CategoryType; label: string }[] = [
   { value: "mixed_doubles", label: "Mixed Doubles" },
 ];
 
-const RANKING_LABELS: Record<string, string> = {
-  wins: "Số trận thắng",
-  head_to_head: "Đối đầu trực tiếp",
-  point_diff: "Hiệu số điểm (+/-)",
-  points_scored: "Tổng điểm ghi được",
-  match_diff: "Hiệu số trận thắng/thua",
-  random: "Bốc thăm may mắn",
-};
-
-
 const TourManagerCreatePage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -284,12 +274,12 @@ const TourManagerCreatePage = () => {
               {/* Ranking Priority UI */}
               <div className="space-y-2 pt-2">
                 <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1">
-                  Thứ tự ưu tiên xếp hạng
+                  {t("tm.rankingTitle") || "Ranking Priority"}
                 </Label>
                 <div className="space-y-1.5">
                   {rankingPriority.map((criterion, idx) => (
                     <div key={criterion} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg border border-border/50">
-                      <span className="flex-1 text-sm font-medium">{idx + 1}. {RANKING_LABELS[criterion]}</span>
+                      <span className="flex-1 text-sm font-medium">{idx + 1}. {t(`tm.ranking.${criterion}`)}</span>
                       <div className="flex gap-1">
                         <Button
                           variant="ghost" 
@@ -316,7 +306,7 @@ const TourManagerCreatePage = () => {
                   ))}
                 </div>
                 <p className="text-[10px] text-muted-foreground italic">
-                  * Hệ thống sẽ so sánh lần lượt từ trên xuống dưới khi có các đội bằng điểm nhau.
+                  * {t("tm.rankingHint") || "System compares sequentially from top to bottom."}
                 </p>
               </div>
             </div>
@@ -372,7 +362,7 @@ const TourManagerCreatePage = () => {
                       </div>
                       <div className="space-y-1">
                         <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                          Xử lý lẻ đội vòng Knockout
+                          {t("tm.wildcardLogic") || "Knockout Fill Logic"}
                         </Label>
                         <Select 
                           value={String(cat.wildcardCount)} 
@@ -385,8 +375,8 @@ const TourManagerCreatePage = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="0" className="text-xs">Tự động sinh vé BYE (Đặc cách)</SelectItem>
-                            <SelectItem value="-1" className="text-xs">Lấy thêm đội vớt tốt nhất</SelectItem>
+                            <SelectItem value="0" className="text-xs">{t("tm.wildcard.bye") || "Auto-BYE"}</SelectItem>
+                            <SelectItem value="-1" className="text-xs">{t("tm.wildcard.best3rd") || "Best Next Place"}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
