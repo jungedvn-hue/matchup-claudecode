@@ -284,7 +284,7 @@ const TourManagerControlPage = () => {
         c.id === activeCat.id ? { ...c, bracketRounds } : c
       ),
     };
-    save(updated);
+    await save(updated);
     toast.success(t("tm.bracketGenerated"));
   };
 
@@ -987,7 +987,7 @@ const TourManagerControlPage = () => {
                       type="number"
                       className="h-7 w-16 text-xs"
                       value={entry.seed || ""}
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const seed = parseInt(e.target.value) || undefined;
                         const updated = {
                           ...tournament,
