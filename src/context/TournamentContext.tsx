@@ -125,15 +125,15 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
 
         setTournaments(prev => prev.map(t => ({
           ...t,
-          categories: t.categories.map(c => ({
+          categories: (t.categories || []).map(c => ({
             ...c,
-            pools: c.pools.map(p => ({
+            pools: (c.pools || []).map(p => ({
               ...p,
-              matches: p.matches.map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
+              matches: (p.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
             })),
-            bracketRounds: c.bracketRounds.map(r => ({
+            bracketRounds: (c.bracketRounds || []).map(r => ({
               ...r,
-              matches: r.matches.map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
+              matches: (r.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
             }))
           }))
         })));

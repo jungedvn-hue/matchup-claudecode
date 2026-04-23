@@ -135,7 +135,7 @@ const TourManagerControlPage = () => {
       const pool: Pool = {
         id: `pool-${name}`,
         name,
-        entryIds: manualPools[name],
+        entryIds: manualPools[name] || [],
         matches: [],
       };
       pool.matches = generateRoundRobinMatches(pool, activeCat.id, entryMap);

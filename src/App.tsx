@@ -37,6 +37,7 @@ import NotFound from "./pages/NotFound";
 
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
 
 const queryClient = new QueryClient();
