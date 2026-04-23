@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Search, Trophy, Clock, CheckCircle2, Gavel } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trophy, Clock, CheckCircle2, Gavel, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useTournaments } from "@/context/TournamentContext";
 import { useAuth } from "@/context/AuthContext";
@@ -17,7 +28,7 @@ import { toast } from "sonner";
 const TourManagerPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { tournaments, updateTournament } = useTournaments();
+  const { tournaments, updateTournament, deleteTournament } = useTournaments();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [showJoinRef, setShowJoinRef] = useState(false);
@@ -86,35 +97,71 @@ const TourManagerPage = () => {
       >
         <CardContent className="p-4">
           <div className="flex justify-between items-start mb-2">
-            <div>
-              <h3 className="font-semibold text-foreground">{tournament.name}</h3>
-              <p className="text-xs text-muted-foreground">{tournament.location}</p>
+            <div className="flex-1 min-w-0" onClick={() => navigate(`/tour-manager/${tournament.id}`)}>
+              <h3 className="font-semibold text-foreground truncate">{tournament.name}</h3>
+              <p className="text-xs text-muted-foreground truncate">{tournament.location}</p>
             </div>
-            <Badge variant={statusColor[tournament.status]}>
-              {t(`tm.status.${tournament.status}`)}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
-            <span>{tournament.date}</span>
-            <span>•</span>
-            <span>{tournament.categories.length} {t("tm.categories")}</span>
-            <span>•</span>
-            <span>{t(`tm.format.${tournament.format}`)}</span>
-          </div>
-          {tournament.status === "active" && progress.total > 0 && (
-            <div className="mt-3">
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">{t("tm.progress")}</span>
-                <span className="font-medium text-foreground">{progress.pct}%</span>
-              </div>
-              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all"
-                  style={{ width: `${progress.pct}%` }}
-                />
-              </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={statusColor[tournament.status]}>
+                {t(`tm.status.${tournament.status}`)}
+              </Badge>
+              
+              {tournament.host_id === user?.id && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t("common.confirm")}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t("tm.deleteConfirmDesc") || "Hành động này không thể hoàn tác. Toàn bộ dữ liệu về các trận đấu và bảng xếp hạng của giải này sẽ bị xóa vĩnh viễn."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => deleteTournament(tournament.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {t("common.delete")}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
-          )}
+          </div>
+          <div onClick={() => navigate(`/tour-manager/${tournament.id}`)}>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
+              <span>{tournament.date}</span>
+              <span>•</span>
+              <span>{tournament.categories.length} {t("tm.categories")}</span>
+              <span>•</span>
+              <span>{t(`tm.format.${tournament.format}`)}</span>
+            </div>
+            {tournament.status === "active" && progress.total > 0 && (
+              <div className="mt-3">
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">{t("tm.progress")}</span>
+                  <span className="font-medium text-foreground">{progress.pct}%</span>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all"
+                    style={{ width: `${progress.pct}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
     );

@@ -9,6 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useTournaments } from "@/context/TournamentContext";
 import { useAuth } from "@/context/AuthContext";
@@ -35,7 +46,7 @@ const TourManagerControlPage = () => {
   const { tournamentId } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { tournaments, loading, updateTournament, updateMatchScore: syncMatchScore } = useTournaments();
+  const { tournaments, loading, updateTournament, deleteTournament, updateMatchScore: syncMatchScore } = useTournaments();
   const tournament = tournaments.find((t) => t.id === tournamentId);
   const [activeCatId, setActiveCatId] = useState<string>("");
   const [tab, setTab] = useState("matches");
@@ -100,6 +111,12 @@ const TourManagerControlPage = () => {
 
   // ── Actions ──
   const save = (updated: Tournament) => updateTournament(updated);
+
+  const handleDelete = async () => {
+    if (!tournament) return;
+    await deleteTournament(tournament.id);
+    navigate("/tour-manager");
+  };
 
   const generatePools = () => {
     if (!activeCat || !tournament) return;
@@ -352,6 +369,30 @@ const TourManagerControlPage = () => {
             <Badge variant={tournament.status === "active" ? "default" : "secondary"}>
               {t(`tm.status.${tournament.status}`)}
             </Badge>
+
+            {isHost && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{t("common.confirm")}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {t("tm.deleteConfirmDesc") || "Hành động này không thể hoàn tác. Toàn bộ dữ liệu về các trận đấu và bảng xếp hạng của giải này sẽ bị xóa vĩnh viễn."}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      {t("common.delete")}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </div>
 

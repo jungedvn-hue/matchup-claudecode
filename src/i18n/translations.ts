@@ -435,6 +435,7 @@ export const translations: Record<Language, Record<string, string>> = {
     "tm.refereeSetupHint": "Enter referees for this tournament (one per line)",
     "tm.refereeCount": "referees",
     "tm.courtCount": "courts",
+    "tm.deleteConfirmDesc": "This action cannot be undone. All match data and standings for this tournament will be permanently deleted.",
   },
 
   vi: {
@@ -871,5 +872,6 @@ export const translations: Record<Language, Record<string, string>> = {
     "tm.refereeSetupHint": "Nhập tên trọng tài cho giải đấu (mỗi dòng 1 người)",
     "tm.refereeCount": "trọng tài",
     "tm.courtCount": "sân",
+    "tm.deleteConfirmDesc": "Hành động này không thể hoàn tác. Toàn bộ dữ liệu về các trận đấu và bảng xếp hạng của giải này sẽ bị xóa vĩnh viễn.",
   },
 };
