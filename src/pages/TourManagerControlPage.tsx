@@ -142,7 +142,7 @@ const TourManagerControlPage = () => {
         c.id === activeCat.id ? { ...c, pools } : c
       ),
     };
-    save(updated);
+    await save(updated);
     toast.success(t("tm.poolsGenerated"));
   };
 
@@ -173,7 +173,7 @@ const TourManagerControlPage = () => {
         c.id === activeCat.id ? { ...c, pools, poolAllocationMode: "manual" as const } : c
       ),
     };
-    save(updated);
+    await save(updated);
     toast.success(t("tm.poolsGenerated"));
   };
 
