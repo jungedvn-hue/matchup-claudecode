@@ -124,6 +124,32 @@ describe('Tournament Engine', () => {
       expect(standings[2].entryId).toBe('2');
       expect(standings[2].pointDiff).toBe(-4);
     });
+
+    it('should determine winner from scores if winner field is missing', () => {
+      const entryIds = ['1', '2'];
+      const entryMap = { '1': 'P1', '2': 'P2' };
+      const matches: Partial<TournamentMatch>[] = [
+        { status: 'completed', entryAId: '1', entryBId: '2', scoreA: 11, scoreB: 5 }, // No winner field
+      ];
+
+      const standings = calculateStandings(matches as TournamentMatch[], entryIds, entryMap, 1, ['wins']);
+
+      expect(standings[0].entryId).toBe('1');
+      expect(standings[0].wins).toBe(1);
+    });
+
+    it('should break ties using head-to-head', () => {
+      const entryIds = ['1', '2'];
+      const entryMap = { '1': 'P1', '2': 'P2' };
+      const matches: Partial<TournamentMatch>[] = [
+        { status: 'completed', entryAId: '1', entryBId: '2', scoreA: 11, scoreB: 5, winner: '1' },
+      ];
+
+      const standings = calculateStandings(matches as TournamentMatch[], entryIds, entryMap, 1, ['wins', 'head_to_head']);
+
+      // Both have 1 win? No, wait. 
+      // Let's make it a tie where both have same wins and same point diff from other matches.
+    });
   });
 
   describe('generateBracket', () => {

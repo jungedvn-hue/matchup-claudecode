@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTournaments } from "@/context/TournamentContext";
-import { calculateStandings, getTournamentProgress } from "@/lib/tournament/engine";
+import { calculateStandings, getTournamentProgress, getWinnerId } from "@/lib/tournament/engine";
 import { TournamentMatch } from "@/lib/tournament/types";
 
 const tabs = ["Matches", "Leaderboard"];
@@ -59,7 +59,7 @@ const TournamentLivePage = () => {
       return calculateStandings(poolMatches, poolEntryIds, entryMap, 0, tournament.rankingPriority);
     }
     return [];
-  }, [activeCat, entryMap]);
+  }, [activeCat, entryMap, tournament.rankingPriority]);
 
   const getRoundLabel = (roundName: string) => {
     return roundName;
@@ -352,7 +352,7 @@ const MatchCard = ({ match, entryMap, refereeMap, courtMap }: {
   refereeMap?: Record<string, string>;
   courtMap?: Record<string, string>;
 }) => {
-  const winner = match.winner;
+  const winner = getWinnerId(match);
   const isDraw = match.status === "completed" && match.scoreA === match.scoreB;
 
   return (

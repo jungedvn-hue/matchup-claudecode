@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
 import { TournamentCategory, TournamentMatch } from "@/lib/tournament/types";
+import { getWinnerId } from "@/lib/tournament/engine";
 import { Trophy, Target, TrendingUp, Award } from "lucide-react";
 
 const COLORS = [
@@ -66,8 +67,10 @@ export function TournamentStats({ category, entryMap, t }: TournamentStatsProps)
       a.pointsScored += m.scoreA; a.pointsConceded += m.scoreB;
       b.pointsScored += m.scoreB; b.pointsConceded += m.scoreA;
 
-      if (m.winner === m.entryAId) { a.wins++; b.losses++; }
-      else if (m.winner === m.entryBId) { b.wins++; a.losses++; }
+      const winnerId = getWinnerId(m);
+      
+      if (winnerId === m.entryAId) { a.wins++; b.losses++; }
+      else if (winnerId === m.entryBId) { b.wins++; a.losses++; }
     });
 
     return Object.values(stats).map((s) => ({

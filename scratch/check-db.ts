@@ -6,23 +6,21 @@ const SUPABASE_ANON_KEY = "sb_publishable_zqnbouoxgfZChIEIsRz8Kg_Cc-I-Xfq";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function checkSchema() {
-  console.log("Checking tour_categories schema...");
+  console.log("Fetching one tournament...");
   const { data, error } = await supabase
-    .from('tour_categories')
+    .from('tournaments')
     .select('*')
     .limit(1);
 
   if (error) {
-    console.error("Error fetching categories:", error);
+    console.error("Error fetching tournament:", error);
     return;
   }
 
   if (data && data.length > 0) {
-    console.log("Columns in tour_categories:", Object.keys(data[0]));
+    console.log("Full tournament object:", JSON.stringify(data[0], null, 2));
   } else {
-    console.log("No data in tour_categories, trying to fetch from tour_matches to see if table is empty.");
-    const { data: matchData } = await supabase.from('tour_matches').select('*').limit(1);
-    console.log("Matches data found:", matchData?.length || 0);
+    console.log("No tournaments found.");
   }
 }
 

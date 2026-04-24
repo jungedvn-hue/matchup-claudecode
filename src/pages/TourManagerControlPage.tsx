@@ -563,7 +563,7 @@ const TourManagerControlPage = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={matchFilter} onValueChange={(v) => setMatchFilter(v as any)}>
+                  <Select value={matchFilter} onValueChange={(v) => setMatchFilter(v as typeof matchFilter)}>
                     <SelectTrigger className="h-8 text-xs flex-1">
                       <SelectValue />
                     </SelectTrigger>

@@ -18,12 +18,69 @@ const TournamentContext = createContext<TournamentContextValue | null>(null);
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface DBParticipant {
+  id: string;
+  category_id: string;
+  name: string;
+  seed?: number;
+  skill_level?: string;
+}
+
+interface DBMatch {
+  id: string;
+  category_id: string;
+  tournament_id: string;
+  pool_id?: string;
+  bracket_round_id?: string;
+  match_no: number;
+  entry_a_id: string | null;
+  entry_b_id: string | null;
+  entry_a_name: string;
+  entry_b_name: string;
+  score_a: number;
+  score_b: number;
+  winner_id?: string;
+  status: string;
+  court_id?: string;
+  referee_id?: string;
+}
+
+interface DBCategory {
+  id: string;
+  tournament_id: string;
+  type: string;
+  name: string;
+  advancing_per_pool: number;
+  wildcard_count: number;
+  pool_allocation_mode: string;
+  pools: any[];
+  bracket_rounds: any[];
+  participants: DBParticipant[];
+  matches: DBMatch[];
+}
+
+interface DBTournament {
+  id: string;
+  name: string;
+  date: string;
+  location: string;
+  format: string;
+  points_per_game: number;
+  win_by_two: boolean;
+  status: string;
+  ranking_priority: any[];
+  host_id: string;
+  referees: any[];
+  courts: any[];
+  categories: DBCategory[];
+}
+
 export const TournamentProvider = ({ children }: { children: ReactNode }) => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const transformToDBMatch = (m: any, tournamentId: string) => ({
+  const transformToDBMatch = (m: TournamentMatch, tournamentId: string) => ({
     id: m.id,
     category_id: m.categoryId,
     tournament_id: tournamentId,
@@ -59,31 +116,33 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       if (error) throw error;
 
       // Transform relational data back to our Frontend Type structure
-      const transformed: Tournament[] = (data as any[]).map(t => ({
+      const transformed: Tournament[] = (data as unknown as DBTournament[] || []).map(t => ({
         ...t,
         referees: t.referees || [],
         courts: t.courts || [],
         rankingPriority: t.ranking_priority || ["wins", "head_to_head", "point_diff", "points_scored"],
-        categories: (t.categories || []).map((c: any) => ({
+        categories: (t.categories || []).map((c) => ({
           ...c,
+          type: c.type as any, // Cast to CategoryType
           wildcardCount: c.wildcard_count || 0,
           entries: c.participants || [],
           pools: c.pools || [], 
           bracketRounds: c.bracket_rounds || [],
-          matches: (c.matches || []).map((m: any) => ({
+          poolAllocationMode: c.pool_allocation_mode as any,
+          matches: (c.matches || []).map((m) => ({
             id: m.id,
             categoryId: m.category_id,
             poolId: m.pool_id,
             bracketRoundId: m.bracket_round_id,
             matchNo: m.match_no,
-            entryAId: m.entry_a_id,
-            entryBId: m.entry_b_id,
+            entryAId: m.entry_a_id || "",
+            entryBId: m.entry_b_id || "",
             entryAName: m.entry_a_name,
             entryBName: m.entry_b_name,
             scoreA: m.score_a,
             scoreB: m.score_b,
             winner: m.winner_id,
-            status: m.status,
+            status: m.status as any,
             courtId: m.court_id,
             refereeId: m.referee_id
           }))
@@ -308,7 +367,11 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       setTournaments((prev) => prev.map((x) => (x.id === t.id ? t : x)));
     } catch (err: any) {
       console.error("Deep Sync Error:", err);
-      toast.error("Failed to sync deep data: " + err.message);
+      if (err.message?.includes("column") && err.message?.includes("not found")) {
+        toast.error("Database schema mismatch. Please run the SQL fix script in scratch/fix-db-schema.sql");
+      } else {
+        toast.error("Failed to sync deep data: " + err.message);
+      }
     }
   };
 

@@ -1,5 +1,5 @@
 import { Tournament, TournamentCategory, Standing } from "./types";
-import { calculateStandings } from "./engine";
+import { calculateStandings, getWinnerId } from "./engine";
 
 // ── CSV Export ──
 export function exportStandingsCSV(
@@ -51,7 +51,10 @@ export function exportStandingsCSV(
         m.entryAName,
         `${m.scoreA}-${m.scoreB}`,
         m.entryBName,
-        m.winner ? (entryMap[m.winner] || m.winner) : "",
+        (() => {
+          const wId = getWinnerId(m);
+          return wId ? (entryMap[wId] || wId) : "";
+        })(),
       ]);
     });
   });
@@ -95,9 +98,9 @@ export function exportStandingsPDF(
           (m) => `
         <tr>
           <td style="text-align:center">${m.matchNo}</td>
-          <td style="text-align:right;${m.winner === m.entryAId ? "font-weight:700;color:#2e7d32" : ""}">${m.entryAName}</td>
+          <td style="text-align:right;${getWinnerId(m) === m.entryAId ? "font-weight:700;color:#2e7d32" : ""}">${m.entryAName}</td>
           <td style="text-align:center;font-weight:700">${m.scoreA} - ${m.scoreB}</td>
-          <td style="${m.winner === m.entryBId ? "font-weight:700;color:#2e7d32" : ""}">${m.entryBName}</td>
+          <td style="${getWinnerId(m) === m.entryBId ? "font-weight:700;color:#2e7d32" : ""}">${m.entryBName}</td>
         </tr>`
         )
         .join("");

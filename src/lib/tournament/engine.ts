@@ -9,6 +9,14 @@ import {
 let matchCounter = 0;
 const nextMatchId = () => `m-${Date.now()}-${++matchCounter}`;
 
+export function getWinnerId(m: TournamentMatch): string | undefined {
+  if (m.winner) return m.winner;
+  if (m.status !== "completed") return undefined;
+  if (m.scoreA > m.scoreB) return m.entryAId;
+  if (m.scoreB > m.scoreA) return m.entryBId;
+  return undefined;
+}
+
 // ── Pool Allocation (Snake Seeding) ──
 export function autoAllocatePools(
   entries: { id: string; name: string; seed?: number; skillLevel?: string }[],
@@ -85,7 +93,8 @@ export function calculateStandings(
   entryIds: string[],
   entryMap: Record<string, string>,
   advancingCount: number,
-  rankingPriority: RankingCriterion[] = ["wins", "head_to_head", "point_diff", "points_scored"]
+  rankingPriority: RankingCriterion[] = ["wins", "head_to_head", "point_diff", "points_scored"],
+  isMiniLeague: boolean = false
 ): Standing[] {
   const stats: Record<string, Standing> = {};
 
@@ -116,8 +125,11 @@ export function calculateStandings(
       a.pointsConceded += m.scoreB;
       b.pointsScored += m.scoreB;
       b.pointsConceded += m.scoreA;
-      if (m.winner === m.entryAId) { a.wins++; b.losses++; }
-      else if (m.winner === m.entryBId) { b.wins++; a.losses++; }
+      
+      const winnerId = getWinnerId(m);
+      
+      if (winnerId === m.entryAId) { a.wins++; b.losses++; }
+      else if (winnerId === m.entryBId) { b.wins++; a.losses++; }
     });
 
   const sorted = Object.values(stats).map((s) => ({
@@ -131,28 +143,46 @@ export function calculateStandings(
         if (b.wins !== a.wins) return b.wins - a.wins;
       }
       
-      if (criterion === "head_to_head") {
-        // Find players tied on current criteria (we should check if they are tied up to this point)
-        // For simplicity in a sort loop, we usually look at the mini-league of these two or the whole tied group.
-        // Standard Head-to-Head tiebreaker
-        const tiedGroup = sorted.filter(p => 
-          p.wins === a.wins && 
-          // Note: In a real sort loop, we'd need to check if they were also tied on previous criteria.
-          // But wins is usually the only thing before H2H.
-          true 
-        );
-
-        if (tiedGroup.length > 1) {
-          const miniMatches = matches.filter(m => 
-            m.status === "completed" &&
-            (m.entryAId === a.entryId && m.entryBId === b.entryId || 
-             m.entryAId === b.entryId && m.entryBId === a.entryId)
-          );
-
-          if (miniMatches.length > 0) {
-            const m = miniMatches[0];
-            if (m.winner === a.entryId) return -1;
-            if (m.winner === b.entryId) return 1;
+      if (criterion === "head_to_head" && !isMiniLeague) {
+        // Standard Head-to-Head tiebreaker: look at the mini-league of players tied on wins
+        // We only do this if it's NOT already a mini-league to prevent recursion
+        const tiedOnWins = sorted.filter(p => p.wins === a.wins);
+        
+        if (tiedOnWins.length > 1) {
+          // If only 2 people are tied, just check their direct match
+          if (tiedOnWins.length === 2) {
+            const m = matches.find(m => 
+              m.status === "completed" &&
+              (m.entryAId === a.entryId && m.entryBId === b.entryId || 
+               m.entryAId === b.entryId && m.entryBId === a.entryId)
+            );
+            if (m) {
+              const winnerId = getWinnerId(m);
+              if (winnerId === a.entryId) return -1;
+              if (winnerId === b.entryId) return 1;
+            }
+          } else {
+            // 3+ players tied: check mini-league standings
+            // Matches between ONLY the tied players
+            const miniMatches = matches.filter(m => 
+              tiedOnWins.some(p => p.entryId === m.entryAId) && 
+              tiedOnWins.some(p => p.entryId === m.entryBId)
+            );
+            
+            // Calculate standings for just this group, WITHOUT the H2H criterion to avoid recursion
+            const subPriority = rankingPriority.filter(c => c !== "head_to_head");
+            const miniStandings = calculateStandings(
+              miniMatches, 
+              tiedOnWins.map(p => p.entryId), 
+              entryMap, 
+              0, 
+              subPriority,
+              true // mark as mini-league
+            );
+            
+            const rankA = miniStandings.find(s => s.entryId === a.entryId)?.rank || 0;
+            const rankB = miniStandings.find(s => s.entryId === b.entryId)?.rank || 0;
+            if (rankA !== rankB) return rankA - rankB;
           }
         }
       }
@@ -172,7 +202,6 @@ export function calculateStandings(
       }
 
       if (criterion === "random") {
-        // Fallback to entry order or name to be consistent
         if (a.entryId !== b.entryId) return a.entryId.localeCompare(b.entryId);
       }
     }
