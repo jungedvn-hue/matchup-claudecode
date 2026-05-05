@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trophy, Calendar, Users, MapPin, Search } from "lucide-react";
+import { Plus, Trophy, Calendar, Users, MapPin, Search, PlayCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,9 +44,15 @@ const TournamentsPage = () => {
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-display font-bold text-foreground">{t("tournaments.title")}</h1>
-          <Button size="sm" className="rounded-xl gap-1 text-xs" onClick={() => navigate("/tour-manager/create")}>
-            <Plus className="h-3.5 w-3.5" /> {t("tournaments.create")}
-          </Button>
+          <div className="flex gap-1.5">
+            <Button size="sm" variant="outline" className="rounded-xl gap-1 text-xs" onClick={() => navigate("/my-matches")}>
+              <PlayCircle className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{t("mm.title") || "Trận của tôi"}</span>
+            </Button>
+            <Button size="sm" className="rounded-xl gap-1 text-xs" onClick={() => navigate("/tour-manager/create")}>
+              <Plus className="h-3.5 w-3.5" /> {t("tournaments.create")}
+            </Button>
+          </div>
         </div>
         
         <div className="relative">

@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTournaments } from "@/context/TournamentContext";
+import { useTournamentRealtime } from "@/hooks/useTournamentRealtime";
 import { calculateStandings, getTournamentProgress, getWinnerId } from "@/lib/tournament/engine";
 import { TournamentMatch } from "@/lib/tournament/types";
 
@@ -18,6 +19,9 @@ const TournamentLivePage = () => {
   const navigate = useNavigate();
   const { tournaments, loading } = useTournaments();
   const tournament = tournaments.find(t => t.id === tournamentId);
+
+  // Scoped realtime: only this tournament's events arrive on this page.
+  useTournamentRealtime(tournamentId ? [tournamentId] : []);
   const [activeTab, setActiveTab] = useState("Matches");
   const [activeCatId, setActiveCatId] = useState<string>("");
 
@@ -56,10 +60,10 @@ const TournamentLivePage = () => {
     const poolEntryIds = activeCat.pools.flatMap(p => p.entryIds);
     
     if (poolMatches.length > 0) {
-      return calculateStandings(poolMatches, poolEntryIds, entryMap, 0, tournament.rankingPriority);
+      return calculateStandings(poolMatches, poolEntryIds, entryMap, 0, tournament?.rankingPriority);
     }
     return [];
-  }, [activeCat, entryMap, tournament.rankingPriority]);
+  }, [activeCat, entryMap, tournament?.rankingPriority]);
 
   const getRoundLabel = (roundName: string) => {
     return roundName;
@@ -83,7 +87,25 @@ const TournamentLivePage = () => {
     );
   }
 
-  const champion = tournament.status === "completed" ? leaderboard[0]?.entryName : null;
+  // Champion = winner of the bracket's last round Final (auto-detect across categories).
+  // Falls back to leaderboard #1 only if tournament was manually marked completed.
+  const bracketChampion = (() => {
+    for (const cat of tournament.categories || []) {
+      const rounds = cat.bracketRounds || [];
+      if (rounds.length === 0) continue;
+      const final = rounds[rounds.length - 1];
+      const finalMatch = final.matches?.find(
+        (m) => m.entryAName !== "BYE" && m.entryBName !== "BYE"
+      );
+      if (finalMatch?.status === "completed" && finalMatch.winner) {
+        return finalMatch.winner === finalMatch.entryAId
+          ? finalMatch.entryAName
+          : finalMatch.entryBName;
+      }
+    }
+    return null;
+  })();
+  const champion = bracketChampion || (tournament.status === "completed" ? leaderboard[0]?.entryName : null);
 
   return (
     <div className="pb-6 min-h-screen">
@@ -101,7 +123,7 @@ const TournamentLivePage = () => {
               <span>{progress.completed}/{progress.total} matches</span>
             </div>
           </div>
-          {tournament.status === "completed" ? (
+          {tournament.status === "completed" || bracketChampion ? (
             <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-lg">Complete</span>
           ) : (
             <span className="text-xs font-semibold text-sport-orange bg-sport-orange/10 px-2 py-1 rounded-lg">Live</span>
@@ -217,24 +239,32 @@ const TournamentLivePage = () => {
                 <h3 className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-2">
                   <Trophy className="h-3 w-3" /> Knockout Stage
                 </h3>
-                <div className="overflow-x-auto -mx-4 px-4 pb-4">
-                  <div className="flex gap-4 min-w-max">
-                    {activeCat.bracketRounds.map(round => (
-                      <div key={round.id} className="space-y-3 min-w-[240px]">
-                        <p className="text-[11px] font-bold text-primary bg-primary/5 py-1 rounded text-center border border-primary/10">
-                          {round.name}
-                        </p>
-                        {round.matches.filter(m => m.entryAName !== "BYE" && m.entryBName !== "BYE").map(match => (
-                          <MatchCard
-                            key={match.id}
-                            match={match}
-                            entryMap={entryMap}
-                            refereeMap={refereeMap}
-                            courtMap={courtMap}
-                          />
-                        ))}
-                      </div>
-                    ))}
+                <div className="pb-4">
+                  <div className="flex flex-wrap gap-4">
+                    {activeCat.bracketRounds.map(round => {
+                      const realMatches = round.matches.filter(
+                        m => m.entryAName !== "BYE" && m.entryBName !== "BYE"
+                      );
+                      return (
+                        <div key={round.id} className="space-y-3 flex-1 min-w-[240px]">
+                          <p className="text-[11px] font-bold text-primary bg-primary/5 py-1 rounded text-center border border-primary/10">
+                            {round.name}
+                            <span className="ml-2 font-normal text-muted-foreground">
+                              ({realMatches.filter(m => m.status === "completed").length}/{realMatches.length})
+                            </span>
+                          </p>
+                          {realMatches.map(match => (
+                            <MatchCard
+                              key={match.id}
+                              match={match}
+                              entryMap={entryMap}
+                              refereeMap={refereeMap}
+                              courtMap={courtMap}
+                            />
+                          ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -375,7 +405,7 @@ const MatchCard = ({ match, entryMap, refereeMap, courtMap }: {
             )}
           </div>
           {match.status === "completed" ? (
-            <Badge variant="secondary" className="text-[8px] h-4 px-1">Final</Badge>
+            <Badge variant="secondary" className="text-[8px] h-4 px-1">Done</Badge>
           ) : match.status === "in_progress" ? (
             <Badge variant="default" className="text-[8px] h-4 px-1 bg-red-500 animate-pulse">Live</Badge>
           ) : null}

@@ -1,7 +1,9 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "matchupvn",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0-beta.1",
+  "description": "MatchUpVN — Pickleball community platform with tournament management, real-time scoring, and player progression.",
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "dev": "vite",

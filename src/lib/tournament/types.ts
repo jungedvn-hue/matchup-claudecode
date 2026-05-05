@@ -4,6 +4,7 @@ export type MatchStatus = "not_started" | "in_progress" | "completed";
 export type SkillLevel = "beginner" | "intermediate" | "advanced";
 export type RankingCriterion = "wins" | "head_to_head" | "point_diff" | "points_scored" | "match_diff" | "random";
 export type PoolAllocationMode = "auto" | "manual";
+export type BracketFillMode = "bye" | "wildcard";
 
 
 export interface TournamentPlayer {
@@ -53,6 +54,8 @@ export interface TournamentMatch {
   courtId?: string;
   refereeId?: string;
   timeSlot?: string;
+  entryAIsWildcard?: boolean;
+  entryBIsWildcard?: boolean;
 }
 
 export interface Pool {
@@ -87,12 +90,13 @@ export interface TournamentCategory {
   name: string;
   skillFilter?: SkillLevel;
   maxEntries?: number;
-  entries: { id: string; name: string; seed?: number; skillLevel?: SkillLevel }[];
+  entries: { id: string; name: string; seed?: number; skillLevel?: SkillLevel; userId?: string }[];
   pools: Pool[];
   bracketRounds: BracketRound[];
   advancingPerPool: number;
   wildcardCount: number;
   poolAllocationMode: PoolAllocationMode;
+  bracketFillMode?: BracketFillMode;
 }
 
 export interface Tournament {
@@ -113,4 +117,5 @@ export interface Tournament {
   courts: TournamentCourt[];
   status: "draft" | "active" | "completed";
   createdAt: string;
+  host_id?: string;
 }

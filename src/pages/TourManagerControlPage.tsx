@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Play, RotateCcw, Check, Trophy, Users, BarChart3, Brackets, Settings2, Tv, Plus, Minus, Shuffle, Download, FileText, PieChart, ExternalLink, Wand2, Trash2, MapPin, Gavel, Loader2, Calculator } from "lucide-react";
+import { ArrowLeft, Play, RotateCcw, Check, Trophy, Users, BarChart3, Brackets, Settings2, Tv, Plus, Minus, Shuffle, Download, FileText, PieChart, ExternalLink, Wand2, Trash2, MapPin, Gavel, Loader2, Calculator, RefreshCw, UserX, Eye, ChevronDown, ChevronUp, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,8 +20,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useTournaments } from "@/context/TournamentContext";
+import { useTournamentRealtime } from "@/hooks/useTournamentRealtime";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import {
@@ -35,9 +45,11 @@ import {
   getAvailableResources,
   getWildcardEntries,
   nearestBracketSize,
+  advanceBracket,
 } from "@/lib/tournament/engine";
 import { Tournament, TournamentCategory, TournamentMatch, Pool, Standing } from "@/lib/tournament/types";
 import { exportStandingsCSV, exportStandingsPDF } from "@/lib/tournament/export";
+import { supabase } from "@/integrations/supabase/client";
 import { TournamentStats } from "@/components/TournamentStats";
 import TourBudgetTab from "@/components/tour/TourBudgetTab";
 
@@ -48,6 +60,9 @@ const TourManagerControlPage = () => {
   const { t } = useLanguage();
   const { tournaments, loading, updateTournament, deleteTournament, updateMatchScore: syncMatchScore } = useTournaments();
   const tournament = tournaments.find((t) => t.id === tournamentId);
+
+  // Scoped realtime: this page only listens to events for the active tournament.
+  useTournamentRealtime(tournamentId ? [tournamentId] : []);
   const [activeCatId, setActiveCatId] = useState<string>("");
   const [tab, setTab] = useState("matches");
   const [matchFilter, setMatchFilter] = useState<"all" | "not_started" | "in_progress" | "completed">("all");
@@ -56,6 +71,12 @@ const TourManagerControlPage = () => {
   const [manualPools, setManualPools] = useState<Record<string, string[]>>({});
   const [manualPoolCount, setManualPoolCount] = useState(2);
   const [isSaving, setIsSaving] = useState(false);
+  const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
+  const [pendingFillMode, setPendingFillMode] = useState<"wildcard" | "bye">("wildcard");
+  const [expandedRefId, setExpandedRefId] = useState<string | null>(null);
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
+  const [bulkRefId, setBulkRefId] = useState<string>("");
+  const [bulkScope, setBulkScope] = useState<"category" | "pools" | "bracket" | "unassigned">("unassigned");
   const { user } = useAuth();
 
   const isHost = tournament?.host_id === user?.id || !user; // Allow full access if no user (local dev)
@@ -69,6 +90,32 @@ const TourManagerControlPage = () => {
       ...(c.bracketRounds || []).flatMap((r) => r.matches || []),
     ]);
   }, [tournament]);
+
+  // Notify host when a referee/player completes a match. Track previous status
+  // per match id so we only fire the toast on the not-started/in-progress →
+  // completed transition (not on every render).
+  const prevMatchStatus = useRef<Map<string, string>>(new Map());
+  const notifInitRef = useRef(false);
+  useEffect(() => {
+    if (!isHost) return;
+    if (!notifInitRef.current) {
+      allMatches.forEach((m) => prevMatchStatus.current.set(m.id, m.status));
+      notifInitRef.current = true;
+      return;
+    }
+    allMatches.forEach((m) => {
+      const prev = prevMatchStatus.current.get(m.id);
+      if (prev && prev !== "completed" && m.status === "completed") {
+        const real = m.entryAName !== "BYE" && m.entryBName !== "BYE";
+        if (real) {
+          toast.message(t("tm.matchSubmitted") || "Có trận vừa hoàn thành", {
+            description: `${m.entryAName} ${m.scoreA} : ${m.scoreB} ${m.entryBName}`,
+          });
+        }
+      }
+      prevMatchStatus.current.set(m.id, m.status);
+    });
+  }, [allMatches, isHost, t]);
 
   const entryMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -146,18 +193,12 @@ const TourManagerControlPage = () => {
 
   const generatePools = async () => {
     if (!activeCat || !tournament) return;
-    const targetPlayersPerPool = parseInt(tournament.playersPerPool as string) || 4;
+    const targetPlayersPerPool = tournament.playersPerPool || 4;
     const poolCount = Math.max(1, Math.ceil(activeCat.entries.length / targetPlayersPerPool));
-    console.log("Generating matches for category:", activeCat.name);
-    console.log("Total entries:", activeCat.entries.length);
     const pools = autoAllocatePools(activeCat.entries, poolCount);
-    // Generate RR matches for each pool
-    let totalMatches = 0;
     pools.forEach((pool) => {
       pool.matches = generateRoundRobinMatches(pool, activeCat.id, entryMap);
-      totalMatches += pool.matches.length;
     });
-    console.log("Generated matches count:", totalMatches);
 
     const updated = {
       ...tournament,
@@ -167,7 +208,6 @@ const TourManagerControlPage = () => {
       ),
     };
     
-    console.log("Syncing with Supabase...");
     await save(updated);
     toast.success(t("tm.poolsGenerated"));
   };
@@ -204,41 +244,91 @@ const TourManagerControlPage = () => {
   };
 
   const updateMatchScore = async (matchId: string, scoreA: number, scoreB: number) => {
-    // Optimistic local update (optional, but good for UX)
-    const updateMatch = (m: TournamentMatch): TournamentMatch =>
-      m.id === matchId ? { ...m, scoreA, scoreB, status: "in_progress" } : m;
-
-    // Sync to Supabase
     await syncMatchScore(matchId, scoreA, scoreB, "in_progress");
   };
 
-  const completeMatch = async (matchId: string) => {
+  const completeMatch = async (matchId: string, scoreA?: number, scoreB?: number) => {
     const match = allMatches.find(m => m.id === matchId);
     if (!match) return;
 
-    const winnerId = match.scoreA > match.scoreB ? match.entryAId : match.entryBId;
-    
-    // Sync to Supabase
-    await syncMatchScore(matchId, match.scoreA, match.scoreB, "completed", winnerId);
+    const finalA = scoreA ?? match.scoreA;
+    const finalB = scoreB ?? match.scoreB;
+    const winnerId = finalA > finalB ? match.entryAId : match.entryBId;
+
+    await syncMatchScore(matchId, finalA, finalB, "completed", winnerId);
+
+    // If this is a bracket match, cascade winner into next round(s) and persist.
+    // Use a targeted DB-first approach (read fresh bracket_rounds from DB, advance,
+    // write back only changed fields) to avoid React-state staleness when multiple
+    // bracket matches complete in quick succession.
+    if (match.bracketRoundId && tournament) {
+      const cat = tournament.categories.find((c) =>
+        c.bracketRounds?.some((r) => r.matches.some((m) => m.id === matchId))
+      );
+      if (cat) {
+        const { data: catRow } = await supabase
+          .from("tour_categories")
+          .select("bracket_rounds")
+          .eq("id", cat.id)
+          .single();
+        const freshRounds: any[] = (catRow?.bracket_rounds as any[]) || cat.bracketRounds;
+
+        const seededRounds = freshRounds.map((r: any) => ({
+          ...r,
+          matches: r.matches.map((m: any) =>
+            m.id === matchId
+              ? { ...m, scoreA: finalA, scoreB: finalB, winner: winnerId, status: "completed" }
+              : m
+          ),
+        }));
+        const { rounds: advancedRounds, updatedMatches } = advanceBracket(seededRounds, matchId);
+
+        await supabase
+          .from("tour_categories")
+          .update({ bracket_rounds: advancedRounds })
+          .eq("id", cat.id);
+
+        // Sync next-round match rows so the realtime score listener has correct entries.
+        for (const m of updatedMatches) {
+          await supabase
+            .from("tour_matches")
+            .update({
+              entry_a_id: m.entryAId,
+              entry_a_name: m.entryAName,
+              entry_b_id: m.entryBId,
+              entry_b_name: m.entryBName,
+              winner_id: m.winner,
+              status: m.status,
+            })
+            .eq("id", m.id);
+        }
+      }
+    }
+
     toast.success(t("tm.matchCompleted"));
   };
 
-  const generateKnockout = async () => {
+  const generateKnockout = async (overrideMode?: "wildcard" | "bye") => {
     if (!activeCat || !tournament) return;
-    
+
     // 1. Get Auto-Qualified entries (ranked 1..advancingPerPool)
     const standings = (activeCat.pools || []).flatMap((pool) =>
       calculateStandings(pool.matches || [], pool.entryIds || [], entryMap, activeCat.advancingPerPool, tournament.rankingPriority)
     );
     const autoQualified = standings.filter((s) => s.qualified);
 
-    // 2. Get Wildcard entries (best 3rd place etc.)
+    // 2. Decide fill strategy. Default = "wildcard" (fill bracket with best 3rd-place teams).
+    // "bye" = take only auto-qualified, pad missing slots with BYE inside generateBracket().
+    const fillMode = overrideMode ?? activeCat.bracketFillMode ?? "wildcard";
     const autoQualifiedCount = autoQualified.length;
-    let actualWildcardCount = activeCat.wildcardCount || 0;
-    
-    if (activeCat.wildcardCount === -1) {
-      const targetBracketSize = nearestBracketSize(autoQualifiedCount);
-      actualWildcardCount = targetBracketSize - autoQualifiedCount;
+    const targetBracketSize = nearestBracketSize(autoQualifiedCount);
+
+    let actualWildcardCount = 0;
+    if (fillMode === "wildcard") {
+      actualWildcardCount =
+        activeCat.wildcardCount === -1 || !activeCat.wildcardCount
+          ? targetBracketSize - autoQualifiedCount
+          : activeCat.wildcardCount;
     }
 
     const wildcards = getWildcardEntries(
@@ -249,9 +339,7 @@ const TourManagerControlPage = () => {
       tournament.rankingPriority
     );
 
-    // 3. Combine and Seed them fairly
-    // We combine all qualified teams and sort them by their performance metrics
-    // to determine their seeding in the bracket.
+    // 3. Combine all qualified teams and sort by ranking priority for fair seeding
     const allQualifiedStats = [...autoQualified, ...wildcards.map(w => w.stats)];
     
     // Sort all qualified teams by the tournament's ranking priority
@@ -277,11 +365,19 @@ const TourManagerControlPage = () => {
       return;
     }
 
-    const bracketRounds = generateBracket(finalQualified, activeCat.id);
+    const wildcardIds = new Set(wildcards.map((w) => w.id));
+    const bracketRounds = generateBracket(finalQualified, activeCat.id).map((r) => ({
+      ...r,
+      matches: r.matches.map((m) => ({
+        ...m,
+        entryAIsWildcard: wildcardIds.has(m.entryAId) || undefined,
+        entryBIsWildcard: wildcardIds.has(m.entryBId) || undefined,
+      })),
+    }));
     const updated = {
       ...tournament,
       categories: tournament.categories.map((c) =>
-        c.id === activeCat.id ? { ...c, bracketRounds } : c
+        c.id === activeCat.id ? { ...c, bracketRounds, bracketFillMode: fillMode } : c
       ),
     };
     await save(updated);
@@ -295,38 +391,33 @@ const TourManagerControlPage = () => {
       return;
     }
     
-    // Flatten all matches first to assign them across the entire category
-    const allCatMatches = [
-      ...(activeCat.pools || []).flatMap((p) => p.matches || []),
-      ...(activeCat.bracketRounds || []).flatMap((r) => r.matches || [])
-    ];
+    // Flatten ALL matches across all categories for global resource assignment
+    const allTournamentMatches = (tournament.categories || []).flatMap(c => [
+      ...(c.pools || []).flatMap((p) => p.matches || []),
+      ...(c.bracketRounds || []).flatMap((r) => r.matches || [])
+    ]);
 
     const filledMatches = autoFillEmptyCourts(
-      allCatMatches,
+      allTournamentMatches,
       tournament.referees || [],
       tournament.courts || []
     );
 
-    // Helper to find match in filledMatches
-    const getFilled = (matchId: string) => filledMatches.find(m => m.id === matchId) || undefined;
+    const filledMap = new Map(filledMatches.map(m => [m.id, m]));
 
     const updated = {
       ...tournament,
-      categories: tournament.categories.map((c) =>
-        c.id === activeCat.id
-          ? {
-              ...c,
-              pools: c.pools.map((p) => ({
-                ...p,
-                matches: p.matches.map(m => getFilled(m.id) || m),
-              })),
-              bracketRounds: c.bracketRounds.map((r) => ({
-                ...r,
-                matches: r.matches.map(m => getFilled(m.id) || m),
-              })),
-            }
-          : c
-      ),
+      categories: tournament.categories.map((c) => ({
+        ...c,
+        pools: c.pools.map((p) => ({
+          ...p,
+          matches: p.matches.map(m => filledMap.get(m.id) || m),
+        })),
+        bracketRounds: c.bracketRounds.map((r) => ({
+          ...r,
+          matches: r.matches.map(m => filledMap.get(m.id) || m),
+        })),
+      })),
     };
     save(updated);
     toast.success(t("tm.resourcesAssigned"));
@@ -751,7 +842,7 @@ const TourManagerControlPage = () => {
             {(tournament.format === "hybrid" || tournament.format === "knockout") &&
               activeCat?.pools.length > 0 &&
               activeCat?.bracketRounds.length === 0 && (
-                <Button className="w-full" onClick={generateKnockout}>
+                <Button className="w-full" onClick={() => { setPendingFillMode(activeCat?.bracketFillMode ?? "wildcard"); setBracketDialogOpen(true); }}>
                   <Trophy className="h-4 w-4 mr-1" /> {t("tm.generateBracket")}
                 </Button>
               )}
@@ -764,38 +855,81 @@ const TourManagerControlPage = () => {
                 <Brackets className="h-10 w-10 mx-auto mb-2 opacity-30" />
                 <p>{t("tm.noBracket")}</p>
                 {(tournament.format === "hybrid" || tournament.format === "knockout") && (
-                  <Button variant="outline" size="sm" className="mt-3" onClick={generateKnockout}>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => { setPendingFillMode(activeCat?.bracketFillMode ?? "wildcard"); setBracketDialogOpen(true); }}>
                     {t("tm.generateBracket")}
                   </Button>
                 )}
               </div>
             ) : (
-              activeCat?.bracketRounds.map((round) => (
-                <Card key={round.id}>
-                  <CardHeader className="p-3 pb-1">
-                    <CardTitle className="text-sm">{round.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-2 space-y-2">
-                    {round.matches
-                      .filter((m) => m.entryAName !== "BYE" && m.entryBName !== "BYE")
-                      .map((match) => (
-                        <MatchCard
-                          key={match.id}
-                          match={match}
-                          onScoreChange={updateMatchScore}
-                          onComplete={completeMatch}
-                          onResourceChange={updateMatchResource}
-                          referees={tournament.referees || []}
-                          courts={tournament.courts || []}
-                          refereeMap={refereeMap}
-                          courtMap={courtMap}
-                          t={t}
-                          compact
-                        />
-                      ))}
-                  </CardContent>
-                </Card>
-              ))
+              activeCat?.bracketRounds.map((round) => {
+                const realMatches = round.matches.filter(
+                  (m) => m.entryAName !== "BYE" && m.entryBName !== "BYE"
+                );
+                const isCurrentRound =
+                  realMatches.some((m) => m.status !== "completed") &&
+                  realMatches.every((m) => m.status !== "not_started" || true) === true;
+                return (
+                  <Card key={round.id} className={isCurrentRound ? "border-primary/40" : ""}>
+                    <CardHeader className="p-3 pb-1">
+                      <CardTitle className="text-sm flex items-center justify-between">
+                        <span>{round.name}</span>
+                        <span className="text-xs text-muted-foreground font-normal">
+                          {realMatches.filter((m) => m.status === "completed").length}/{realMatches.length}
+                        </span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 space-y-2">
+                      {round.matches
+                        .filter((m) => m.entryAName !== "BYE" && m.entryBName !== "BYE")
+                        .map((match) => {
+                          const isTBD =
+                            match.entryAId.startsWith("tbd-") ||
+                            match.entryBId.startsWith("tbd-") ||
+                            match.entryAName === "TBD" ||
+                            match.entryBName === "TBD";
+                          if (isTBD) {
+                            return (
+                              <div
+                                key={match.id}
+                                className="rounded border border-dashed border-muted-foreground/30 p-2 text-xs text-muted-foreground italic flex justify-between"
+                              >
+                                <span>
+                                  {match.entryAName}
+                                  {match.entryAIsWildcard && <span className="ml-1 text-[10px] text-amber-600">(WC)</span>}
+                                </span>
+                                <span>vs</span>
+                                <span>
+                                  {match.entryBName}
+                                  {match.entryBIsWildcard && <span className="ml-1 text-[10px] text-amber-600">(WC)</span>}
+                                </span>
+                              </div>
+                            );
+                          }
+                          const labeledMatch = {
+                            ...match,
+                            entryAName: match.entryAIsWildcard ? `${match.entryAName} ⓦ` : match.entryAName,
+                            entryBName: match.entryBIsWildcard ? `${match.entryBName} ⓦ` : match.entryBName,
+                          };
+                          return (
+                            <MatchCard
+                              key={match.id}
+                              match={labeledMatch}
+                              onScoreChange={updateMatchScore}
+                              onComplete={completeMatch}
+                              onResourceChange={updateMatchResource}
+                              referees={tournament.referees || []}
+                              courts={tournament.courts || []}
+                              refereeMap={refereeMap}
+                              courtMap={courtMap}
+                              t={t}
+                              compact
+                            />
+                          );
+                        })}
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </TabsContent>
 
@@ -901,19 +1035,67 @@ const TourManagerControlPage = () => {
             </Card>
 
             {/* Referees */}
-            <Card>
-              <CardHeader className="p-3 pb-1">
-                <CardTitle className="text-sm flex items-center gap-1.5">
-                  <Gavel className="h-4 w-4 text-primary" /> {t("tm.referees")} ({tournament.referees?.length || 0})
-                </CardTitle>
-              </CardHeader>
+            <Card className="overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+                    <Gavel className="h-3.5 w-3.5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{t("tm.referees")}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {tournament.referees?.length || 0} {t("tm.refereesAssigned") || "trọng tài"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {(tournament.referees?.length || 0) > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5"
+                      onClick={() => {
+                        setBulkRefId(tournament.referees?.[0]?.id || "");
+                        setBulkScope("unassigned");
+                        setBulkAssignOpen(true);
+                      }}
+                    >
+                      <ListChecks className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">{t("tm.bulkAssign") || "Gán hàng loạt"}</span>
+                    </Button>
+                  )}
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="h-8 gap-1.5"
+                    onClick={async () => {
+                      const id = `ref-${Date.now()}`;
+                      const name = `Referee ${(tournament.referees?.length || 0) + 1}`;
+                      const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                      await save({ ...tournament, referees: [...(tournament.referees || []), { id, name, accessCode }] });
+                    }}
+                  >
+                    <Plus className="h-3.5 w-3.5" /> {t("tm.addReferee")}
+                  </Button>
+                </div>
+              </div>
               <CardContent className="p-3 space-y-2">
-                {(tournament.referees || []).map((ref, i) => (
-                  <div key={ref.id} className="space-y-1 bg-secondary/20 p-2 rounded-lg border border-border/50">
+                {(tournament.referees || []).length === 0 && (
+                  <div className="text-center py-6 text-xs text-muted-foreground">
+                    {t("tm.noReferees") || "Chưa có trọng tài. Thêm trọng tài để gán cho từng trận."}
+                  </div>
+                )}
+                {(tournament.referees || []).map((ref, i) => {
+                  const refMatchCount = allMatches.filter((m) => m.refereeId === ref.id).length;
+                  const isExpanded = expandedRefId === ref.id;
+                  return (
+                  <div key={ref.id} className="bg-card border border-border rounded-lg p-2.5 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground w-5">{i + 1}.</span>
+                      <span className="h-6 w-6 rounded-full bg-primary/10 text-primary text-[11px] font-bold flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </span>
                       <Input
-                        className="h-7 text-xs flex-1"
+                        className="h-8 text-sm flex-1"
                         defaultValue={ref.name}
                         onBlur={async (e) => {
                           const newName = e.target.value;
@@ -930,35 +1112,117 @@ const TourManagerControlPage = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        title={t("tm.removeReferee") || "Xoá trọng tài"}
                         onClick={async () => {
                           await save({ ...tournament, referees: tournament.referees.filter((r) => r.id !== ref.id) });
                         }}
                       >
-                        <Trash2 className="h-3 w-3 text-destructive" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                     {ref.accessCode && (
-                      <div className="flex justify-between items-center pl-7 pr-1 text-[10px]">
-                        <span className="text-muted-foreground">Access Code: <strong className="font-mono text-primary bg-primary/10 px-1 py-0.5 rounded select-all">{ref.accessCode}</strong></span>
-                        {ref.userId ? <span className="text-emerald-500 font-bold">✓ Đã tham gia</span> : <span className="text-amber-500">Chờ tham gia</span>}
+                      <div className="flex items-center justify-between gap-2 pl-8">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(ref.accessCode!);
+                            toast.success(t("tm.codeCopied") || "Đã copy mã!");
+                          }}
+                          className="flex items-center gap-1.5 text-[11px] hover:opacity-80 transition-opacity"
+                          title={t("tm.copyCode") || "Click để copy"}
+                        >
+                          <span className="text-muted-foreground">{t("tm.accessCode") || "Code"}:</span>
+                          <strong className="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded select-all tracking-widest">
+                            {ref.accessCode}
+                          </strong>
+                        </button>
+                        {ref.userId ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 text-[10px] h-5">
+                            ✓ {t("tm.joined") || "Đã tham gia"}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] h-5 text-amber-600 dark:text-amber-400 border-amber-500/40">
+                            {t("tm.pendingJoin") || "Chờ tham gia"}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Action row */}
+                    <div className="flex items-center gap-1 pl-8 pt-1 border-t border-border/40">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-[11px] gap-1"
+                        title={t("tm.regenCode") || "Tạo mã mới"}
+                        onClick={async () => {
+                          const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                          await save({
+                            ...tournament,
+                            referees: tournament.referees.map((r) =>
+                              r.id === ref.id ? { ...r, accessCode: newCode, userId: undefined } : r
+                            ),
+                          });
+                          toast.success(t("tm.codeRegenerated") || "Đã tạo mã mới");
+                        }}
+                      >
+                        <RefreshCw className="h-3 w-3" /> {t("tm.regenCode") || "Mã mới"}
+                      </Button>
+                      {ref.userId && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-[11px] gap-1 text-amber-600 dark:text-amber-400"
+                          title={t("tm.kickReferee") || "Đẩy ra khỏi giải"}
+                          onClick={async () => {
+                            await save({
+                              ...tournament,
+                              referees: tournament.referees.map((r) =>
+                                r.id === ref.id ? { ...r, userId: undefined } : r
+                              ),
+                            });
+                            toast.success(t("tm.refereeKicked") || "Đã đẩy trọng tài ra");
+                          }}
+                        >
+                          <UserX className="h-3 w-3" /> {t("tm.kick") || "Đẩy ra"}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-[11px] gap-1 ml-auto"
+                        onClick={() => setExpandedRefId(isExpanded ? null : ref.id)}
+                      >
+                        <Eye className="h-3 w-3" /> {refMatchCount} {t("tm.matches") || "trận"}
+                        {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                      </Button>
+                    </div>
+
+                    {/* Match list when expanded */}
+                    {isExpanded && (
+                      <div className="pl-8 pt-1 space-y-1 border-t border-border/40">
+                        {refMatchCount === 0 ? (
+                          <p className="text-[11px] text-muted-foreground py-2">{t("tm.noMatchesAssigned") || "Chưa được gán trận nào"}</p>
+                        ) : (
+                          allMatches
+                            .filter((m) => m.refereeId === ref.id)
+                            .map((m) => (
+                              <div key={m.id} className="text-[11px] flex items-center justify-between py-1 border-b border-border/30 last:border-0">
+                                <span className="truncate flex-1">
+                                  {m.entryAName} vs {m.entryBName}
+                                </span>
+                                <span className="text-muted-foreground ml-2">
+                                  {m.courtId ? courtMap[m.courtId] : "—"} · {m.status === "completed" ? "✓" : m.status === "in_progress" ? "🔴" : "○"}
+                                </span>
+                              </div>
+                            ))
+                        )}
                       </div>
                     )}
                   </div>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-xs"
-                  onClick={async () => {
-                    const id = `ref-${Date.now()}`;
-                    const name = `Referee ${(tournament.referees?.length || 0) + 1}`;
-                    const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-                    await save({ ...tournament, referees: [...(tournament.referees || []), { id, name, accessCode }] });
-                  }}
-                >
-                  <Plus className="h-3 w-3 mr-1" /> {t("tm.addReferee")}
-                </Button>
+                  );
+                })}
               </CardContent>
             </Card>
           </TabsContent>
@@ -970,6 +1234,54 @@ const TourManagerControlPage = () => {
                 {activeCat?.entries.length} {t("tm.players")}
               </p>
             </div>
+            
+            {/* Bulk Add Players */}
+            <div className="space-y-2 mb-3 p-3 bg-secondary/20 rounded-lg border border-border/50">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-medium">Bulk Add Players</Label>
+                <span className="text-[10px] text-muted-foreground">One name per line</span>
+              </div>
+              <textarea
+                id="bulkPlayerInput"
+                rows={4}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+                placeholder={"Nguyen Van A\nTran Thi B\nLe Van C\n..."}
+              />
+              <Button
+                size="sm"
+                className="w-full h-8 text-xs"
+                onClick={async () => {
+                  const textarea = document.getElementById('bulkPlayerInput') as HTMLTextAreaElement;
+                  if (!textarea || !activeCat || !tournament) return;
+                  const names = textarea.value
+                    .split('\n')
+                    .map(l => l.trim())
+                    .filter(Boolean);
+                  if (names.length === 0) return;
+                  const newEntries = names.map(name => ({ id: `p-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, name }));
+                  const existingNames = new Set((activeCat.entries || []).map(e => e.name));
+                  const uniqueNew = newEntries.filter(e => !existingNames.has(e.name));
+                  if (uniqueNew.length === 0) {
+                    toast.error("All names already exist");
+                    return;
+                  }
+                  const updated = {
+                    ...tournament,
+                    categories: tournament.categories.map((c) =>
+                      c.id === activeCat.id
+                        ? { ...c, entries: [...c.entries, ...uniqueNew] }
+                        : c
+                    ),
+                  };
+                  await save(updated);
+                  textarea.value = '';
+                  toast.success(`Added ${uniqueNew.length} player(s)`);
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Add {activeCat?.entries.length || 0 > 0 ? 'More' : 'Players'}
+              </Button>
+            </div>
+
             {activeCat?.entries.map((entry, i) => (
               <Card key={entry.id}>
                 <CardContent className="p-3 flex items-center justify-between gap-3">
@@ -1017,6 +1329,213 @@ const TourManagerControlPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* ── Bulk Assign Referee Dialog ── */}
+      <Dialog open={bulkAssignOpen} onOpenChange={setBulkAssignOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("tm.bulkAssign") || "Gán hàng loạt"}</DialogTitle>
+            <DialogDescription>
+              {t("tm.bulkAssignDesc") || "Gán 1 trọng tài cho nhiều trận cùng lúc."}
+            </DialogDescription>
+          </DialogHeader>
+          {(() => {
+            if (!activeCat || !tournament) return null;
+            const catMatches = [
+              ...(activeCat.pools || []).flatMap((p) => p.matches || []),
+              ...(activeCat.bracketRounds || []).flatMap((r) => r.matches || []),
+            ].filter((m) => m.entryAName !== "BYE" && m.entryBName !== "BYE");
+            const targetMatches = catMatches.filter((m) => {
+              if (bulkScope === "category") return true;
+              if (bulkScope === "pools") return !!m.poolId;
+              if (bulkScope === "bracket") return !!m.bracketRoundId;
+              if (bulkScope === "unassigned") return !m.refereeId;
+              return false;
+            });
+            return (
+              <div className="space-y-3 text-sm">
+                <div className="space-y-2">
+                  <Label className="text-xs">{t("tm.selectReferee") || "Chọn trọng tài"}</Label>
+                  <Select value={bulkRefId} onValueChange={setBulkRefId}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(tournament.referees || []).map((r) => (
+                        <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">{t("tm.scope") || "Phạm vi"}</Label>
+                  <RadioGroup value={bulkScope} onValueChange={(v) => setBulkScope(v as any)} className="space-y-1.5">
+                    <div className="flex items-center gap-2 rounded border p-2">
+                      <RadioGroupItem value="unassigned" id="bs-un" />
+                      <Label htmlFor="bs-un" className="cursor-pointer text-xs flex-1">
+                        {t("tm.scopeUnassigned") || "Chỉ trận chưa gán"} <span className="text-muted-foreground">({catMatches.filter((m) => !m.refereeId).length})</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2 rounded border p-2">
+                      <RadioGroupItem value="pools" id="bs-pools" />
+                      <Label htmlFor="bs-pools" className="cursor-pointer text-xs flex-1">
+                        {t("tm.scopePools") || "Tất cả trận vòng bảng"} <span className="text-muted-foreground">({catMatches.filter((m) => !!m.poolId).length})</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2 rounded border p-2">
+                      <RadioGroupItem value="bracket" id="bs-br" />
+                      <Label htmlFor="bs-br" className="cursor-pointer text-xs flex-1">
+                        {t("tm.scopeBracket") || "Tất cả trận knockout"} <span className="text-muted-foreground">({catMatches.filter((m) => !!m.bracketRoundId).length})</span>
+                      </Label>
+                    </div>
+                    <div className="flex items-center gap-2 rounded border p-2">
+                      <RadioGroupItem value="category" id="bs-cat" />
+                      <Label htmlFor="bs-cat" className="cursor-pointer text-xs flex-1">
+                        {t("tm.scopeAll") || "Toàn bộ category"} <span className="text-muted-foreground">({catMatches.length})</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                <div className="rounded-md bg-muted p-2 text-xs">
+                  {t("tm.willAssign") || "Sẽ gán"} <b>{targetMatches.length}</b> {t("tm.matchesShort") || "trận"}
+                </div>
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkAssignOpen(false)}>{t("common.cancel") || "Hủy"}</Button>
+            <Button
+              disabled={!bulkRefId}
+              onClick={async () => {
+                if (!activeCat || !tournament || !bulkRefId) return;
+                const matchInScope = (m: TournamentMatch) => {
+                  if (m.entryAName === "BYE" || m.entryBName === "BYE") return false;
+                  if (bulkScope === "category") return true;
+                  if (bulkScope === "pools") return !!m.poolId;
+                  if (bulkScope === "bracket") return !!m.bracketRoundId;
+                  if (bulkScope === "unassigned") return !m.refereeId;
+                  return false;
+                };
+                let count = 0;
+                const updated: Tournament = {
+                  ...tournament,
+                  categories: tournament.categories.map((c) => {
+                    if (c.id !== activeCat.id) return c;
+                    return {
+                      ...c,
+                      pools: c.pools.map((p) => ({
+                        ...p,
+                        matches: p.matches.map((m) => {
+                          if (matchInScope(m)) { count++; return { ...m, refereeId: bulkRefId }; }
+                          return m;
+                        }),
+                      })),
+                      bracketRounds: c.bracketRounds.map((r) => ({
+                        ...r,
+                        matches: r.matches.map((m) => {
+                          if (matchInScope(m)) { count++; return { ...m, refereeId: bulkRefId }; }
+                          return m;
+                        }),
+                      })),
+                    };
+                  }),
+                };
+                await save(updated);
+                setBulkAssignOpen(false);
+                toast.success(`${t("tm.assignedReferee") || "Đã gán"}: ${count} ${t("tm.matchesShort") || "trận"}`);
+              }}
+            >
+              <Check className="h-4 w-4 mr-1.5" /> {t("common.confirm") || "Xác nhận"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Bracket Fill Mode Dialog ── */}
+      <Dialog open={bracketDialogOpen} onOpenChange={setBracketDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("tm.generateBracket")}</DialogTitle>
+            <DialogDescription>
+              {t("tm.bracketFillModeDesc") ||
+                "Chọn cách lấp đầy bracket khi số đội qualified không phải lũy thừa của 2."}
+            </DialogDescription>
+          </DialogHeader>
+          {(() => {
+            if (!activeCat || !tournament) return null;
+            const standings = (activeCat.pools || []).flatMap((pool) =>
+              calculateStandings(
+                pool.matches || [],
+                pool.entryIds || [],
+                entryMap,
+                activeCat.advancingPerPool,
+                tournament.rankingPriority
+              )
+            );
+            const autoCount = standings.filter((s) => s.qualified).length;
+            const target = nearestBracketSize(autoCount);
+            const padCount = target - autoCount;
+            return (
+              <div className="space-y-3 text-sm">
+                <div className="rounded-md bg-muted p-3 text-xs">
+                  <div>
+                    {t("tm.directQualified") || "Đội trực tiếp qua vòng"}: <b>{autoCount}</b>
+                  </div>
+                  <div>
+                    {t("tm.bracketSize") || "Kích thước bracket"}: <b>{target}</b>
+                  </div>
+                  <div>
+                    {t("tm.slotsToFill") || "Slot cần lấp"}: <b>{padCount}</b>
+                  </div>
+                </div>
+                <RadioGroup
+                  value={pendingFillMode}
+                  onValueChange={(v) => setPendingFillMode(v as "wildcard" | "bye")}
+                  className="space-y-2"
+                >
+                  <div className="flex items-start gap-2 rounded border p-2">
+                    <RadioGroupItem value="wildcard" id="fm-wc" className="mt-1" />
+                    <Label htmlFor="fm-wc" className="cursor-pointer leading-tight">
+                      <div className="font-medium">
+                        {t("tm.fillWildcard") || "Wildcard (Top thành tích cao nhất)"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {padCount > 0
+                          ? `Lấy thêm ${padCount} đội xếp hạng tốt nhất từ các đội chưa qualified.`
+                          : "Không cần lấp slot, bracket đã đủ."}
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-start gap-2 rounded border p-2">
+                    <RadioGroupItem value="bye" id="fm-bye" className="mt-1" />
+                    <Label htmlFor="fm-bye" className="cursor-pointer leading-tight">
+                      <div className="font-medium">{t("tm.fillBye") || "BYE"}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {padCount > 0
+                          ? `Pad ${padCount} BYE — top seed sẽ nghỉ vòng đầu.`
+                          : "Không cần BYE."}
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBracketDialogOpen(false)}>
+              {t("common.cancel") || "Hủy"}
+            </Button>
+            <Button
+              onClick={async () => {
+                setBracketDialogOpen(false);
+                await generateKnockout(pendingFillMode);
+              }}
+            >
+              <Trophy className="h-4 w-4 mr-1" /> {t("tm.generateBracket")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -1037,7 +1556,7 @@ function MatchCard({
 }: {
   match: TournamentMatch;
   onScoreChange: (id: string, a: number, b: number) => void;
-  onComplete: (id: string) => void;
+  onComplete: (id: string, scoreA?: number, scoreB?: number) => void;
   onResourceChange?: (id: string, field: "refereeId" | "courtId", value: string | undefined) => void;
   referees?: { id: string; name: string }[];
   courts?: { id: string; name: string }[];
@@ -1054,6 +1573,16 @@ function MatchCard({
   };
 
   const hasResources = (referees && referees.length > 0) || (courts && courts.length > 0);
+
+  // Local state for scores so typing isn't reverted by React's controlled-input reconciliation
+  // before the optimistic Supabase round-trip + realtime listener catches up.
+  const [localA, setLocalA] = useState(match.scoreA);
+  const [localB, setLocalB] = useState(match.scoreB);
+  useEffect(() => { setLocalA(match.scoreA); }, [match.scoreA]);
+  useEffect(() => { setLocalB(match.scoreB); }, [match.scoreB]);
+
+  const updateA = (v: number) => { setLocalA(v); onScoreChange(match.id, v, localB); };
+  const updateB = (v: number) => { setLocalB(v); onScoreChange(match.id, localA, v); };
 
   return (
     <Card className={`${statusBg[match.status]} border`}>
@@ -1102,26 +1631,26 @@ function MatchCard({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 bg-card text-primary shadow-sm hover:bg-primary/10"
-                    onClick={() => onScoreChange(match.id, match.scoreA + 1, match.scoreB)}
+                    onClick={() => updateA(localA + 1)}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                   <input
                     type="number"
-                    value={match.scoreA}
-                    onChange={(e) => onScoreChange(match.id, parseInt(e.target.value) || 0, match.scoreB)}
+                    value={localA}
+                    onChange={(e) => updateA(parseInt(e.target.value) || 0)}
                     className="text-xl font-display font-black w-10 text-center bg-transparent focus:outline-none focus:ring-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-foreground tabular-nums"
                   />
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 bg-card text-muted-foreground shadow-sm hover:bg-destructive/10"
-                    onClick={() => onScoreChange(match.id, Math.max(0, match.scoreA - 1), match.scoreB)}
+                    onClick={() => updateA(Math.max(0, localA - 1))}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
                 </div>
-                
+
                 <div className="h-10 w-[2px] bg-border/50 mx-1" />
 
                 <div className="flex flex-col items-center gap-1">
@@ -1129,21 +1658,21 @@ function MatchCard({
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 bg-card text-primary shadow-sm hover:bg-primary/10"
-                    onClick={() => onScoreChange(match.id, match.scoreA, match.scoreB + 1)}
+                    onClick={() => updateB(localB + 1)}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                   <input
                     type="number"
-                    value={match.scoreB}
-                    onChange={(e) => onScoreChange(match.id, match.scoreA, parseInt(e.target.value) || 0)}
+                    value={localB}
+                    onChange={(e) => updateB(parseInt(e.target.value) || 0)}
                     className="text-xl font-display font-black w-10 text-center bg-transparent focus:outline-none focus:ring-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-foreground tabular-nums"
                   />
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 bg-card text-muted-foreground shadow-sm hover:bg-destructive/10"
-                    onClick={() => onScoreChange(match.id, match.scoreA, Math.max(0, match.scoreB - 1))}
+                    onClick={() => updateB(Math.max(0, localB - 1))}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -1205,12 +1734,12 @@ function MatchCard({
         )}
 
         {/* Complete button */}
-        {match.status !== "completed" && (match.scoreA > 0 || match.scoreB > 0) && (
+        {match.status !== "completed" && (localA > 0 || localB > 0) && (
           <Button
             size="sm"
             className="w-full mt-3 h-10 text-sm font-bold shadow-md active:scale-95 transition-transform"
-            onClick={() => onComplete(match.id)}
-            disabled={match.scoreA === match.scoreB}
+            onClick={() => onComplete(match.id, localA, localB)}
+            disabled={localA === localB}
           >
             <Check className="h-4 w-4 mr-2" /> {t("tm.completeMatch")}
           </Button>

@@ -4,6 +4,7 @@ import {
   Standing,
   BracketRound,
   MatchStatus,
+  RankingCriterion,
 } from "./types";
 
 let matchCounter = 0;
@@ -170,7 +171,9 @@ export function calculateStandings(
             );
             
             // Calculate standings for just this group, WITHOUT the H2H criterion to avoid recursion
-            const subPriority = rankingPriority.filter(c => c !== "head_to_head");
+            // Ensure at least one fallback criterion so sort is stable
+            const subPriority: RankingCriterion[] = rankingPriority.filter(c => c !== "head_to_head");
+            if (subPriority.length === 0) subPriority.push("random");
             const miniStandings = calculateStandings(
               miniMatches, 
               tiedOnWins.map(p => p.entryId), 
@@ -229,10 +232,13 @@ export function getWildcardEntries(
     calculateStandings(pool.matches, pool.entryIds, entryMap, advancingPerPool, rankingPriority)
   );
  
-  // 2. Identify candidates (teams that didn't automatically qualify)
-  // Specifically looking for teams at rank (advancingPerPool + 1) as "Best 3rd/Next place"
-  // Or more broadly, all non-qualified teams
-  const candidates = allStandings.filter(s => !s.qualified);
+  // 2. Identify candidates: non-qualified teams, deduplicated by entryId
+  const seenIds = new Set<string>();
+  const candidates = allStandings.filter(s => {
+    if (s.qualified || seenIds.has(s.entryId)) return false;
+    seenIds.add(s.entryId);
+    return true;
+  });
  
   // 3. Sort candidates using the same priority logic
   // Note: Since they come from different pools, head-to-head might not apply unless they played cross-pool (unlikely here)
@@ -347,6 +353,74 @@ export function generateBracket(
   }
 
   return rounds;
+}
+
+// ── Bracket Advancement (cascade winners into next rounds) ──
+// Returns updated rounds and the list of matches whose entry/winner fields changed,
+// so callers can persist them. Handles BYE cascades automatically.
+export function advanceBracket(
+  rounds: BracketRound[],
+  completedMatchId: string
+): { rounds: BracketRound[]; updatedMatches: TournamentMatch[] } {
+  const updated = rounds.map((r) => ({
+    ...r,
+    matches: r.matches.map((m) => ({ ...m })),
+  }));
+  const updatedMatches: TournamentMatch[] = [];
+
+  // Locate the completed match
+  let roundIdx = -1;
+  let matchIdx = -1;
+  for (let r = 0; r < updated.length; r++) {
+    const idx = updated[r].matches.findIndex((m) => m.id === completedMatchId);
+    if (idx !== -1) {
+      roundIdx = r;
+      matchIdx = idx;
+      break;
+    }
+  }
+  if (roundIdx === -1) return { rounds: updated, updatedMatches };
+
+  let curRoundIdx = roundIdx;
+  let curMatchIdx = matchIdx;
+  const completed = updated[curRoundIdx].matches[curMatchIdx];
+  let curWinnerId = getWinnerId(completed);
+  if (!curWinnerId) return { rounds: updated, updatedMatches };
+  let curWinnerName =
+    curWinnerId === completed.entryAId ? completed.entryAName : completed.entryBName;
+
+  while (curRoundIdx < updated.length - 1) {
+    const nextRoundIdx = curRoundIdx + 1;
+    const nextMatchIdx = Math.floor(curMatchIdx / 2);
+    const slotA = curMatchIdx % 2 === 0;
+    const nextMatch = updated[nextRoundIdx].matches[nextMatchIdx];
+    if (!nextMatch) break;
+
+    if (slotA) {
+      nextMatch.entryAId = curWinnerId;
+      nextMatch.entryAName = curWinnerName;
+    } else {
+      nextMatch.entryBId = curWinnerId;
+      nextMatch.entryBName = curWinnerName;
+    }
+
+    // If the opposing slot is a BYE, auto-complete and cascade further
+    const otherName = slotA ? nextMatch.entryBName : nextMatch.entryAName;
+    if (otherName === "BYE") {
+      nextMatch.winner = curWinnerId;
+      nextMatch.status = "completed";
+      updatedMatches.push({ ...nextMatch });
+      curMatchIdx = nextMatchIdx;
+      curRoundIdx = nextRoundIdx;
+      // curWinnerId / curWinnerName unchanged
+      continue;
+    }
+
+    updatedMatches.push({ ...nextMatch });
+    break;
+  }
+
+  return { rounds: updated, updatedMatches };
 }
 
 // ── Tournament Progress ──

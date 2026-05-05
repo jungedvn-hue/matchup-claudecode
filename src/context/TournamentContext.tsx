@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { Tournament } from "@/lib/tournament/types";
+import { Tournament, TournamentMatch } from "@/lib/tournament/types";
 import { useAuth } from "@/context/AuthContext";
 
 interface TournamentContextValue {
@@ -11,6 +11,10 @@ interface TournamentContextValue {
   deleteTournament: (id: string) => Promise<void>;
   getTournament: (id: string) => Tournament | undefined;
   refreshTournaments: () => Promise<void>;
+  // Actions used by the per-page realtime hook to apply scoped updates without
+  // triggering a full refetch.
+  applyMatchUpdate: (match: Partial<TournamentMatch> & { id: string }) => void;
+  applyCategoryUpdate: (rawCategoryRow: any) => void;
 }
 
 const TournamentContext = createContext<TournamentContextValue | null>(null);
@@ -115,21 +119,15 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
 
-      // Transform relational data back to our Frontend Type structure
-      const transformed: Tournament[] = (data as unknown as DBTournament[] || []).map(t => ({
+      const transformed: Tournament[] = (data as unknown as DBTournament[] || []).map(t => {
+        return {
         ...t,
         referees: t.referees || [],
         courts: t.courts || [],
         rankingPriority: t.ranking_priority || ["wins", "head_to_head", "point_diff", "points_scored"],
-        categories: (t.categories || []).map((c) => ({
-          ...c,
-          type: c.type as any, // Cast to CategoryType
-          wildcardCount: c.wildcard_count || 0,
-          entries: c.participants || [],
-          pools: c.pools || [], 
-          bracketRounds: c.bracket_rounds || [],
-          poolAllocationMode: c.pool_allocation_mode as any,
-          matches: (c.matches || []).map((m) => ({
+        categories: (t.categories || []).map((c) => {
+          // Build a lookup of live match data (scores, status, winner) keyed by match id
+          const liveMatches = (c.matches || []).map((m) => ({
             id: m.id,
             categoryId: m.category_id,
             poolId: m.pool_id,
@@ -145,9 +143,44 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             status: m.status as any,
             courtId: m.court_id,
             refereeId: m.referee_id
-          }))
-        }))
-      }));
+          }));
+          const liveMap = new Map(liveMatches.map(m => [m.id, m]));
+
+          // Pools/brackets are stored as JSONB snapshots, but the canonical scores
+          // live in tour_matches. Merge live data into the snapshots so the UI
+          // (which reads from pools[*].matches) reflects the latest state.
+          const mergePoolMatches = (matches: any[]) =>
+            (matches || []).map((m) => liveMap.get(m.id) || m);
+
+          const pools = (c.pools || []).map((p: any) => ({
+            ...p,
+            matches: mergePoolMatches(p.matches || []),
+          }));
+          const bracketRounds = (c.bracket_rounds || []).map((r: any) => ({
+            ...r,
+            matches: mergePoolMatches(r.matches || []),
+          }));
+
+          return {
+            ...c,
+            type: c.type as any,
+            advancingPerPool: c.advancing_per_pool ?? 2,
+            wildcardCount: c.wildcard_count || 0,
+            entries: (c.participants || []).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              seed: p.seed,
+              skillLevel: p.skill_level,
+              userId: p.user_id || undefined,
+            })),
+            pools,
+            bracketRounds,
+            poolAllocationMode: c.pool_allocation_mode as any,
+            bracketFillMode: ((c as any).bracket_fill_mode as any) || "wildcard",
+            matches: liveMatches
+          };
+        })
+      };});
 
       setTournaments(transformed);
     } catch (err: any) {
@@ -160,71 +193,52 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     fetchTournaments();
-
-    // Setup Real-time listener for Matches with batching
-    let updateQueue: any[] = [];
-    let timeout: NodeJS.Timeout | null = null;
-
-    const processQueue = () => {
-      if (updateQueue.length === 0) return;
-      
-      setTournaments(prev => {
-        let next = [...prev];
-        updateQueue.forEach(updatedMatch => {
-          next = next.map(t => ({
-            ...t,
-            categories: (t.categories || []).map(c => ({
-              ...c,
-              pools: (c.pools || []).map(p => ({
-                ...p,
-                matches: (p.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
-              })),
-              bracketRounds: (c.bracketRounds || []).map(r => ({
-                ...r,
-                matches: (r.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
-              }))
-            }))
-          }));
-        });
-        return next;
-      });
-      
-      updateQueue = [];
-      timeout = null;
-    };
-
-    const matchSubscription = supabase
-      .channel('live-scores')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tour_matches' }, (payload: any) => {
-        const raw = payload.new;
-        const updatedMatch = {
-          id: raw.id,
-          categoryId: raw.category_id,
-          poolId: raw.pool_id,
-          bracketRoundId: raw.bracket_round_id,
-          matchNo: raw.match_no,
-          entryAId: raw.entry_a_id,
-          entryBId: raw.entry_b_id,
-          entryAName: raw.entry_a_name,
-          entryBName: raw.entry_b_name,
-          scoreA: raw.score_a,
-          scoreB: raw.score_b,
-          winner: raw.winner_id,
-          status: raw.status,
-          courtId: raw.court_id,
-          refereeId: raw.referee_id
-        };
-
-        updateQueue.push(updatedMatch);
-        if (timeout) clearTimeout(timeout);
-        timeout = setTimeout(processQueue, 500); // Gộp tất cả update trong 500ms
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(matchSubscription);
-    };
   }, []);
+
+  // Scoped realtime: pages subscribe via `useTournamentRealtime(ids)` and call
+  // these actions to merge incoming events into state.
+  const applyMatchUpdate = (updatedMatch: Partial<TournamentMatch> & { id: string }) => {
+    setTournaments(prev => prev.map(t => ({
+      ...t,
+      categories: (t.categories || []).map(c => ({
+        ...c,
+        pools: (c.pools || []).map(p => ({
+          ...p,
+          matches: (p.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
+        })),
+        bracketRounds: (c.bracketRounds || []).map(r => ({
+          ...r,
+          matches: (r.matches || []).map(m => m.id === updatedMatch.id ? { ...m, ...updatedMatch } : m)
+        }))
+      }))
+    })));
+  };
+
+  const applyCategoryUpdate = (raw: any) => {
+    setTournaments(prev => prev.map(t => ({
+      ...t,
+      categories: t.categories.map(c => {
+        if (c.id !== raw.id) return c;
+        const liveById = new Map<string, any>();
+        (c.matches || []).forEach((m: any) => liveById.set(m.id, m));
+        const mergeScores = (matches: any[]) =>
+          (matches || []).map((m: any) => {
+            const live = liveById.get(m.id);
+            return live ? { ...m, scoreA: live.scoreA, scoreB: live.scoreB, winner: live.winner, status: live.status } : m;
+          });
+        const newPools = (raw.pools || []).map((p: any) => ({ ...p, matches: mergeScores(p.matches || []) }));
+        const newRounds = (raw.bracket_rounds || []).map((r: any) => ({ ...r, matches: mergeScores(r.matches || []) }));
+        return {
+          ...c,
+          pools: newPools,
+          bracketRounds: newRounds,
+          advancingPerPool: raw.advancing_per_pool ?? c.advancingPerPool,
+          wildcardCount: raw.wildcard_count ?? c.wildcardCount,
+          bracketFillMode: raw.bracket_fill_mode || c.bracketFillMode,
+        };
+      })
+    })));
+  };
 
   const addTournament = async (t: Tournament) => {
     try {
@@ -266,7 +280,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             wildcard_count: cat.wildcardCount || 0,
             pool_allocation_mode: cat.poolAllocationMode,
             pools: cat.pools || [],
-            bracket_rounds: cat.bracketRounds || []
+            bracket_rounds: cat.bracketRounds || [],
+            bracket_fill_mode: cat.bracketFillMode || "wildcard"
           }])
           .select()
           .single();
@@ -280,7 +295,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             category_id: cat.id,
             name: e.name,
             seed: e.seed,
-            skill_level: e.skillLevel
+            skill_level: e.skillLevel,
+            user_id: e.userId ?? null
           }));
           await supabase.from('tour_participants').insert(participants);
         }
@@ -310,24 +326,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
 
-      // 2. Prepare all matches for deep sync
-      const allMatchesToUpsert: any[] = [];
-      for (const cat of t.categories) {
-        // Collect matches from pools
-        cat.pools?.forEach(p => {
-          p.matches?.forEach(m => {
-            allMatchesToUpsert.push(transformToDBMatch(m, t.id));
-          });
-        });
-        // Collect matches from bracket rounds
-        cat.bracketRounds?.forEach(r => {
-          r.matches?.forEach(m => {
-            allMatchesToUpsert.push(transformToDBMatch(m, t.id));
-          });
-        });
-      }
-
-      // 3. Perform bulk operations
+      // 2. Perform bulk operations per-category (delete+insert paired to limit data-loss window)
       for (const cat of t.categories) {
         // Update category structure (pools, brackets)
         const { error: catError } = await supabase
@@ -336,42 +335,47 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             pools: cat.pools || [],
             bracket_rounds: cat.bracketRounds || [],
             pool_allocation_mode: cat.poolAllocationMode,
-            advancing_per_pool: cat.advancingPerPool
+            advancing_per_pool: cat.advancingPerPool,
+            bracket_fill_mode: cat.bracketFillMode || "wildcard"
           })
           .eq('id', cat.id);
-        
-        if (catError) {
-          console.error(`Category Update Error (${cat.name}):`, catError);
-          throw catError;
+
+        if (catError) throw catError;
+
+        // Sync participants: upsert is idempotent (entries don't change after creation in
+        // current UX, but upsert guards against duplicate-key races on save() retries).
+        if (cat.entries.length > 0) {
+          const participants = cat.entries.map(e => ({
+            id: e.id,
+            category_id: cat.id,
+            name: e.name,
+            seed: e.seed,
+            skill_level: e.skillLevel,
+            user_id: e.userId ?? null
+          }));
+          const { error: partError } = await supabase.from('tour_participants').upsert(participants, { onConflict: 'id' });
+          if (partError) throw partError;
         }
 
-        // Delete all existing matches for this category to avoid duplicates
+        // Collect matches for this category
+        const catMatches: any[] = [];
+        cat.pools?.forEach(p => p.matches?.forEach(m => catMatches.push(transformToDBMatch(m, t.id))));
+        cat.bracketRounds?.forEach(r => r.matches?.forEach(m => catMatches.push(transformToDBMatch(m, t.id))));
+
+        // Delete then immediately re-insert for this category only
         const { error: delError } = await supabase.from('tour_matches').delete().eq('category_id', cat.id);
-        if (delError) {
-          console.error(`Match Delete Error (${cat.name}):`, delError);
-          throw delError;
-        }
-      }
+        if (delError) throw delError;
 
-      if (allMatchesToUpsert.length > 0) {
-        const { error: matchError } = await supabase
-          .from('tour_matches')
-          .insert(allMatchesToUpsert); // Use insert instead of upsert since we cleared old ones
-        
-        if (matchError) {
-          console.error("Match Insert Error:", matchError);
-          throw matchError;
+        if (catMatches.length > 0) {
+          const { error: matchError } = await supabase.from('tour_matches').insert(catMatches);
+          if (matchError) throw matchError;
         }
       }
 
       setTournaments((prev) => prev.map((x) => (x.id === t.id ? t : x)));
     } catch (err: any) {
       console.error("Deep Sync Error:", err);
-      if (err.message?.includes("column") && err.message?.includes("not found")) {
-        toast.error("Database schema mismatch. Please run the SQL fix script in scratch/fix-db-schema.sql");
-      } else {
-        toast.error("Failed to sync deep data: " + err.message);
-      }
+      toast.error("Failed to sync tournament data: " + err.message);
     }
   };
 
@@ -406,15 +410,17 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
   const getTournament = (id: string) => tournaments.find((x) => x.id === id);
 
   return (
-    <TournamentContext.Provider value={{ 
-      tournaments, 
+    <TournamentContext.Provider value={{
+      tournaments,
       loading,
-      addTournament, 
-      updateTournament, 
+      addTournament,
+      updateTournament,
       updateMatchScore,
-      deleteTournament, 
+      deleteTournament,
       getTournament,
-      refreshTournaments: fetchTournaments
+      refreshTournaments: fetchTournaments,
+      applyMatchUpdate,
+      applyCategoryUpdate
     }}>
       {children}
     </TournamentContext.Provider>

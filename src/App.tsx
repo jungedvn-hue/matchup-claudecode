@@ -30,6 +30,8 @@ import CreateEventPage from "./pages/CreateEventPage";
 import TourManagerPage from "./pages/TourManagerPage";
 import TourManagerCreatePage from "./pages/TourManagerCreatePage";
 import TourManagerControlPage from "./pages/TourManagerControlPage";
+import RefereeDashboardPage from "./pages/RefereeDashboardPage";
+import MyMatchesPage from "./pages/MyMatchesPage";
 import VerificationPage from "./pages/VerificationPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
 import HealthHub from "./pages/health-hub/HealthHub";
@@ -59,6 +61,7 @@ const AppShell = () => {
         <Route path="/dashboard" element={<HostDashboard />} />
         <Route path="/create-tournament" element={<CreateTournamentPage />} />
         <Route path="/tournament-live" element={<TournamentLivePage />} />
+        <Route path="/tournament-live/:tournamentId" element={<TournamentLivePage />} />
         <Route path="/marketplace" element={<MarketplacePage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
@@ -70,10 +73,11 @@ const AppShell = () => {
         <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/create-event" element={<CreateEventPage />} />
         
-        {/* QA BYPASS: No ProtectedRoute for testing */}
-        <Route path="/tour-manager" element={<TourManagerPage />} />
-        <Route path="/tour-manager/create" element={<TourManagerCreatePage />} />
-        <Route path="/tour-manager/:tournamentId" element={<TourManagerControlPage />} />
+        <Route path="/tour-manager" element={<ProtectedRoute><TourManagerPage /></ProtectedRoute>} />
+        <Route path="/tour-manager/create" element={<ProtectedRoute><TourManagerCreatePage /></ProtectedRoute>} />
+        <Route path="/tour-manager/:tournamentId" element={<ProtectedRoute><TourManagerControlPage /></ProtectedRoute>} />
+        <Route path="/referee" element={<ProtectedRoute><RefereeDashboardPage /></ProtectedRoute>} />
+        <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
         
         <Route path="/verify" element={<VerificationPage />} />
         <Route path="/marketplace/service/:serviceId" element={<ServiceDetailPage />} />

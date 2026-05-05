@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,7 +34,7 @@ const CATEGORY_OPTIONS: { value: CategoryType; label: string }[] = [
 const TourManagerCreatePage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { addTournament } = useTournaments();
+  const { addTournament, refreshTournaments } = useTournaments();
   const { user } = useAuth();
   const [step, setStep] = useState(1);
 
@@ -91,12 +91,13 @@ const TourManagerCreatePage = () => {
 
   const parsePlayers = (catType: string) => {
     const text = bulkText[catType] || "";
+    const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     return text
       .split("\n")
       .map((l) => l.trim())
       .filter(Boolean)
       .map((name, i) => ({
-        id: `p-${catType}-${i}`,
+        id: `p-${catType}-${stamp}-${i}`,
         name,
       }));
   };
@@ -164,10 +165,12 @@ const TourManagerCreatePage = () => {
       courts: buildCourts(),
       status: "draft",
       createdAt: new Date().toISOString(),
+      host_id: user?.id,
     };
 
     try {
       await addTournament(tournament);
+      await refreshTournaments();
       toast.success(t("tm.created"));
       navigate(`/tour-manager/${tournament.id}`);
     } catch (error) {
@@ -330,55 +333,69 @@ const TourManagerCreatePage = () => {
               </Button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               {categories.map((cat) => (
-                <Card key={cat.type}>
-                  <CardContent className="p-3 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-foreground">{cat.name}</p>
-                        {cat.skillFilter && (
-                          <Badge variant="secondary" className="text-xs mt-1">{cat.skillFilter}</Badge>
-                        )}
+                <Card key={cat.type} className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="flex items-center justify-between gap-2 px-4 py-3 bg-muted/30 border-b border-border">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                          <Trophy className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm text-foreground truncate">{cat.name}</p>
+                          {cat.skillFilter && (
+                            <Badge variant="secondary" className="text-[10px] h-4 px-1.5 mt-0.5">{cat.skillFilter}</Badge>
+                          )}
+                        </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => removeCategory(cat.type)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => removeCategory(cat.type)}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50">
-                      <div className="space-y-1">
-                        <Label className="text-[10px] uppercase font-bold text-muted-foreground">{t("tm.advancingPerPool")}</Label>
-                        <Input 
-                          type="number" 
-                          min={1} 
-                          value={cat.advancingPerPool} 
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-foreground/80">
+                          {t("tm.advancingPerPool")}
+                        </Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={cat.advancingPerPool}
                           onChange={(e) => {
                             const val = parseInt(e.target.value) || 2;
                             setCategories(categories.map(c => c.type === cat.type ? { ...c, advancingPerPool: val } : c));
                           }}
-                          className="h-8 text-xs"
+                          className="h-9 text-sm"
                         />
+                        <p className="text-[10px] text-muted-foreground leading-tight">{t("tm.advancingPerPoolHint")}</p>
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                          {t("tm.wildcardLogic") || "Knockout Fill Logic"}
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-foreground/80">
+                          {t("tm.wildcardLogic")}
                         </Label>
-                        <Select 
-                          value={String(cat.wildcardCount)} 
+                        <Select
+                          value={String(cat.wildcardCount)}
                           onValueChange={(v) => {
                             const val = parseInt(v) || 0;
                             setCategories(categories.map(c => c.type === cat.type ? { ...c, wildcardCount: val } : c));
                           }}
                         >
-                          <SelectTrigger className="h-8 text-xs">
+                          <SelectTrigger className="h-9 text-sm">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="0" className="text-xs">{t("tm.wildcard.bye") || "Auto-BYE"}</SelectItem>
-                            <SelectItem value="-1" className="text-xs">{t("tm.wildcard.best3rd") || "Best Next Place"}</SelectItem>
+                            <SelectItem value="0" className="text-sm">{t("tm.wildcard.bye")}</SelectItem>
+                            <SelectItem value="-1" className="text-sm">{t("tm.wildcard.best3rd")}</SelectItem>
                           </SelectContent>
                         </Select>
+                        <p className="text-[10px] text-muted-foreground leading-tight">{t("tm.wildcardHint")}</p>
                       </div>
                     </div>
                   </CardContent>

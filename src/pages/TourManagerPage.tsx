@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Search, Trophy, Clock, CheckCircle2, Gavel, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trophy, Clock, CheckCircle2, Gavel, Trash2, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -170,29 +170,39 @@ const TourManagerPage = () => {
   return (
     <div className="pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" />
-                {t("tm.title")}
-              </h1>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setShowJoinRef(true)}>
-              <Gavel className="h-4 w-4 mr-1" />
-              {t("tm.joinReferee")}
-            </Button>
-            <Button size="sm" onClick={() => navigate("/tour-manager/create")}>
-              <Plus className="h-4 w-4 mr-1" />
-              {t("tm.createNew")}
-            </Button>
-          </div>
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigate("/")}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg font-bold text-foreground flex items-center gap-2 flex-1 min-w-0 truncate">
+            <Trophy className="h-5 w-5 text-primary shrink-0" />
+            <span className="truncate">{t("tm.title")}</span>
+          </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1.5 shrink-0"
+            onClick={() => navigate("/my-matches")}
+            title={t("mm.title") || "Trận của tôi"}
+          >
+            <PlayCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("mm.title") || "Trận của tôi"}</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1.5 shrink-0"
+            onClick={() => navigate("/referee")}
+            title={t("ref.title") || "Trọng tài"}
+          >
+            <Gavel className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("ref.title") || "Trọng tài"}</span>
+          </Button>
+          <Button size="sm" className="h-9 gap-1.5 shrink-0" onClick={() => navigate("/tour-manager/create")}>
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("tm.createNew")}</span>
+          </Button>
         </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

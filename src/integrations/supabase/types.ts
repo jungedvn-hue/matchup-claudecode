@@ -47,6 +47,225 @@ export type Database = {
         }
         Relationships: []
       }
+      tournaments: {
+        Row: {
+          id: string
+          name: string
+          date: string
+          location: string
+          format: string
+          points_per_game: number
+          win_by_two: boolean
+          status: string
+          ranking_priority: Json
+          host_id: string
+          referees: Json
+          courts: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          date: string
+          location: string
+          format?: string
+          points_per_game?: number
+          win_by_two?: boolean
+          status?: string
+          ranking_priority?: Json
+          host_id: string
+          referees?: Json
+          courts?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          date?: string
+          location?: string
+          format?: string
+          points_per_game?: number
+          win_by_two?: boolean
+          status?: string
+          ranking_priority?: Json
+          host_id?: string
+          referees?: Json
+          courts?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tour_categories: {
+        Row: {
+          id: string
+          tournament_id: string
+          type: string
+          name: string
+          advancing_per_pool: number
+          wildcard_count: number
+          pool_allocation_mode: string
+          pools: Json
+          bracket_rounds: Json
+          bracket_fill_mode: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tournament_id: string
+          type: string
+          name: string
+          advancing_per_pool?: number
+          wildcard_count?: number
+          pool_allocation_mode?: string
+          pools?: Json
+          bracket_rounds?: Json
+          bracket_fill_mode?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tournament_id?: string
+          type?: string
+          name?: string
+          advancing_per_pool?: number
+          wildcard_count?: number
+          pool_allocation_mode?: string
+          pools?: Json
+          bracket_rounds?: Json
+          bracket_fill_mode?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_categories_tournament_id_fkey"
+            columns: ["tournament_id"]
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      tour_participants: {
+        Row: {
+          id: string
+          category_id: string
+          name: string
+          seed: number | null
+          skill_level: string | null
+          user_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          category_id: string
+          name: string
+          seed?: number | null
+          skill_level?: string | null
+          user_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          category_id?: string
+          name?: string
+          seed?: number | null
+          skill_level?: string | null
+          user_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_participants_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "tour_categories"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      tour_matches: {
+        Row: {
+          id: string
+          category_id: string
+          tournament_id: string
+          pool_id: string | null
+          bracket_round_id: string | null
+          match_no: number
+          entry_a_id: string | null
+          entry_b_id: string | null
+          entry_a_name: string
+          entry_b_name: string
+          score_a: number
+          score_b: number
+          winner_id: string | null
+          status: string
+          court_id: string | null
+          referee_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          category_id: string
+          tournament_id: string
+          pool_id?: string | null
+          bracket_round_id?: string | null
+          match_no: number
+          entry_a_id?: string | null
+          entry_b_id?: string | null
+          entry_a_name?: string
+          entry_b_name?: string
+          score_a?: number
+          score_b?: number
+          winner_id?: string | null
+          status?: string
+          court_id?: string | null
+          referee_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          category_id?: string
+          tournament_id?: string
+          pool_id?: string | null
+          bracket_round_id?: string | null
+          match_no?: number
+          entry_a_id?: string | null
+          entry_b_id?: string | null
+          entry_a_name?: string
+          entry_b_name?: string
+          score_a?: number
+          score_b?: number
+          winner_id?: string | null
+          status?: string
+          court_id?: string | null
+          referee_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_matches_category_id_fkey"
+            columns: ["category_id"]
+            referencedRelation: "tour_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
