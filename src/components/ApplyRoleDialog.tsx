@@ -28,6 +28,11 @@ const ROLE_LABELS: Record<ApplicableRole, { title: string; desc: string; needsBu
     desc: "Bán dụng cụ, phụ kiện pickleball.",
     needsBusiness: true,
   },
+  referee: {
+    title: "Đăng ký làm Verified Referee",
+    desc: "Trở thành trọng tài chính thức, được host mời từ pool hệ thống.",
+    needsBusiness: false,
+  },
 };
 
 interface Props {

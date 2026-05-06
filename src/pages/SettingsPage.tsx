@@ -16,7 +16,7 @@ import ApplyRoleDialog from "@/components/ApplyRoleDialog";
 type ApplicableRole = Exclude<AppRole, "master" | "player">;
 type ApplicationStatus = "pending" | "approved" | "rejected";
 
-const APPLICABLE_ROLES: ApplicableRole[] = ["host", "court_owner", "store_owner"];
+const APPLICABLE_ROLES: ApplicableRole[] = ["host", "court_owner", "store_owner", "referee"];
 
 const SettingsPage = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const SettingsPage = () => {
   const { user, roles, rolesLoading, isMaster, refetchRoles } = useAuth();
 
   const [latestApp, setLatestApp] = useState<Record<ApplicableRole, ApplicationStatus | null>>({
-    host: null, court_owner: null, store_owner: null,
+    host: null, court_owner: null, store_owner: null, referee: null,
   });
   const [appsLoading, setAppsLoading] = useState(false);
   const [applyRole, setApplyRole] = useState<ApplicableRole | null>(null);
@@ -35,6 +35,7 @@ const SettingsPage = () => {
     { id: "host", label: t("settings.host"), emoji: "🎯", desc: t("settings.hostDesc") },
     { id: "court_owner", label: t("settings.courtOwner"), emoji: "🏟️", desc: t("settings.courtOwnerDesc") },
     { id: "store_owner", label: t("settings.storeOwner"), emoji: "🛍️", desc: t("settings.storeOwnerDesc") },
+    { id: "referee", label: "Verified Referee", emoji: "🦓", desc: "Trọng tài chính thức, được host mời từ pool" },
   ];
 
   const languages: { id: Language; label: string; flag: string }[] = [
@@ -52,7 +53,7 @@ const SettingsPage = () => {
       .order("created_at", { ascending: false });
 
     const latest: Record<ApplicableRole, ApplicationStatus | null> = {
-      host: null, court_owner: null, store_owner: null,
+      host: null, court_owner: null, store_owner: null, referee: null,
     };
     for (const row of data ?? []) {
       const r = row.requested_role as ApplicableRole;

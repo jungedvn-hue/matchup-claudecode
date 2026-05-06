@@ -1,6 +1,6 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Gavel, MapPin, Calendar, Trophy, Clock, CheckCircle2, PlayCircle, ChevronRight } from "lucide-react";
+import { ArrowLeft, Gavel, MapPin, Calendar, Trophy, Clock, CheckCircle2, PlayCircle, ChevronRight, ShieldCheck, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useTournaments } from "@/context/TournamentContext";
 import { useTournamentRealtime } from "@/hooks/useTournamentRealtime";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import ApplyRoleDialog from "@/components/ApplyRoleDialog";
 import { Tournament, TournamentMatch } from "@/lib/tournament/types";
 import { toast } from "sonner";
 
@@ -25,10 +27,29 @@ const RefereeDashboardPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { tournaments, updateTournament } = useTournaments();
-  const { user } = useAuth();
+  const { user, roles, isMaster } = useAuth();
 
   const [showJoinRef, setShowJoinRef] = useState(false);
   const [accessCode, setAccessCode] = useState("");
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [refStatus, setRefStatus] = useState<"none" | "pending" | "rejected">("none");
+
+  const isVerifiedReferee = isMaster || roles.includes("referee");
+
+  const fetchRefereeApplication = useCallback(async () => {
+    if (!user || isVerifiedReferee) return;
+    const { data } = await supabase
+      .from("role_applications")
+      .select("status")
+      .eq("user_id", user.id)
+      .eq("requested_role", "referee")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    const s = data?.[0]?.status as "pending" | "rejected" | undefined;
+    setRefStatus(s ?? "none");
+  }, [user, isVerifiedReferee]);
+
+  useEffect(() => { fetchRefereeApplication(); }, [fetchRefereeApplication]);
 
   // Tournaments where current user is a referee
   const myTournaments = useMemo(() => {
@@ -197,6 +218,33 @@ const RefereeDashboardPage = () => {
         </div>
       </div>
 
+      {/* Verified Referee status banner */}
+      <div className="px-4 pt-3">
+        {isVerifiedReferee ? (
+          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Verified Referee — đang trong pool hệ thống</p>
+          </div>
+        ) : refStatus === "pending" ? (
+          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
+            <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">Đơn Verified Referee đang chờ duyệt</p>
+          </div>
+        ) : (
+          <button
+            onClick={() => setApplyOpen(true)}
+            className="w-full flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/30 hover:bg-primary/15 transition-colors text-left"
+          >
+            <ShieldAlert className="h-4 w-4 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-primary">Trở thành Verified Referee</p>
+              <p className="text-[11px] text-muted-foreground">{refStatus === "rejected" ? "Đơn trước bị từ chối — gửi lại?" : "Được host mời từ pool, ưu tiên xét chọn"}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-primary shrink-0" />
+          </button>
+        )}
+      </div>
+
       <div className="px-4 pt-4">
         {/* No tournaments empty state */}
         {myTournaments.length === 0 ? (
@@ -349,6 +397,13 @@ const RefereeDashboardPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ApplyRoleDialog
+        role="referee"
+        open={applyOpen}
+        onOpenChange={setApplyOpen}
+        onSubmitted={fetchRefereeApplication}
+      />
     </div>
   );
 };

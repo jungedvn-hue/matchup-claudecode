@@ -1,6 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 
-export type AppRole = "master" | "player" | "host" | "court_owner" | "store_owner";
+export type AppRole = "master" | "player" | "host" | "court_owner" | "store_owner" | "referee";
 
 export const useRoles = (): AppRole[] => {
   const { roles } = useAuth();
