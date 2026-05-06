@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 type RoleId = "player" | "host" | "court_owner" | "store_owner";
 type SkillLevel = "beginner" | "intermediate" | "advanced" | "pro" | null;
@@ -49,8 +51,10 @@ type StepDef = { id: string; role: RoleId | "shared"; render: () => React.ReactN
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
 
   // Shared
   const [selectedRoles, setSelectedRoles] = useState<RoleId[]>([]);
@@ -121,10 +125,43 @@ const OnboardingPage = () => {
   const currentStepId = steps[stepIndex]?.id || "roles";
   const totalSteps = steps.length;
 
-  const goNext = () => {
+  const submitRoleApplications = async () => {
+    if (!user) return;
+    const applicable = selectedRoles.filter((r) => r !== "player");
+    if (applicable.length === 0) return;
+    const rows = applicable.map((role) => {
+      const business_info =
+        role === "court_owner"
+          ? { business_name: venueName, court_count: courtCount, amenities: amenities.join(", ") }
+          : role === "store_owner"
+          ? { business_name: storeName, categories: storeCategories.join(", ") }
+          : null;
+      const reasonParts: string[] = [];
+      if (role === "host") {
+        if (groupName) reasonParts.push(`Group: ${groupName}`);
+        if (groupLocation) reasonParts.push(`Location: ${groupLocation}`);
+        if (hostEventTypes.length) reasonParts.push(`Event types: ${hostEventTypes.join(", ")}`);
+      }
+      return {
+        user_id: user.id,
+        requested_role: role,
+        reason: reasonParts.join(" | ") || `Submitted via onboarding flow`,
+        business_info,
+      };
+    });
+    await supabase.from("role_applications").insert(rows);
+  };
+
+  const goNext = async () => {
     if (stepIndex >= totalSteps - 1) {
+      setSubmitting(true);
+      try {
+        await submitRoleApplications();
+      } catch {
+        // Silent: user can retry from Settings
+      }
       localStorage.setItem("pickleplay_onboarded", "true");
-      localStorage.setItem("pickleplay_roles", JSON.stringify(selectedRoles));
+      setSubmitting(false);
       navigate("/");
       return;
     }

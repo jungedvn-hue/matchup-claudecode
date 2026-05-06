@@ -42,6 +42,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import RequireMaster from "@/components/RequireMaster";
 import FeatureGate from "@/components/FeatureGate";
 import AdminApplicationsPage from "./pages/AdminApplicationsPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
 
@@ -83,6 +84,7 @@ const AppShell = () => {
         <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
         
         <Route path="/admin/applications" element={<RequireMaster><AdminApplicationsPage /></RequireMaster>} />
+        <Route path="/admin/users" element={<RequireMaster><AdminUsersPage /></RequireMaster>} />
 
         <Route path="/verify" element={<VerificationPage />} />
         <Route path="/marketplace/service/:serviceId" element={<ServiceDetailPage />} />

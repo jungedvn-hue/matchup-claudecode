@@ -132,19 +132,28 @@ const SettingsPage = () => {
         </div>
 
         {isMaster && (
-          <Card
-            className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
-            onClick={() => navigate("/admin/applications")}
-          >
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5 text-primary" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-primary">Master Account</p>
-                <p className="text-xs text-muted-foreground">Bấm để mở Admin — Đơn đăng ký vai trò</p>
-              </div>
-              <ArrowLeft className="h-4 w-4 text-primary rotate-180" />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-1">
+              <Shield className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold text-primary">Master Account</p>
             </div>
-          </Card>
+            <div className="grid grid-cols-2 gap-2">
+              <Card
+                className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
+                onClick={() => navigate("/admin/applications")}
+              >
+                <p className="text-xs font-semibold text-primary">Đơn đăng ký</p>
+                <p className="text-[10px] text-muted-foreground">Approve / Reject</p>
+              </Card>
+              <Card
+                className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
+                onClick={() => navigate("/admin/users")}
+              >
+                <p className="text-xs font-semibold text-primary">Quản lý User</p>
+                <p className="text-[10px] text-muted-foreground">Cấp / gỡ vai trò</p>
+              </Card>
+            </div>
+          </div>
         )}
 
         <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
