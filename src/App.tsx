@@ -39,6 +39,8 @@ import NotFound from "./pages/NotFound";
 
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import RequireMaster from "@/components/RequireMaster";
+import AdminApplicationsPage from "./pages/AdminApplicationsPage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
 
@@ -79,6 +81,8 @@ const AppShell = () => {
         <Route path="/referee" element={<ProtectedRoute><RefereeDashboardPage /></ProtectedRoute>} />
         <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
         
+        <Route path="/admin/applications" element={<RequireMaster><AdminApplicationsPage /></RequireMaster>} />
+
         <Route path="/verify" element={<VerificationPage />} />
         <Route path="/marketplace/service/:serviceId" element={<ServiceDetailPage />} />
         <Route path="/health" element={<HealthHub />} />
