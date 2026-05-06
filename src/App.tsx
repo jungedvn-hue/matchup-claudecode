@@ -40,6 +40,7 @@ import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import RequireMaster from "@/components/RequireMaster";
+import FeatureGate from "@/components/FeatureGate";
 import AdminApplicationsPage from "./pages/AdminApplicationsPage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
@@ -60,8 +61,8 @@ const AppShell = () => {
         <Route path="/groups" element={<GroupsPage />} />
         <Route path="/group/:groupId" element={<GroupDetailPage />} />
         <Route path="/tournaments" element={<TournamentsPage />} />
-        <Route path="/dashboard" element={<HostDashboard />} />
-        <Route path="/create-tournament" element={<CreateTournamentPage />} />
+        <Route path="/dashboard" element={<ProtectedRoute><FeatureGate role="host"><HostDashboard /></FeatureGate></ProtectedRoute>} />
+        <Route path="/create-tournament" element={<ProtectedRoute><FeatureGate role="host"><CreateTournamentPage /></FeatureGate></ProtectedRoute>} />
         <Route path="/tournament-live" element={<TournamentLivePage />} />
         <Route path="/tournament-live/:tournamentId" element={<TournamentLivePage />} />
         <Route path="/marketplace" element={<MarketplacePage />} />
@@ -75,9 +76,9 @@ const AppShell = () => {
         <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/create-event" element={<CreateEventPage />} />
         
-        <Route path="/tour-manager" element={<ProtectedRoute><TourManagerPage /></ProtectedRoute>} />
-        <Route path="/tour-manager/create" element={<ProtectedRoute><TourManagerCreatePage /></ProtectedRoute>} />
-        <Route path="/tour-manager/:tournamentId" element={<ProtectedRoute><TourManagerControlPage /></ProtectedRoute>} />
+        <Route path="/tour-manager" element={<ProtectedRoute><FeatureGate role="host"><TourManagerPage /></FeatureGate></ProtectedRoute>} />
+        <Route path="/tour-manager/create" element={<ProtectedRoute><FeatureGate role="host"><TourManagerCreatePage /></FeatureGate></ProtectedRoute>} />
+        <Route path="/tour-manager/:tournamentId" element={<ProtectedRoute><FeatureGate role="host"><TourManagerControlPage /></FeatureGate></ProtectedRoute>} />
         <Route path="/referee" element={<ProtectedRoute><RefereeDashboardPage /></ProtectedRoute>} />
         <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
         
