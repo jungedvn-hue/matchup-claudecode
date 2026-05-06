@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { GroupEvent } from "@/data/events";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface BuyTicketDialogProps {
   event: GroupEvent | null;
@@ -13,15 +14,16 @@ interface BuyTicketDialogProps {
   onSubmit: (eventId: string, message?: string) => void;
 }
 
-const formatPrice = (price: number) => {
-  if (price === 0) return "Miễn phí";
-  return price.toLocaleString("vi-VN") + "đ";
-};
-
 const BuyTicketDialog = ({ event, open, onOpenChange, onSubmit }: BuyTicketDialogProps) => {
+  const { t } = useLanguage();
   const [step, setStep] = useState<"info" | "confirm" | "success">("info");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const formatPrice = (price: number) => {
+    if (price === 0) return t("common.free");
+    return price.toLocaleString("vi-VN") + "đ";
+  };
 
   const handleSubmit = () => {
     setLoading(true);
@@ -56,22 +58,20 @@ const BuyTicketDialog = ({ event, open, onOpenChange, onSubmit }: BuyTicketDialo
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="text-lg font-display font-bold text-foreground">Đã gửi yêu cầu mua vé!</h3>
-            <p className="text-sm text-muted-foreground">
-              Host sẽ xem xét và phê duyệt vé của bạn. Bạn sẽ nhận thông báo khi được duyệt.
-            </p>
+            <h3 className="text-lg font-display font-bold text-foreground">{t("ticket.requestSent")}</h3>
+            <p className="text-sm text-muted-foreground">{t("ticket.approvalPending")}</p>
             <div className="bg-secondary rounded-xl p-3 text-left">
               <p className="text-xs font-semibold text-foreground">{event.title}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">{event.date} · {event.time}</p>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-[10px] text-muted-foreground">Trạng thái</span>
+                <span className="text-[10px] text-muted-foreground">{t("ticket.statusLabel")}</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-semibold">
-                  ⏳ Chờ duyệt
+                  {t("ticket.pendingBadge")}
                 </span>
               </div>
             </div>
             <Button onClick={handleClose} className="w-full rounded-xl mt-2">
-              Đã hiểu
+              {t("ticket.understood")}
             </Button>
           </motion.div>
         ) : (
@@ -116,13 +116,13 @@ const BuyTicketDialog = ({ event, open, onOpenChange, onSubmit }: BuyTicketDialo
               {/* Ticket Info */}
               <div className="rounded-xl border border-border p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Giá vé</span>
+                  <span className="text-xs text-muted-foreground">{t("ticket.priceLabel")}</span>
                   <span className={`text-sm font-display font-bold ${event.price === 0 ? "text-primary" : "text-foreground"}`}>
                     {formatPrice(event.price)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Còn trống</span>
+                  <span className="text-xs text-muted-foreground">{t("ticket.available")}</span>
                   <span className={`text-xs font-semibold ${spotsLeft <= 3 ? "text-destructive" : "text-foreground"}`}>
                     {spotsLeft}/{event.maxSpots} chỗ
                   </span>
@@ -137,7 +137,7 @@ const BuyTicketDialog = ({ event, open, onOpenChange, onSubmit }: BuyTicketDialo
 
               {step === "confirm" && (
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-                  <label className="text-xs font-medium text-foreground">Lời nhắn cho Host (tùy chọn)</label>
+                  <label className="text-xs font-medium text-foreground">{t("ticket.messageLabel")}</label>
                   <Textarea
                     placeholder="Giới thiệu bản thân hoặc ghi chú gì thêm..."
                     value={message}
@@ -150,7 +150,7 @@ const BuyTicketDialog = ({ event, open, onOpenChange, onSubmit }: BuyTicketDialo
 
               <div className="flex gap-2 pt-1">
                 <Button variant="outline" onClick={handleClose} className="flex-1 rounded-xl">
-                  Hủy
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -164,13 +164,13 @@ const BuyTicketDialog = ({ event, open, onOpenChange, onSubmit }: BuyTicketDialo
                   className="flex-1 rounded-xl gap-1.5"
                 >
                   {loading ? (
-                    "Đang xử lý..."
+                    t("common.processing")
                   ) : step === "info" ? (
                     <>
-                      <Ticket className="h-3.5 w-3.5" /> Mua vé {event.price > 0 ? formatPrice(event.price) : ""}
+                      <Ticket className="h-3.5 w-3.5" /> {t("group.buyTicket")}{event.price > 0 ? " " + formatPrice(event.price) : ""}
                     </>
                   ) : (
-                    "Xác nhận gửi"
+                    t("common.confirmSubmit")
                   )}
                 </Button>
               </div>

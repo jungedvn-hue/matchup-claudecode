@@ -152,6 +152,20 @@ const SettingsPage = () => {
                 <p className="text-xs font-semibold text-primary">Quản lý User</p>
                 <p className="text-[10px] text-muted-foreground">Cấp / gỡ vai trò</p>
               </Card>
+              <Card
+                className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
+                onClick={() => navigate("/admin/tournaments")}
+              >
+                <p className="text-xs font-semibold text-primary">Tournament</p>
+                <p className="text-[10px] text-muted-foreground">Quản lý mọi giải</p>
+              </Card>
+              <Card
+                className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
+                onClick={() => navigate("/admin/stats")}
+              >
+                <p className="text-xs font-semibold text-primary">Thống kê</p>
+                <p className="text-[10px] text-muted-foreground">User, signup, role</p>
+              </Card>
             </div>
           </div>
         )}

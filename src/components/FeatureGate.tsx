@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { AppRole } from "@/hooks/use-roles";
 import ApplyRoleDialog from "@/components/ApplyRoleDialog";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type ApplicableRole = Exclude<AppRole, "master" | "player">;
 type Status = "pending" | "approved" | "rejected";
@@ -25,10 +26,12 @@ const ROLE_LABEL: Record<ApplicableRole, string> = {
   host: "Social Host",
   court_owner: "Court Owner",
   store_owner: "Store Owner",
+  referee: "Verified Referee",
 };
 
 const FeatureGate: React.FC<Props> = ({ role, title, description, children }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { user, roles, rolesLoading, isMaster } = useAuth();
   const [latest, setLatest] = useState<{ status: Status; reviewer_note: string | null } | null>(null);
   const [appsLoading, setAppsLoading] = useState(true);
@@ -87,28 +90,24 @@ const FeatureGate: React.FC<Props> = ({ role, title, description, children }) =>
 
         <div className="space-y-1">
           <h2 className="text-lg font-display font-bold">
-            {title ?? `Tính năng yêu cầu vai trò ${ROLE_LABEL[role]}`}
+            {title ?? `${t("gate.requiresRole")} ${ROLE_LABEL[role]}`}
           </h2>
           {status === "pending" && (
-            <p className="text-sm text-muted-foreground">
-              Đơn đăng ký của bạn đang chờ master xét duyệt. Thường mất 1-3 ngày.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("gate.pendingDesc")}</p>
           )}
           {status === "rejected" && (
             <>
-              <p className="text-sm text-muted-foreground">
-                Đơn trước đã bị từ chối. Bạn có thể gửi lại đơn mới.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("gate.rejectedDesc")}</p>
               {latest?.reviewer_note && (
                 <p className="text-xs p-2 rounded bg-secondary text-left mt-2">
-                  <span className="text-muted-foreground">Ghi chú:</span> {latest.reviewer_note}
+                  <span className="text-muted-foreground">{t("gate.reviewerNote")}</span> {latest.reviewer_note}
                 </p>
               )}
             </>
           )}
           {status === null && (
             <p className="text-sm text-muted-foreground">
-              {description ?? `Hãy đăng ký để mở khoá tính năng dành cho ${ROLE_LABEL[role]}.`}
+              {description ?? `${t("gate.unlockDesc")} ${ROLE_LABEL[role]}.`}
             </p>
           )}
         </div>
@@ -117,11 +116,11 @@ const FeatureGate: React.FC<Props> = ({ role, title, description, children }) =>
           {(status === null || status === "rejected") && (
             <Button onClick={() => setApplyOpen(true)} className="w-full">
               <ShieldAlert className="h-4 w-4 mr-2" />
-              Đăng ký {ROLE_LABEL[role]}
+              {t("gate.apply")} {ROLE_LABEL[role]}
             </Button>
           )}
           <Button variant="outline" onClick={() => navigate("/")}>
-            Về trang chủ
+            {t("group.goHome")}
           </Button>
         </div>
       </Card>

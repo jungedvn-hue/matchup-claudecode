@@ -37,12 +37,15 @@ import ServiceDetailPage from "./pages/ServiceDetailPage";
 import HealthHub from "./pages/health-hub/HealthHub";
 import NotFound from "./pages/NotFound";
 
+import { useLanguage } from "@/i18n/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import RequireMaster from "@/components/RequireMaster";
 import FeatureGate from "@/components/FeatureGate";
 import AdminApplicationsPage from "./pages/AdminApplicationsPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminTournamentsPage from "./pages/AdminTournamentsPage";
+import AdminStatsPage from "./pages/AdminStatsPage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
 
@@ -85,6 +88,8 @@ const AppShell = () => {
         
         <Route path="/admin/applications" element={<RequireMaster><AdminApplicationsPage /></RequireMaster>} />
         <Route path="/admin/users" element={<RequireMaster><AdminUsersPage /></RequireMaster>} />
+        <Route path="/admin/tournaments" element={<RequireMaster><AdminTournamentsPage /></RequireMaster>} />
+        <Route path="/admin/stats" element={<RequireMaster><AdminStatsPage /></RequireMaster>} />
 
         <Route path="/verify" element={<VerificationPage />} />
         <Route path="/marketplace/service/:serviceId" element={<ServiceDetailPage />} />
@@ -93,6 +98,22 @@ const AppShell = () => {
       </Routes>
       {!isOnboarding && <AIAssistant />}
       {!isOnboarding && <BottomNav />}
+    </div>
+  );
+};
+
+const ErrorFallback = ({ error, onReload }: { error: Error | null; onReload: () => void }) => {
+  const { t } = useLanguage();
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="max-w-md w-full bg-card p-6 rounded-xl border border-destructive/50 shadow-2xl">
+        <h2 className="text-xl font-bold text-destructive mb-2">{t("error.title")}</h2>
+        <p className="text-sm text-muted-foreground mb-4">{t("error.desc")}</p>
+        <pre className="bg-muted p-3 rounded-lg text-[10px] overflow-auto max-h-40 mb-4 border border-border">
+          {error?.toString()}
+        </pre>
+        <Button onClick={onReload} className="w-full">{t("error.reload")}</Button>
+      </div>
     </div>
   );
 };
@@ -110,27 +131,16 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
   }
   render() {
     if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-          <div className="max-w-md w-full bg-card p-6 rounded-xl border border-destructive/50 shadow-2xl">
-            <h2 className="text-xl font-bold text-destructive mb-2">Đã xảy ra lỗi hệ thống</h2>
-            <p className="text-sm text-muted-foreground mb-4">Ứng dụng gặp sự cố bất ngờ. Vui lòng chụp ảnh lỗi này và gửi cho bộ phận hỗ trợ.</p>
-            <pre className="bg-muted p-3 rounded-lg text-[10px] overflow-auto max-h-40 mb-4 border border-border">
-              {this.state.error?.toString()}
-            </pre>
-            <Button onClick={() => window.location.reload()} className="w-full">Tải lại trang</Button>
-          </div>
-        </div>
-      );
+      return <ErrorFallback error={this.state.error} onReload={() => window.location.reload()} />;
     }
     return this.props.children;
   }
 }
 
 const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
+  <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
+      <ErrorBoundary>
         <AuthProvider>
           <TournamentProvider>
             <TooltipProvider>
@@ -142,9 +152,9 @@ const App = () => (
             </TooltipProvider>
           </TournamentProvider>
         </AuthProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
+      </ErrorBoundary>
+    </LanguageProvider>
+  </QueryClientProvider>
 );
 
 export default App;

@@ -423,6 +423,69 @@ export function advanceBracket(
   return { rounds: updated, updatedMatches };
 }
 
+// ── Bracket Revert (undo a completed match — clear cascaded slot in next round) ──
+// Returns updated rounds and the list of downstream matches that were rolled back,
+// so callers can persist them. Mirrors advanceBracket: also unwinds BYE auto-cascades.
+export function revertBracket(
+  rounds: BracketRound[],
+  undoneMatchId: string
+): { rounds: BracketRound[]; updatedMatches: TournamentMatch[] } {
+  const updated = rounds.map((r) => ({
+    ...r,
+    matches: r.matches.map((m) => ({ ...m })),
+  }));
+  const updatedMatches: TournamentMatch[] = [];
+
+  let roundIdx = -1;
+  let matchIdx = -1;
+  for (let r = 0; r < updated.length; r++) {
+    const idx = updated[r].matches.findIndex((m) => m.id === undoneMatchId);
+    if (idx !== -1) {
+      roundIdx = r;
+      matchIdx = idx;
+      break;
+    }
+  }
+  if (roundIdx === -1) return { rounds: updated, updatedMatches };
+
+  let curRoundIdx = roundIdx;
+  let curMatchIdx = matchIdx;
+
+  while (curRoundIdx < updated.length - 1) {
+    const nextRoundIdx = curRoundIdx + 1;
+    const nextMatchIdx = Math.floor(curMatchIdx / 2);
+    const slotA = curMatchIdx % 2 === 0;
+    const nextMatch = updated[nextRoundIdx].matches[nextMatchIdx];
+    if (!nextMatch) break;
+
+    const wasByeAdvance =
+      nextMatch.status === "completed" &&
+      (nextMatch.entryAName === "BYE" || nextMatch.entryBName === "BYE");
+
+    if (slotA) {
+      nextMatch.entryAId = `tbd-${nextMatch.id}`;
+      nextMatch.entryAName = "TBD";
+    } else {
+      nextMatch.entryBId = `tbd-${nextMatch.id}`;
+      nextMatch.entryBName = "TBD";
+    }
+    nextMatch.winner = undefined;
+    nextMatch.status = "not_started";
+    nextMatch.scoreA = 0;
+    nextMatch.scoreB = 0;
+    updatedMatches.push({ ...nextMatch });
+
+    if (wasByeAdvance) {
+      curMatchIdx = nextMatchIdx;
+      curRoundIdx = nextRoundIdx;
+      continue;
+    }
+    break;
+  }
+
+  return { rounds: updated, updatedMatches };
+}
+
 // ── Tournament Progress ──
 export function getTournamentProgress(
   matches: TournamentMatch[]

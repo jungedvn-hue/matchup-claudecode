@@ -9,30 +9,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import type { AppRole } from "@/hooks/use-roles";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type ApplicableRole = Exclude<AppRole, "master" | "player">;
 
-const ROLE_LABELS: Record<ApplicableRole, { title: string; desc: string; needsBusiness: boolean }> = {
-  host: {
-    title: "Đăng ký làm Social Host",
-    desc: "Tổ chức giải đấu, mời trọng tài, quản lý event.",
-    needsBusiness: false,
-  },
-  court_owner: {
-    title: "Đăng ký làm Court Owner",
-    desc: "Quản lý sân, cho thuê, đặt lịch.",
-    needsBusiness: true,
-  },
-  store_owner: {
-    title: "Đăng ký làm Store Owner",
-    desc: "Bán dụng cụ, phụ kiện pickleball.",
-    needsBusiness: true,
-  },
-  referee: {
-    title: "Đăng ký làm Verified Referee",
-    desc: "Trở thành trọng tài chính thức, được host mời từ pool hệ thống.",
-    needsBusiness: false,
-  },
+const ROLE_META: Record<ApplicableRole, { titleKey: string; descKey: string; needsBusiness: boolean }> = {
+  host: { titleKey: "apply.hostTitle", descKey: "apply.hostDesc", needsBusiness: false },
+  court_owner: { titleKey: "apply.courtOwnerTitle", descKey: "apply.courtOwnerDesc", needsBusiness: true },
+  store_owner: { titleKey: "apply.storeOwnerTitle", descKey: "apply.storeOwnerDesc", needsBusiness: true },
+  referee: { titleKey: "apply.refereeTitle", descKey: "apply.refereeDesc", needsBusiness: false },
 };
 
 interface Props {
@@ -45,6 +30,7 @@ interface Props {
 const ApplyRoleDialog: React.FC<Props> = ({ role, open, onOpenChange, onSubmitted }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [reason, setReason] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [taxId, setTaxId] = useState("");
@@ -52,7 +38,7 @@ const ApplyRoleDialog: React.FC<Props> = ({ role, open, onOpenChange, onSubmitte
   const [submitting, setSubmitting] = useState(false);
 
   if (!role) return null;
-  const meta = ROLE_LABELS[role];
+  const meta = ROLE_META[role];
 
   const reset = () => {
     setReason("");
@@ -64,11 +50,11 @@ const ApplyRoleDialog: React.FC<Props> = ({ role, open, onOpenChange, onSubmitte
   const submit = async () => {
     if (!user) return;
     if (reason.trim().length < 10) {
-      toast({ title: "Lý do quá ngắn", description: "Vui lòng mô tả ít nhất 10 ký tự.", variant: "destructive" });
+      toast({ title: t("apply.reasonTooShort"), description: t("apply.reasonTooShortDesc"), variant: "destructive" });
       return;
     }
     if (meta.needsBusiness && !businessName.trim()) {
-      toast({ title: "Thiếu thông tin", description: "Vui lòng điền tên doanh nghiệp.", variant: "destructive" });
+      toast({ title: t("apply.missingInfo"), description: t("apply.missingBizName"), variant: "destructive" });
       return;
     }
 
@@ -87,13 +73,13 @@ const ApplyRoleDialog: React.FC<Props> = ({ role, open, onOpenChange, onSubmitte
     setSubmitting(false);
     if (error) {
       const msg = error.message?.includes("uniq_pending_application")
-        ? "Anh đã có đơn đang chờ duyệt cho vai trò này."
+        ? t("apply.pendingError")
         : error.message;
-      toast({ title: "Không gửi được", description: msg, variant: "destructive" });
+      toast({ title: t("apply.submitError"), description: msg, variant: "destructive" });
       return;
     }
 
-    toast({ title: "Đã gửi đơn", description: "Master sẽ xét duyệt trong 1-3 ngày." });
+    toast({ title: t("apply.success"), description: t("apply.successDesc") });
     reset();
     onOpenChange(false);
     onSubmitted?.();
@@ -103,13 +89,13 @@ const ApplyRoleDialog: React.FC<Props> = ({ role, open, onOpenChange, onSubmitte
     <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{meta.title}</DialogTitle>
-          <DialogDescription>{meta.desc}</DialogDescription>
+          <DialogTitle>{t(meta.titleKey)}</DialogTitle>
+          <DialogDescription>{t(meta.descKey)}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label htmlFor="reason">Lý do <span className="text-destructive">*</span></Label>
+            <Label htmlFor="reason">{t("apply.reasonLabel")} <span className="text-destructive">*</span></Label>
             <Textarea
               id="reason"
               placeholder="Mô tả ngắn về kinh nghiệm, mục đích sử dụng vai trò này..."
@@ -122,15 +108,15 @@ const ApplyRoleDialog: React.FC<Props> = ({ role, open, onOpenChange, onSubmitte
           {meta.needsBusiness && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="biz">Tên doanh nghiệp <span className="text-destructive">*</span></Label>
+                <Label htmlFor="biz">{t("apply.bizName")} <span className="text-destructive">*</span></Label>
                 <Input id="biz" value={businessName} onChange={(e) => setBusinessName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="tax">Mã số thuế</Label>
+                <Label htmlFor="tax">{t("apply.taxId")}</Label>
                 <Input id="tax" value={taxId} onChange={(e) => setTaxId(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="addr">Địa chỉ</Label>
+                <Label htmlFor="addr">{t("apply.address")}</Label>
                 <Input id="addr" value={address} onChange={(e) => setAddress(e.target.value)} />
               </div>
             </>
@@ -139,11 +125,11 @@ const ApplyRoleDialog: React.FC<Props> = ({ role, open, onOpenChange, onSubmitte
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
-            Huỷ
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={submitting}>
             {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Gửi đơn
+            {t("apply.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { GroupReview } from "@/data/groups";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface GroupRatingProps {
   groupName: string;
@@ -14,14 +15,6 @@ interface GroupRatingProps {
   reviews: GroupReview[];
   canRate: boolean; // only members can rate
 }
-
-const ratingLabels: Record<number, string> = {
-  1: "Rất tệ",
-  2: "Tạm được",
-  3: "Bình thường",
-  4: "Rất tốt",
-  5: "Tuyệt vời",
-};
 
 const StarDisplay = ({ rating, size = "sm" }: { rating: number; size?: "sm" | "md" }) => {
   const sizeClass = size === "md" ? "h-4 w-4" : "h-3 w-3";
@@ -46,6 +39,7 @@ const StarDisplay = ({ rating, size = "sm" }: { rating: number; size?: "sm" | "m
 export { StarDisplay };
 
 const GroupRating = ({ groupName, avgRating, totalReviews, reviews, canRate }: GroupRatingProps) => {
+  const { t } = useLanguage();
   const [showForm, setShowForm] = useState(false);
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -57,8 +51,8 @@ const GroupRating = ({ groupName, avgRating, totalReviews, reviews, canRate }: G
     setSubmitted(true);
     setShowForm(false);
     toast({
-      title: "⭐ Cảm ơn bạn đã đánh giá!",
-      description: `Bạn đã đánh giá ${groupName} ${userRating}/5 sao.`,
+      title: t("rating.thanks"),
+      description: t("rating.thanksDesc").replace("{name}", groupName).replace("{rating}", String(userRating)),
     });
   };
 
@@ -68,13 +62,13 @@ const GroupRating = ({ groupName, avgRating, totalReviews, reviews, canRate }: G
     <div className="space-y-3">
       {/* Summary */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-display font-semibold text-foreground">Đánh giá</h3>
+        <h3 className="text-sm font-display font-semibold text-foreground">{t("rating.title")}</h3>
         {canRate && !submitted && (
           <button
             onClick={() => setShowForm(!showForm)}
             className="text-[10px] text-primary font-medium"
           >
-            {showForm ? "Hủy" : "Viết đánh giá"}
+            {showForm ? t("common.cancel") : t("rating.write")}
           </button>
         )}
       </div>
@@ -84,7 +78,7 @@ const GroupRating = ({ groupName, avgRating, totalReviews, reviews, canRate }: G
           <div className="text-center">
             <p className="text-2xl font-display font-bold text-foreground">{avgRating.toFixed(1)}</p>
             <StarDisplay rating={avgRating} size="md" />
-            <p className="text-[10px] text-muted-foreground mt-1">{totalReviews} đánh giá</p>
+            <p className="text-[10px] text-muted-foreground mt-1">{totalReviews} {t("rating.totalReviews")}</p>
           </div>
           <div className="flex-1 space-y-1">
             {[5, 4, 3, 2, 1].map((star) => {
@@ -116,7 +110,7 @@ const GroupRating = ({ groupName, avgRating, totalReviews, reviews, canRate }: G
             className="overflow-hidden"
           >
             <Card className="p-4 shadow-card space-y-3 border-primary/20">
-              <p className="text-xs font-medium text-foreground">Trải nghiệm của bạn thế nào?</p>
+              <p className="text-xs font-medium text-foreground">{t("rating.experience")}</p>
               <div className="flex justify-center gap-1.5">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -143,11 +137,11 @@ const GroupRating = ({ groupName, avgRating, totalReviews, reviews, canRate }: G
                   animate={{ opacity: 1 }}
                   className="text-xs text-center font-medium text-accent"
                 >
-                  {ratingLabels[displayRating]}
+                  {t(`rating.label.${displayRating}`)}
                 </motion.p>
               )}
               <Textarea
-                placeholder="Chia sẻ thêm về trải nghiệm của bạn (tùy chọn)..."
+                placeholder={t("rating.commentPh")}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 className="rounded-xl text-xs min-h-[60px] resize-none"
@@ -158,7 +152,7 @@ const GroupRating = ({ groupName, avgRating, totalReviews, reviews, canRate }: G
                 className="w-full rounded-xl gap-1.5"
                 size="sm"
               >
-                <Send className="h-3.5 w-3.5" /> Gửi đánh giá
+                <Send className="h-3.5 w-3.5" /> {t("rating.send")}
               </Button>
             </Card>
           </motion.div>

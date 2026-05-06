@@ -46,6 +46,7 @@ import {
   getWildcardEntries,
   nearestBracketSize,
   advanceBracket,
+  revertBracket,
 } from "@/lib/tournament/engine";
 import { Tournament, TournamentCategory, TournamentMatch, Pool, Standing } from "@/lib/tournament/types";
 import { exportStandingsCSV, exportStandingsPDF } from "@/lib/tournament/export";
@@ -306,6 +307,106 @@ const TourManagerControlPage = () => {
     }
 
     toast.success(t("tm.matchCompleted"));
+  };
+
+  const undoMatch = async (matchId: string) => {
+    const match = allMatches.find((m) => m.id === matchId);
+    if (!match || !tournament) return;
+    if (match.status !== "completed") return;
+
+    const cat = tournament.categories.find((c) =>
+      [
+        ...(c.pools || []).flatMap((p) => p.matches || []),
+        ...(c.bracketRounds || []).flatMap((r) => r.matches || []),
+      ].some((m) => m.id === matchId)
+    );
+    if (!cat) return;
+
+    const isBracket = !!match.bracketRoundId;
+
+    // Guard 1 — pool match: block if bracket already generated.
+    if (!isBracket && (cat.bracketRounds?.length ?? 0) > 0) {
+      toast.error(t("tm.undoBlockedBracket"));
+      return;
+    }
+
+    // Guard 2 — bracket match: block if downstream match already completed (non-BYE).
+    if (isBracket) {
+      const rounds = cat.bracketRounds || [];
+      let rIdx = -1, mIdx = -1;
+      for (let r = 0; r < rounds.length; r++) {
+        const idx = rounds[r].matches.findIndex((m) => m.id === matchId);
+        if (idx !== -1) { rIdx = r; mIdx = idx; break; }
+      }
+      if (rIdx !== -1 && rIdx < rounds.length - 1) {
+        const nextMatch = rounds[rIdx + 1].matches[Math.floor(mIdx / 2)];
+        if (
+          nextMatch &&
+          nextMatch.status === "completed" &&
+          nextMatch.entryAName !== "BYE" &&
+          nextMatch.entryBName !== "BYE"
+        ) {
+          toast.error(t("tm.undoBlockedDownstream"));
+          return;
+        }
+      }
+    }
+
+    // Reset the match itself: keep scores so user can edit, clear winner, set in_progress.
+    const { error: matchErr } = await supabase
+      .from("tour_matches")
+      .update({
+        status: "in_progress",
+        winner_id: null,
+      })
+      .eq("id", matchId);
+    if (matchErr) {
+      toast.error(matchErr.message);
+      return;
+    }
+
+    // Cascade revert downstream bracket slots.
+    if (isBracket) {
+      const { data: catRow } = await supabase
+        .from("tour_categories")
+        .select("bracket_rounds")
+        .eq("id", cat.id)
+        .single();
+      const freshRounds: any[] = (catRow?.bracket_rounds as any[]) || cat.bracketRounds || [];
+
+      const seededRounds = freshRounds.map((r: any) => ({
+        ...r,
+        matches: r.matches.map((m: any) =>
+          m.id === matchId
+            ? { ...m, status: "in_progress", winner: undefined }
+            : m
+        ),
+      }));
+      const { rounds: revertedRounds, updatedMatches } = revertBracket(seededRounds, matchId);
+
+      await supabase
+        .from("tour_categories")
+        .update({ bracket_rounds: revertedRounds })
+        .eq("id", cat.id);
+
+      for (const m of updatedMatches) {
+        await supabase
+          .from("tour_matches")
+          .update({
+            entry_a_id: m.entryAId,
+            entry_a_name: m.entryAName,
+            entry_b_id: m.entryBId,
+            entry_b_name: m.entryBName,
+            winner_id: m.winner ?? null,
+            status: m.status,
+            score_a: m.scoreA,
+            score_b: m.scoreB,
+          })
+          .eq("id", m.id);
+      }
+    }
+
+    toast.success(t("tm.matchUndone"));
   };
 
   const generateKnockout = async (overrideMode?: "wildcard" | "bye") => {
@@ -748,6 +849,7 @@ const TourManagerControlPage = () => {
                         match={match}
                         onScoreChange={updateMatchScore}
                         onComplete={completeMatch}
+                        onUndo={isHost || isMyMatch ? undoMatch : undefined}
                         onResourceChange={isHost ? updateMatchResource : undefined}
                         referees={tournament.referees || []}
                         courts={tournament.courts || []}
@@ -916,6 +1018,7 @@ const TourManagerControlPage = () => {
                               match={labeledMatch}
                               onScoreChange={updateMatchScore}
                               onComplete={completeMatch}
+                              onUndo={isHost ? undoMatch : undefined}
                               onResourceChange={updateMatchResource}
                               referees={tournament.referees || []}
                               courts={tournament.courts || []}
@@ -1545,6 +1648,7 @@ function MatchCard({
   match,
   onScoreChange,
   onComplete,
+  onUndo,
   onResourceChange,
   referees,
   courts,
@@ -1557,6 +1661,7 @@ function MatchCard({
   match: TournamentMatch;
   onScoreChange: (id: string, a: number, b: number) => void;
   onComplete: (id: string, scoreA?: number, scoreB?: number) => void;
+  onUndo?: (id: string) => void;
   onResourceChange?: (id: string, field: "refereeId" | "courtId", value: string | undefined) => void;
   referees?: { id: string; name: string }[];
   courts?: { id: string; name: string }[];

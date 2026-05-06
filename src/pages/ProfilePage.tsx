@@ -48,10 +48,10 @@ const ProfilePage = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      toast.success("Đã đăng xuất thành công");
+      toast.success(t("common.logoutSuccess"));
       navigate("/login");
     } catch (error) {
-      toast.error("Lỗi khi đăng xuất");
+      toast.error(t("common.logoutError"));
     }
   };
 
@@ -62,11 +62,11 @@ const ProfilePage = () => {
           <Users className="h-10 w-10 text-primary" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-display font-bold">Bạn chưa đăng nhập</h2>
-          <p className="text-muted-foreground">Vui lòng đăng nhập để xem hồ sơ và tham gia các giải đấu.</p>
+          <h2 className="text-2xl font-display font-bold">{t("common.notLoggedIn")}</h2>
+          <p className="text-muted-foreground">{t("common.loginToView")}</p>
         </div>
         <Button onClick={() => navigate("/login")} className="w-full max-w-[200px] rounded-xl font-bold">
-          Đăng nhập ngay
+          {t("common.loginNow")}
         </Button>
       </div>
     );
@@ -114,27 +114,17 @@ const ProfilePage = () => {
                   <MapPin className="h-3 w-3 text-muted-foreground" />
                   <span className="text-[10px] text-muted-foreground">San Francisco, CA</span>
                 </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Button size="sm" variant="outline" onClick={() => navigate("/edit-profile")} className="h-7 text-[10px] rounded-lg border-primary/20 hover:bg-primary/5">
-                    <Edit className="h-3 w-3 mr-1" /> {t("common.edit")}
-                  </Button>
-                  <Button size="icon" variant="ghost" onClick={() => navigate("/settings")} className="h-7 w-7 rounded-lg text-muted-foreground">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button size="sm" variant="outline" onClick={() => navigate("/edit-profile")} className="h-7 text-[10px] rounded-lg border-primary/20 hover:bg-primary/5 mt-2">
+                  <Edit className="h-3 w-3 mr-1" /> {t("common.edit")}
+                </Button>
               </div>
             </div>
             
             <XPProgressBar currentXP={playerStats.currentXP} level={playerStats.level} />
 
-            <div className="flex gap-2">
-              <Button onClick={() => setLogDialogOpen(true)} className="flex-1 rounded-xl gap-2 font-bold shadow-lg shadow-primary/20">
-                <Trophy className="h-4 w-4" /> {t("common.logMatch") || "Ghi điểm"}
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => navigate("/edit-profile")} className="rounded-xl shrink-0">
-                <Edit className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button onClick={() => setLogDialogOpen(true)} className="w-full rounded-xl gap-2 font-bold shadow-lg shadow-primary/20">
+              <Trophy className="h-4 w-4" /> {t("common.logMatch")}
+            </Button>
           </Card>
         </motion.div>
 
