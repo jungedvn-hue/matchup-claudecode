@@ -27,6 +27,6 @@ dist-ssr
 .claude/
 .cursor/
 .qoder/
-docs/
+docs/prd/
 reports/
 scripts/

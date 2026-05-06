@@ -1,18 +1,21 @@
-import { useMemo } from "react";
+import { useAuth } from "@/context/AuthContext";
 
-export type AppRole = "player" | "host" | "court_owner" | "store_owner";
+export type AppRole = "master" | "player" | "host" | "court_owner" | "store_owner";
 
 export const useRoles = (): AppRole[] => {
-  return useMemo(() => {
-    try {
-      const raw = localStorage.getItem("pickleplay_roles");
-      if (raw) return JSON.parse(raw) as AppRole[];
-      // Fallback: old single-role format
-      const legacy = localStorage.getItem("pickleplay_account_type");
-      if (legacy) return [legacy as AppRole];
-    } catch {}
-    return ["player"]; // default
-  }, []);
+  const { roles } = useAuth();
+  return roles;
 };
 
-export const hasRole = (roles: AppRole[], role: AppRole) => roles.includes(role);
+export const hasRole = (roles: AppRole[], role: AppRole) =>
+  roles.includes(role) || roles.includes("master");
+
+export const useHasRole = (role: AppRole): boolean => {
+  const roles = useRoles();
+  return hasRole(roles, role);
+};
+
+export const useIsMaster = (): boolean => {
+  const roles = useRoles();
+  return roles.includes("master");
+};
