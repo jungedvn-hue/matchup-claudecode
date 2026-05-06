@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local dev artifacts (not part of repo)
+.claude/
+.cursor/
+.qoder/
+docs/
+reports/
+scripts/
