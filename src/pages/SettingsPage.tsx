@@ -1,20 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Check, Globe } from "lucide-react";
+import { ArrowLeft, Check, Globe, Clock, X, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { Language } from "@/i18n/translations";
 import type { AppRole } from "@/hooks/use-roles";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import ApplyRoleDialog from "@/components/ApplyRoleDialog";
+
+type ApplicableRole = Exclude<AppRole, "master" | "player">;
+type ApplicationStatus = "pending" | "approved" | "rejected";
+
+const APPLICABLE_ROLES: ApplicableRole[] = ["host", "court_owner", "store_owner"];
 
 const SettingsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
-  const [selected, setSelected] = useState<AppRole[]>([]);
+  const { user, roles, rolesLoading, isMaster, refetchRoles } = useAuth();
+
+  const [latestApp, setLatestApp] = useState<Record<ApplicableRole, ApplicationStatus | null>>({
+    host: null, court_owner: null, store_owner: null,
+  });
+  const [appsLoading, setAppsLoading] = useState(false);
+  const [applyRole, setApplyRole] = useState<ApplicableRole | null>(null);
 
   const roleOptions: { id: AppRole; label: string; emoji: string; desc: string }[] = [
     { id: "player", label: t("settings.player"), emoji: "🏓", desc: t("settings.playerDesc") },
@@ -28,35 +42,57 @@ const SettingsPage = () => {
     { id: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
   ];
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("pickleplay_roles");
-      if (raw) setSelected(JSON.parse(raw));
-      else {
-        const legacy = localStorage.getItem("pickleplay_account_type");
-        if (legacy) setSelected([legacy as AppRole]);
-        else setSelected(["player"]);
-      }
-    } catch {
-      setSelected(["player"]);
-    }
-  }, []);
+  const fetchApplications = useCallback(async () => {
+    if (!user) return;
+    setAppsLoading(true);
+    const { data } = await supabase
+      .from("role_applications")
+      .select("requested_role, status, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-  const toggle = (role: AppRole) => {
-    setSelected((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
+    const latest: Record<ApplicableRole, ApplicationStatus | null> = {
+      host: null, court_owner: null, store_owner: null,
+    };
+    for (const row of data ?? []) {
+      const r = row.requested_role as ApplicableRole;
+      if (APPLICABLE_ROLES.includes(r) && latest[r] === null) {
+        latest[r] = row.status as ApplicationStatus;
+      }
+    }
+    setLatestApp(latest);
+    setAppsLoading(false);
+  }, [user]);
+
+  useEffect(() => { fetchApplications(); }, [fetchApplications]);
+
+  const isActive = (role: AppRole) => roles.includes(role);
+
+  const getRoleStatus = (role: AppRole): "active" | "pending" | "rejected" | "none" => {
+    if (isActive(role)) return "active";
+    if (role === "player" || role === "master") return "none";
+    const r = role as ApplicableRole;
+    if (latestApp[r] === "pending") return "pending";
+    if (latestApp[r] === "rejected") return "rejected";
+    return "none";
   };
 
-  const save = () => {
-    if (selected.length === 0) {
-      toast({ title: t("settings.selectAtLeast"), variant: "destructive" });
+  const onRoleClick = (role: AppRole) => {
+    if (role === "master") return; // master không tự apply
+    if (role === "player") {
+      toast({ title: "Vai trò Player luôn được kích hoạt." });
       return;
     }
-    localStorage.setItem("pickleplay_roles", JSON.stringify(selected));
-    toast({ title: t("settings.saved") });
-    navigate("/profile");
-    window.location.reload();
+    const status = getRoleStatus(role);
+    if (status === "active") {
+      toast({ title: "Đã có vai trò này", description: "Liên hệ master nếu muốn gỡ bỏ." });
+      return;
+    }
+    if (status === "pending") {
+      toast({ title: "Đơn đang chờ duyệt", description: "Master sẽ xét duyệt sớm." });
+      return;
+    }
+    setApplyRole(role as ApplicableRole);
   };
 
   return (
@@ -94,13 +130,22 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          {t("settings.subtitle")}
-        </p>
+        {isMaster && (
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/10 border border-primary/30">
+            <Shield className="h-4 w-4 text-primary" />
+            <p className="text-sm font-semibold text-primary">Master Account</p>
+          </div>
+        )}
+
+        <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
+
+        {(rolesLoading || appsLoading) && (
+          <p className="text-xs text-muted-foreground">Đang tải vai trò...</p>
+        )}
 
         <div className="space-y-3">
           {roleOptions.map((role, i) => {
-            const checked = selected.includes(role.id);
+            const status = getRoleStatus(role.id);
             return (
               <motion.div
                 key={role.id}
@@ -110,9 +155,9 @@ const SettingsPage = () => {
               >
                 <Card
                   className={`p-4 cursor-pointer transition-all border-2 ${
-                    checked ? "border-primary bg-primary/5" : "border-transparent"
+                    status === "active" ? "border-primary bg-primary/5" : "border-transparent"
                   }`}
-                  onClick={() => toggle(role.id)}
+                  onClick={() => onRoleClick(role.id)}
                 >
                   <div className="flex items-center gap-3">
                     <div className="text-2xl">{role.emoji}</div>
@@ -120,18 +165,38 @@ const SettingsPage = () => {
                       <p className="text-sm font-semibold text-card-foreground">{role.label}</p>
                       <p className="text-xs text-muted-foreground">{role.desc}</p>
                     </div>
-                    <Checkbox checked={checked} onCheckedChange={() => toggle(role.id)} />
+                    {status === "active" && (
+                      <Badge className="bg-primary text-primary-foreground gap-1">
+                        <Check className="h-3 w-3" /> Active
+                      </Badge>
+                    )}
+                    {status === "pending" && (
+                      <Badge variant="secondary" className="gap-1">
+                        <Clock className="h-3 w-3" /> Đang xét duyệt
+                      </Badge>
+                    )}
+                    {status === "rejected" && (
+                      <Badge variant="destructive" className="gap-1">
+                        <X className="h-3 w-3" /> Bị từ chối
+                      </Badge>
+                    )}
+                    {status === "none" && role.id !== "player" && (
+                      <Badge variant="outline">Đăng ký</Badge>
+                    )}
                   </div>
                 </Card>
               </motion.div>
             );
           })}
         </div>
-
-        <Button onClick={save} className="w-full rounded-xl gap-2 mt-4" disabled={selected.length === 0}>
-          <Check className="h-4 w-4" /> {t("common.save")}
-        </Button>
       </div>
+
+      <ApplyRoleDialog
+        role={applyRole}
+        open={!!applyRole}
+        onOpenChange={(o) => { if (!o) setApplyRole(null); }}
+        onSubmitted={() => { fetchApplications(); refetchRoles(); }}
+      />
     </div>
   );
 };
