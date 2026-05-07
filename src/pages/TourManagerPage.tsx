@@ -215,7 +215,25 @@ const TourManagerPage = () => {
         </div>
       </div>
 
-      <div className="px-4 pt-4">
+      <div className="px-4 pt-4 max-w-2xl mx-auto">
+        {/* Health-Hub-style summary card */}
+        <Card className="p-4 mb-4 shadow-card overflow-hidden bg-gradient-to-br from-primary/8 via-card to-card">
+          <div className="grid grid-cols-3 gap-2.5">
+            <div className="text-center">
+              <p className="text-xl font-display font-bold text-primary tabular-nums leading-none">{active.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("tm.active")}</p>
+            </div>
+            <div className="text-center border-x border-border/50">
+              <p className="text-xl font-display font-bold text-amber-600 dark:text-amber-500 tabular-nums leading-none">{draft.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("tm.drafts")}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-display font-bold text-emerald-600 dark:text-emerald-400 tabular-nums leading-none">{completed.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("tm.completed")}</p>
+            </div>
+          </div>
+        </Card>
+
         <Tabs defaultValue="active">
           <TabsList className="w-full">
             <TabsTrigger value="active" className="flex-1 gap-1">

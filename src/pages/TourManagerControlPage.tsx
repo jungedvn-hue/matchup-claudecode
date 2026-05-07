@@ -628,35 +628,40 @@ const TourManagerControlPage = () => {
           </div>
         </div>
 
-        {/* Dashboard strip */}
-        <div className="flex gap-2 text-center">
-          <div className="flex-1 bg-muted rounded-lg p-2">
-            <p className="text-lg font-bold text-foreground">{progress.pct}%</p>
-            <p className="text-[10px] text-muted-foreground">{t("tm.progress")}</p>
-          </div>
-          <div className="flex-1 bg-muted rounded-lg p-2">
-            <p className="text-lg font-bold text-foreground">{progress.completed}/{progress.total}</p>
-            <p className="text-[10px] text-muted-foreground">{t("tm.matchesDone")}</p>
-          </div>
-          <div className="flex-1 bg-muted rounded-lg p-2">
-            <p className="text-lg font-bold text-foreground">{progress.inProgress}</p>
-            <p className="text-[10px] text-muted-foreground">{t("tm.inProgress")}</p>
-          </div>
+        {/* Hero stats — Health Hub style */}
+        <div className="grid grid-cols-3 gap-2">
+          <StatPill
+            value={`${progress.pct}%`}
+            label={t("tm.progress")}
+            tone={progress.pct >= 100 ? "emerald" : progress.pct >= 50 ? "primary" : "amber"}
+          />
+          <StatPill
+            value={`${progress.completed}/${progress.total}`}
+            label={t("tm.matchesDone")}
+            tone="primary"
+          />
+          <StatPill
+            value={progress.inProgress}
+            label={t("tm.inProgress")}
+            tone={progress.inProgress > 0 ? "blue" : "muted"}
+          />
         </div>
 
         {/* Category selector */}
         {tournament.categories.length > 1 && (
-          <div className="flex gap-1 mt-2 overflow-x-auto">
+          <div className="flex gap-1.5 mt-2.5 overflow-x-auto -mx-4 px-4 scrollbar-hide">
             {tournament.categories.map((c) => (
-              <Button
+              <button
                 key={c.id}
-                variant={activeCat?.id === c.id ? "default" : "outline"}
-                size="sm"
-                className="text-xs whitespace-nowrap"
                 onClick={() => setActiveCatId(c.id)}
+                className={`px-3 h-7 rounded-full text-[11px] font-medium whitespace-nowrap transition-all border ${
+                  activeCat?.id === c.id
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                }`}
               >
                 {c.name}
-              </Button>
+              </button>
             ))}
           </div>
         )}
@@ -2148,5 +2153,30 @@ function ManualPoolAllocation({
     </div>
   );
 }
+
+// Health-Hub-inspired stat tile for the Tour Mgr control header.
+const StatPill = ({
+  value,
+  label,
+  tone,
+}: {
+  value: string | number;
+  label: string;
+  tone: "primary" | "emerald" | "amber" | "blue" | "muted";
+}) => {
+  const tones = {
+    primary: "bg-primary/10 text-primary",
+    emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    amber: "bg-amber-500/10 text-amber-600 dark:text-amber-500",
+    blue: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    muted: "bg-muted/60 text-muted-foreground",
+  };
+  return (
+    <div className={`rounded-lg p-2 text-center ${tones[tone]}`}>
+      <p className="text-base font-display font-bold leading-tight tabular-nums">{value}</p>
+      <p className="text-[9px] font-medium uppercase tracking-wider opacity-80 mt-0.5">{label}</p>
+    </div>
+  );
+};
 
 export default TourManagerControlPage;

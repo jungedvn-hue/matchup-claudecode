@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy, Target, Settings, BarChart3, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -75,6 +75,8 @@ const TourManagerCreatePage = () => {
   // Step 4 - Resources
   const [courtNames, setCourtNames] = useState<string[]>([]);
   const [refereeBulk, setRefereeBulk] = useState("");
+
+  const [showRanking, setShowRanking] = useState(false);
 
   const addCategory = () => {
     const opt = CATEGORY_OPTIONS.find((c) => c.value === newCatType);
@@ -207,159 +209,181 @@ const TourManagerCreatePage = () => {
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-4">
+      <div className="px-4 pt-4 space-y-3 max-w-2xl mx-auto">
         {/* Step 1: Tournament Setup */}
         {step === 1 && (
           <>
-            <div className="space-y-3">
-              <div>
-                <Label>{t("tm.tournamentName")}</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("tm.tournamentNamePh")} />
+            {/* Card 1 — Basics */}
+            <SectionCard icon={Trophy} title={t("tm.basicsTitle") || "Basics"} tone="from-primary/5">
+              <Field label={t("tm.tournamentName")} required>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("tm.tournamentNamePh")} className="h-10" />
+              </Field>
+              <div className="grid grid-cols-2 gap-2.5">
+                <Field label={t("tm.date")} required>
+                  <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10" />
+                </Field>
+                <Field label={t("tm.location")} required>
+                  <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("tm.locationPh")} className="h-10" />
+                </Field>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t("tm.date")}</Label>
-                  <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </SectionCard>
+
+            {/* Card 2 — Match rules */}
+            <SectionCard icon={Target} title={t("tm.matchRulesTitle") || "Match rules"} tone="from-accent/5">
+              <Field label={t("tm.format")}>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(["round_robin", "knockout", "hybrid"] as TournamentFormat[]).map(f => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setFormat(f)}
+                      className={`h-10 rounded-lg text-xs font-medium border transition-all ${
+                        format === f ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                      }`}
+                    >
+                      {t(`tm.format.${f}`)}
+                    </button>
+                  ))}
                 </div>
-                <div>
-                  <Label>{t("tm.location")}</Label>
-                  <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("tm.locationPh")} />
-                </div>
-              </div>
-              <div>
-                <Label>{t("tm.format")}</Label>
-                <Select value={format} onValueChange={(v) => setFormat(v as TournamentFormat)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="round_robin">{t("tm.format.round_robin")}</SelectItem>
-                    <SelectItem value="knockout">{t("tm.format.knockout")}</SelectItem>
-                    <SelectItem value="hybrid">{t("tm.format.hybrid")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t("tm.pointsPerGame")}</Label>
-                  <div className="flex gap-1.5 mt-1">
-                    {[11, 15, 21].map((v) => (
-                      <Button
+              </Field>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <Field label={t("tm.pointsPerGame")}>
+                  <div className="flex gap-1">
+                    {[11, 15, 21].map(v => (
+                      <button
                         key={v}
                         type="button"
-                        size="sm"
-                        variant={pointsPerGame === v ? "default" : "outline"}
-                        className="h-9 px-2.5 text-xs"
                         onClick={() => setPointsPerGame(v)}
+                        className={`h-10 w-10 rounded-lg text-xs font-bold border transition-all ${
+                          pointsPerGame === v ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                        }`}
                       >
                         {v}
-                      </Button>
+                      </button>
                     ))}
                     <Input
                       type="number"
                       min={1}
                       max={50}
                       value={pointsPerGame}
-                      onChange={(e) => {
-                        const n = Math.max(1, Math.min(50, Number(e.target.value) || 1));
-                        setPointsPerGame(n);
-                      }}
-                      className="h-9 w-16"
+                      onChange={(e) => setPointsPerGame(Math.max(1, Math.min(50, Number(e.target.value) || 1)))}
+                      className="h-10 flex-1"
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">{t("tm.pointsPerGameHint")}</p>
-                </div>
-                <div className="flex items-end gap-2 pb-1">
-                  <Switch checked={winByTwo} onCheckedChange={setWinByTwo} />
-                  <Label className="text-sm">{t("tm.winByTwo")}</Label>
-                </div>
-              </div>
-              <div>
-                <Label>{t("tm.maxPoints")}</Label>
-                <Input
-                  type="number"
-                  min={pointsPerGame}
-                  max={50}
-                  value={maxPoints}
-                  onChange={(e) => setMaxPoints(e.target.value)}
-                  placeholder={String(pointsPerGame + 4)}
-                  className="h-9"
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">{t("tm.maxPointsHint")}</p>
-              </div>
-              <div>
-                <Label>{t("tm.numSets")}</Label>
-                <Select value={String(numSets)} onValueChange={(v) => setNumSets(Number(v))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">{t("tm.numSets.bo1")}</SelectItem>
-                    <SelectItem value="3">{t("tm.numSets.bo3")}</SelectItem>
-                    <SelectItem value="5">{t("tm.numSets.bo5")}</SelectItem>
-                    <SelectItem value="7">{t("tm.numSets.bo7")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t("tm.courts")}</Label>
-                  <Input type="number" min={1} value={courts} onChange={(e) => setCourts(Number(e.target.value))} />
-                </div>
-                <div>
-                  <Label>{t("tm.matchDuration")}</Label>
-                  <Input type="number" min={5} value={matchDuration} onChange={(e) => setMatchDuration(Number(e.target.value))} />
-                </div>
-              </div>
-              <div>
-                <Label>{t("tm.playersPerPool")}</Label>
-                <Select value={String(playersPerPool)} onValueChange={(v) => setPlayersPerPool(Number(v))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="3">3</SelectItem>
-                    <SelectItem value="4">4</SelectItem>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="6">6</SelectItem>
-                    <SelectItem value="8">8</SelectItem>
-                  </SelectContent>
-                </Select>
+                </Field>
+                <Field label={t("tm.maxPoints")}>
+                  <Input
+                    type="number"
+                    min={pointsPerGame}
+                    max={50}
+                    value={maxPoints}
+                    onChange={(e) => setMaxPoints(e.target.value)}
+                    placeholder={String(pointsPerGame + 4)}
+                    className="h-10"
+                  />
+                </Field>
               </div>
 
-              {/* Ranking Priority UI */}
-              <div className="space-y-2 pt-2">
-                <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1">
-                  {t("tm.rankingTitle") || "Ranking Priority"}
-                </Label>
-                <div className="space-y-1.5">
+              <Field label={t("tm.numSets")}>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[1, 3, 5, 7].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setNumSets(n)}
+                      className={`h-10 rounded-lg text-xs font-medium border transition-all ${
+                        numSets === n ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                      }`}
+                    >
+                      {t(`tm.numSets.bo${n}`)}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/50 border border-border/50">
+                <Label className="text-xs font-medium">{t("tm.winByTwo")}</Label>
+                <Switch checked={winByTwo} onCheckedChange={setWinByTwo} />
+              </div>
+
+              {/* Live preview */}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/15">
+                <Badge variant="secondary" className="text-[10px]">{t("tm.preview") || "Preview"}</Badge>
+                <p className="text-[11px] font-medium text-foreground tabular-nums">
+                  {t(`tm.numSets.bo${numSets}`)} · {pointsPerGame}pts{winByTwo ? " · win-by-2" : ""}{maxPoints ? ` · cap ${maxPoints}` : ""}
+                </p>
+              </div>
+            </SectionCard>
+
+            {/* Card 3 — Schedule */}
+            <SectionCard icon={Settings} title={t("tm.scheduleTitle") || "Schedule"} tone="from-emerald-500/5">
+              <div className="grid grid-cols-2 gap-2.5">
+                <Field label={t("tm.courts")}>
+                  <Input type="number" min={1} value={courts} onChange={(e) => setCourts(Number(e.target.value))} className="h-10" />
+                </Field>
+                <Field label={t("tm.matchDuration")}>
+                  <Input type="number" min={5} value={matchDuration} onChange={(e) => setMatchDuration(Number(e.target.value))} className="h-10" />
+                </Field>
+              </div>
+              <Field label={t("tm.playersPerPool")}>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {[3, 4, 5, 6, 8].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setPlayersPerPool(n)}
+                      className={`h-10 rounded-lg text-xs font-medium border transition-all ${
+                        playersPerPool === n ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+            </SectionCard>
+
+            {/* Card 4 — Ranking priority (collapsed advanced) */}
+            <Card className="shadow-card overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowRanking(s => !s)}
+                className="w-full flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                    <BarChart3 className="h-4 w-4" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-display font-semibold text-foreground">{t("tm.rankingTitle") || "Ranking priority"}</p>
+                    <p className="text-[10px] text-muted-foreground">{t("tm.rankingSubtitle") || "Advanced — tap to customize"}</p>
+                  </div>
+                </div>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showRanking ? "rotate-180" : ""}`} />
+              </button>
+              {showRanking && (
+                <div className="px-4 pb-4 space-y-1.5 border-t border-border/50 pt-3">
                   {rankingPriority.map((criterion, idx) => (
-                    <div key={criterion} className="flex items-center gap-2 p-2 bg-secondary/50 rounded-lg border border-border/50">
-                      <span className="flex-1 text-sm font-medium">{idx + 1}. {t(`tm.ranking.${criterion}`)}</span>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost" 
-                          type="button"
-                          size="icon" 
-                          className="h-7 w-7 rounded-md hover:bg-background"
-                          onClick={() => moveCriterion(idx, "up")}
-                          disabled={idx === 0}
-                        >
-                          <ArrowUp className="h-4 w-4" />
+                    <div key={criterion} className="flex items-center gap-2 p-2 bg-secondary/40 rounded-lg border border-border/40">
+                      <span className="h-6 w-6 rounded-md bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">{idx + 1}</span>
+                      <span className="flex-1 text-xs font-medium">{t(`tm.ranking.${criterion}`)}</span>
+                      <div className="flex gap-0.5">
+                        <Button variant="ghost" type="button" size="icon" className="h-7 w-7" onClick={() => moveCriterion(idx, "up")} disabled={idx === 0}>
+                          <ArrowUp className="h-3.5 w-3.5" />
                         </Button>
-                        <Button
-                          variant="ghost" 
-                          type="button"
-                          size="icon" 
-                          className="h-7 w-7 rounded-md hover:bg-background"
-                          onClick={() => moveCriterion(idx, "down")}
-                          disabled={idx === rankingPriority.length - 1}
-                        >
-                          <ArrowDown className="h-4 w-4" />
+                        <Button variant="ghost" type="button" size="icon" className="h-7 w-7" onClick={() => moveCriterion(idx, "down")} disabled={idx === rankingPriority.length - 1}>
+                          <ArrowDown className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </div>
                   ))}
+                  <p className="text-[10px] text-muted-foreground italic pt-1">
+                    {t("tm.rankingHint") || "System compares sequentially from top to bottom."}
+                  </p>
                 </div>
-                <p className="text-[10px] text-muted-foreground italic">
-                  * {t("tm.rankingHint") || "System compares sequentially from top to bottom."}
-                </p>
-              </div>
-            </div>
+              )}
+            </Card>
           </>
         )}
 
@@ -559,5 +583,46 @@ const TourManagerCreatePage = () => {
     </div>
   );
 };
+
+// ───────── Health-Hub-style helpers ─────────
+
+const SectionCard = ({
+  icon: Icon,
+  title,
+  tone,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  tone: string; // tailwind gradient-from class fragment, e.g. "from-primary/5"
+  children: React.ReactNode;
+}) => (
+  <Card className={`p-4 shadow-card overflow-hidden bg-gradient-to-br ${tone} via-card to-card space-y-3`}>
+    <div className="flex items-center gap-2.5">
+      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+        <Icon className="h-4 w-4" />
+      </div>
+      <h3 className="text-sm font-display font-bold text-foreground">{title}</h3>
+    </div>
+    <div className="space-y-2.5">{children}</div>
+  </Card>
+);
+
+const Field = ({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) => (
+  <div className="space-y-1.5">
+    <Label className="text-xs font-medium text-foreground">
+      {label} {required && <span className="text-destructive">*</span>}
+    </Label>
+    {children}
+  </div>
+);
 
 export default TourManagerCreatePage;
