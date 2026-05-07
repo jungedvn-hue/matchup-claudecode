@@ -125,6 +125,40 @@ const OnboardingPage = () => {
   const currentStepId = steps[stepIndex]?.id || "roles";
   const totalSteps = steps.length;
 
+  const persistPlayerProfile = async () => {
+    if (!user) return;
+    const initialDupr =
+      skillLevel === "pro" ? 5.0 :
+      skillLevel === "advanced" ? 4.0 :
+      skillLevel === "intermediate" ? 3.0 :
+      skillLevel === "beginner" ? 2.0 : 2.0;
+
+    const profileUpdate: Record<string, unknown> = {
+      onboarding_completed: true,
+    };
+    if (name.trim()) profileUpdate.display_name = name.trim();
+    if (location.trim()) profileUpdate.location = location.trim();
+    if (selectedRoles.includes("player")) {
+      if (skillLevel) profileUpdate.skill_level = skillLevel;
+      if (playTime) profileUpdate.play_time = playTime;
+      if (playStyle) profileUpdate.play_style = playStyle;
+      profileUpdate.dupr_rating = initialDupr;
+      profileUpdate.total_xp = 100;
+      profileUpdate.current_level = 1;
+    }
+    const sb = supabase as unknown as { from: (t: string) => { update: (v: unknown) => { eq: (c: string, v: unknown) => Promise<unknown> }; insert: (v: unknown) => Promise<unknown> } };
+    await sb.from("profiles").update(profileUpdate).eq("user_id", user.id);
+
+    // Onboarding XP bonus (audit trail)
+    if (selectedRoles.includes("player")) {
+      await sb.from("xp_transactions").insert({
+        user_id: user.id,
+        amount: 100,
+        source: "onboarding",
+      });
+    }
+  };
+
   const submitRoleApplications = async () => {
     if (!user) return;
     const applicable = selectedRoles.filter((r) => r !== "player");
@@ -170,6 +204,7 @@ const OnboardingPage = () => {
     if (stepIndex >= totalSteps - 1) {
       setSubmitting(true);
       try {
+        await persistPlayerProfile();
         await submitRoleApplications();
       } catch {
         // Silent: user can retry from Settings
