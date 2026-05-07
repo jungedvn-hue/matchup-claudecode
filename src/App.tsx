@@ -38,6 +38,7 @@ import StoreDashboardPage from "./pages/StoreDashboardPage";
 import StoreProductsPage from "./pages/StoreProductsPage";
 import StoreBookingsPage from "./pages/StoreBookingsPage";
 import StoreProfilePage from "./pages/StoreProfilePage";
+import StoreEditPage from "./pages/StoreEditPage";
 import HealthHub from "./pages/health-hub/HealthHub";
 import NotFound from "./pages/NotFound";
 
@@ -78,6 +79,7 @@ const AppShell = () => {
         <Route path="/my-store" element={<ProtectedRoute><FeatureGate role="store_owner"><StoreDashboardPage /></FeatureGate></ProtectedRoute>} />
         <Route path="/my-store/products" element={<ProtectedRoute><FeatureGate role="store_owner"><StoreProductsPage /></FeatureGate></ProtectedRoute>} />
         <Route path="/my-store/bookings" element={<ProtectedRoute><FeatureGate role="store_owner"><StoreBookingsPage /></FeatureGate></ProtectedRoute>} />
+        <Route path="/my-store/edit" element={<ProtectedRoute><FeatureGate role="store_owner"><StoreEditPage /></FeatureGate></ProtectedRoute>} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />

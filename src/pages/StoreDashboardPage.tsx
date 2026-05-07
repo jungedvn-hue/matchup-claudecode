@@ -16,6 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useMyStore, useStoreBookings, useStoreProducts, STORE_CATEGORIES, type Review } from "@/hooks/useStores";
 import { supabase } from "@/integrations/supabase/client";
+import LogoUpload from "@/components/LogoUpload";
 
 const StoreDashboardPage = () => {
   const navigate = useNavigate();
@@ -160,6 +161,7 @@ const FirstTimeStoreSetup = ({ onBack }: { onBack: () => void }) => {
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -174,6 +176,7 @@ const FirstTimeStoreSetup = ({ onBack }: { onBack: () => void }) => {
       description: description || null,
       phone: phone || null,
       address: address || null,
+      logo_url: logoUrl,
       categories,
       status: "active",
     });
@@ -202,6 +205,8 @@ const FirstTimeStoreSetup = ({ onBack }: { onBack: () => void }) => {
         </Card>
 
         <Card className="p-4 shadow-card space-y-3.5">
+          <LogoUpload value={logoUrl} onChange={setLogoUrl} size={72} />
+
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t("store.product.name").replace("Product", "Store").replace("sản phẩm", "cửa hàng")} <span className="text-destructive">*</span></Label>
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="Pickle Gear Pro" />
