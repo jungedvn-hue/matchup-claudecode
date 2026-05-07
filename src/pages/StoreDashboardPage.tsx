@@ -8,9 +8,13 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { useMyStore, useStoreBookings, useStoreProducts, type Review } from "@/hooks/useStores";
+import { useToast } from "@/hooks/use-toast";
+import { useMyStore, useStoreBookings, useStoreProducts, STORE_CATEGORIES, type Review } from "@/hooks/useStores";
 import { supabase } from "@/integrations/supabase/client";
 
 const StoreDashboardPage = () => {
@@ -41,25 +45,7 @@ const StoreDashboardPage = () => {
   }
 
   if (!store) {
-    return (
-      <div className="pb-20 min-h-screen">
-        <Header onBack={() => navigate(-1)} title={t("store.dashboard.title")} />
-        <div className="px-4 pt-12 max-w-md mx-auto">
-          <Card className="p-8 text-center space-y-4">
-            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-              <Store className="h-8 w-8 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-base font-display font-bold text-foreground">{t("store.notRegistered")}</h2>
-              <p className="text-xs text-muted-foreground mt-1.5">{t("store.dashboard.subtitle")}</p>
-            </div>
-            <Button className="w-full" onClick={() => navigate("/settings")}>
-              {t("store.registerCta")}
-            </Button>
-          </Card>
-        </div>
-      </div>
-    );
+    return <FirstTimeStoreSetup onBack={() => navigate(-1)} />;
   }
 
   const activeBookings = bookings.filter(b => b.status === "pending" || b.status === "confirmed").length;
@@ -159,6 +145,107 @@ const StoreDashboardPage = () => {
         <Section title={t("store.recentReviews")} showSeeAll={false}>
           <RecentReviewsList storeId={store.id} t={t} />
         </Section>
+      </div>
+    </div>
+  );
+};
+
+// ───────── First-time setup ─────────
+
+const FirstTimeStoreSetup = ({ onBack }: { onBack: () => void }) => {
+  const { t } = useLanguage();
+  const { toast } = useToast();
+  const { upsertStore } = useMyStore();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  const toggleCat = (c: string) =>
+    setCategories(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+
+  const handleSave = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    const { error } = await upsertStore({
+      name,
+      description: description || null,
+      phone: phone || null,
+      address: address || null,
+      categories,
+      status: "active",
+    });
+    setSaving(false);
+    if (error) {
+      toast({ title: t("auth.toast.error"), description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: t("store.profile.savedToast") });
+  };
+
+  return (
+    <div className="pb-24 min-h-screen">
+      <Header onBack={onBack} title={t("store.registerCta")} />
+      <div className="px-4 pt-5 max-w-md mx-auto space-y-4">
+        <Card className="p-5 shadow-card overflow-hidden bg-gradient-to-br from-primary/5 via-card to-card">
+          <div className="flex items-start gap-3">
+            <div className="h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0">
+              <Store className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-base font-display font-bold text-foreground">{t("store.notRegistered")}</h2>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{t("store.dashboard.subtitle")}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4 shadow-card space-y-3.5">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t("store.product.name").replace("Product", "Store").replace("sản phẩm", "cửa hàng")} <span className="text-destructive">*</span></Label>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="Pickle Gear Pro" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t("store.product.description")}</Label>
+            <Textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} placeholder={t("store.product.descPh")} className="resize-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">{t("store.booking.form.phone")}</Label>
+              <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">Address</Label>
+              <Input value={address} onChange={e => setAddress(e.target.value)} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t("store.product.category")}</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {STORE_CATEGORIES.map(c => {
+                const active = categories.includes(c);
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => toggleCat(c)}
+                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                      active ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                    }`}
+                  >
+                    {t(`store.cat.${c}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+
+        <Button className="w-full h-11 rounded-xl" onClick={handleSave} disabled={saving || !name.trim()}>
+          {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {t("store.registerCta")}
+        </Button>
       </div>
     </div>
   );
