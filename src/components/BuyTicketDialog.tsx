@@ -139,7 +139,7 @@ const BuyTicketDialog = ({ event, open, onOpenChange, onSubmit }: BuyTicketDialo
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
                   <label className="text-xs font-medium text-foreground">{t("ticket.messageLabel")}</label>
                   <Textarea
-                    placeholder="Giới thiệu bản thân hoặc ghi chú gì thêm..."
+                    placeholder={t("buyTicket.messagePh")}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     className="rounded-xl text-xs min-h-[60px] resize-none"

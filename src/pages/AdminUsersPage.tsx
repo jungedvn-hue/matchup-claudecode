@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { AppRole } from "@/hooks/use-roles";
 
 interface UserRow {
@@ -35,6 +36,7 @@ const AdminUsersPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -50,7 +52,7 @@ const AdminUsersPage = () => {
       .order("display_name");
 
     if (error) {
-      toast({ title: "Lỗi tải user", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.users.toast.loadError"), description: error.message, variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -93,7 +95,7 @@ const AdminUsersPage = () => {
   const revokeRole = async (row: UserRow, role: AppRole) => {
     if (!user) return;
     if (row.user_id === user.id && role === "master") {
-      toast({ title: "Không thể tự gỡ vai trò master của chính mình", variant: "destructive" });
+      toast({ title: t("admin.users.toast.cannotRevokeSelf"), variant: "destructive" });
       return;
     }
     setActing(`${row.user_id}:${role}`);
@@ -104,10 +106,10 @@ const AdminUsersPage = () => {
       .eq("role", role);
     setActing(null);
     if (error) {
-      toast({ title: "Lỗi gỡ vai trò", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.users.toast.revokeError"), description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Đã gỡ vai trò" });
+    toast({ title: t("admin.users.toast.revoked") });
     load();
   };
 
@@ -129,10 +131,10 @@ const AdminUsersPage = () => {
       );
     setActing(null);
     if (error) {
-      toast({ title: "Lỗi cấp vai trò", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.users.toast.grantError"), description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Đã cấp vai trò" });
+    toast({ title: t("admin.users.toast.granted") });
     setGrantTarget(null);
     setGrantRole("host");
     load();
@@ -157,7 +159,7 @@ const AdminUsersPage = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên hoặc user_id..."
+            placeholder={t("admin.users.searchPh")}
             className="pl-9"
           />
         </div>
@@ -186,7 +188,7 @@ const AdminUsersPage = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{u.display_name ?? "Không rõ"}</p>
+                  <p className="text-sm font-semibold truncate">{u.display_name ?? t("admin.unknown")}</p>
                   <p className="text-[10px] text-muted-foreground font-mono truncate">{u.user_id}</p>
                 </div>
                 <Button
@@ -215,7 +217,7 @@ const AdminUsersPage = () => {
                           onClick={() => revokeRole(u, r.role)}
                           disabled={acting === `${u.user_id}:${r.role}`}
                           className="ml-1 hover:bg-background/30 rounded p-0.5"
-                          title="Gỡ vai trò"
+                          title={t("admin.users.revokeRole")}
                         >
                           {acting === `${u.user_id}:${r.role}` ? (
                             <Loader2 className="h-3 w-3 animate-spin" />

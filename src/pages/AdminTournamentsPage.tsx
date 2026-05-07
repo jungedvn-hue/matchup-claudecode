@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Tournament {
   id: string;
@@ -31,6 +32,7 @@ const STATUS_COLOR: Record<string, string> = {
 const AdminTournamentsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [items, setItems] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -45,7 +47,7 @@ const AdminTournamentsPage = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({ title: "Lỗi tải tournament", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.tournaments.toast.loadError"), description: error.message, variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -94,10 +96,10 @@ const AdminTournamentsPage = () => {
     const { error } = await supabase.from("tournaments").delete().eq("id", deleteTarget.id);
     setActing(false);
     if (error) {
-      toast({ title: "Lỗi xoá", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.tournaments.toast.deleteError"), description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Đã xoá tournament" });
+    toast({ title: t("admin.tournaments.toast.deleted") });
     setDeleteTarget(null);
     load();
   };
@@ -119,7 +121,7 @@ const AdminTournamentsPage = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên giải hoặc host..."
+            placeholder={t("admin.tournaments.searchPh")}
             className="pl-9"
           />
         </div>
@@ -136,32 +138,32 @@ const AdminTournamentsPage = () => {
             Không có tournament nào.
           </Card>
         )}
-        {!loading && filtered.map((t) => (
-          <Card key={t.id} className="p-3 space-y-2">
+        {!loading && filtered.map((tour) => (
+          <Card key={tour.id} className="p-3 space-y-2">
             <div className="flex items-start gap-2">
               <Trophy className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{t.name}</p>
+                <p className="text-sm font-semibold truncate">{tour.name}</p>
                 <p className="text-[10px] text-muted-foreground">
-                  Host: {t.host?.display_name ?? "Không rõ"} • {new Date(t.created_at).toLocaleDateString("vi-VN")}
+                  {t("admin.tournaments.host")}: {tour.host?.display_name ?? t("admin.unknown")} • {new Date(tour.created_at).toLocaleDateString()}
                 </p>
               </div>
-              {t.status && (
-                <Badge variant="outline" className={STATUS_COLOR[t.status] ?? ""}>{t.status}</Badge>
+              {tour.status && (
+                <Badge variant="outline" className={STATUS_COLOR[tour.status] ?? ""}>{tour.status}</Badge>
               )}
             </div>
             <div className="flex items-center justify-between gap-2 pl-7">
               <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {t.participantCount}</span>
-                {t.format && <span>{t.format}</span>}
-                {t.start_date && <span>{new Date(t.start_date).toLocaleDateString("vi-VN")}</span>}
+                <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {tour.participantCount}</span>
+                {tour.format && <span>{tour.format}</span>}
+                {tour.start_date && <span>{new Date(tour.start_date).toLocaleDateString()}</span>}
               </div>
               <div className="flex gap-1">
                 <Button
                   size="sm"
                   variant="ghost"
                   className="h-7 px-2 gap-1"
-                  onClick={() => navigate(`/tour-manager/${t.id}`)}
+                  onClick={() => navigate(`/tour-manager/${tour.id}`)}
                 >
                   <ExternalLink className="h-3 w-3" />
                 </Button>
@@ -169,7 +171,7 @@ const AdminTournamentsPage = () => {
                   size="sm"
                   variant="ghost"
                   className="h-7 px-2 text-destructive hover:bg-destructive/10"
-                  onClick={() => setDeleteTarget(t)}
+                  onClick={() => setDeleteTarget(tour)}
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>

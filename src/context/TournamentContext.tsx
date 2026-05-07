@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Tournament, TournamentMatch } from "@/lib/tournament/types";
 import { useAuth } from "@/context/AuthContext";
+import i18n from "@/i18n";
 
 interface TournamentContextValue {
   tournaments: Tournament[];
@@ -248,7 +249,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
   const addTournament = async (t: Tournament) => {
     try {
       if (!user) {
-        throw new Error("Vui lòng đăng nhập để tạo giải đấu");
+        throw new Error(i18n.t("tm.toast.tournamentSignInRequired") as string);
       }
       
       const { data: tourData, error: tourError } = await supabase

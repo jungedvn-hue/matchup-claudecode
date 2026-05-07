@@ -103,7 +103,7 @@ const RefereeDashboardPage = () => {
     myMatches.forEach((m) => {
       if (!seenMatchIds.current.has(m.id)) {
         seenMatchIds.current.add(m.id);
-        toast.message(t("ref.newAssignment") || "Bạn được gán trận mới", {
+        toast.message(t("ref.newAssignment"), {
           description: `${m.tournamentName} · ${m.entryAName} vs ${m.entryBName}`,
         });
       }
@@ -112,24 +112,24 @@ const RefereeDashboardPage = () => {
 
   const handleJoin = () => {
     if (!user) {
-      toast.error(t("auth.loginRequired") || "Vui lòng đăng nhập!");
+      toast.error(t("auth.loginRequired"));
       return;
     }
     const code = accessCode.trim().toUpperCase();
     if (!code) return;
     const target = tournaments.find((t) => t.referees?.some((r) => r.accessCode === code));
     if (!target) {
-      toast.error(t("tm.invalidAccessCode") || "Không tìm thấy giải đấu!");
+      toast.error(t("tm.invalidAccessCode"));
       return;
     }
     const ref = target.referees?.find((r) => r.accessCode === code);
     if (ref?.userId === user.id) {
-      toast.success(t("tm.alreadyJoined") || "Bạn đã tham gia giải này rồi!");
+      toast.success(t("tm.alreadyJoined"));
       setShowJoinRef(false);
       return;
     }
     if (ref?.userId) {
-      toast.error(t("tm.codeAlreadyUsed") || "Mã này đã được người khác sử dụng!");
+      toast.error(t("tm.codeAlreadyUsed"));
       return;
     }
     const updated: Tournament = {
@@ -137,7 +137,7 @@ const RefereeDashboardPage = () => {
       referees: target.referees?.map((r) => (r.id === ref?.id ? { ...r, userId: user.id } : r)) || [],
     };
     updateTournament(updated);
-    toast.success(t("tm.joinSuccess") || "Tham gia thành công!");
+    toast.success(t("tm.joinSuccess"));
     setShowJoinRef(false);
     setAccessCode("");
   };
@@ -149,7 +149,7 @@ const RefereeDashboardPage = () => {
       ) : m.status === "in_progress" ? (
         <Badge className="text-[10px] h-5 bg-red-500 hover:bg-red-500 animate-pulse">{t("ref.live") || "Live"}</Badge>
       ) : (
-        <Badge variant="outline" className="text-[10px] h-5">{t("ref.upcoming") || "Sắp đấu"}</Badge>
+        <Badge variant="outline" className="text-[10px] h-5">{t("ref.upcoming")}</Badge>
       );
 
     return (
@@ -193,7 +193,7 @@ const RefereeDashboardPage = () => {
           </Button>
           <h1 className="text-lg font-bold flex items-center gap-2 flex-1 min-w-0 truncate">
             <Gavel className="h-5 w-5 text-primary shrink-0" />
-            <span className="truncate">{t("ref.title") || "Trọng tài"}</span>
+            <span className="truncate">{t("ref.title")}</span>
           </h1>
           <Button size="sm" className="h-9 gap-1.5 shrink-0" onClick={() => setShowJoinRef(true)}>
             <Gavel className="h-4 w-4" />
@@ -208,7 +208,7 @@ const RefereeDashboardPage = () => {
             <p className="text-lg font-bold text-red-600 dark:text-red-400">{live.length}</p>
           </div>
           <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-center">
-            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium uppercase">{t("ref.upcoming") || "Sắp đấu"}</p>
+            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium uppercase">{t("ref.upcoming")}</p>
             <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{upcoming.length}</p>
           </div>
           <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2 text-center">
@@ -223,12 +223,12 @@ const RefereeDashboardPage = () => {
         {isVerifiedReferee ? (
           <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
             <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Verified Referee — đang trong pool hệ thống</p>
+            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{t("referee.verifiedActive")}</p>
           </div>
         ) : refStatus === "pending" ? (
           <div className="flex items-center gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
             <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">Đơn Verified Referee đang chờ duyệt</p>
+            <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">{t("referee.applicationPending")}</p>
           </div>
         ) : (
           <button
@@ -237,8 +237,8 @@ const RefereeDashboardPage = () => {
           >
             <ShieldAlert className="h-4 w-4 text-primary shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-primary">Trở thành Verified Referee</p>
-              <p className="text-[11px] text-muted-foreground">{refStatus === "rejected" ? "Đơn trước bị từ chối — gửi lại?" : "Được host mời từ pool, ưu tiên xét chọn"}</p>
+              <p className="text-xs font-semibold text-primary">{t("referee.becomeVerified")}</p>
+              <p className="text-[11px] text-muted-foreground">{refStatus === "rejected" ? t("referee.previouslyRejected") : t("referee.becomeVerifiedDesc")}</p>
             </div>
             <ChevronRight className="h-4 w-4 text-primary shrink-0" />
           </button>
@@ -252,7 +252,7 @@ const RefereeDashboardPage = () => {
             <div className="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center">
               <Gavel className="h-8 w-8 opacity-40" />
             </div>
-            <p className="text-sm">{t("ref.noTournaments") || "Bạn chưa tham gia giải nào với vai trò trọng tài"}</p>
+            <p className="text-sm">{t("ref.noTournaments")}</p>
             <Button size="sm" onClick={() => setShowJoinRef(true)}>
               <Gavel className="h-4 w-4 mr-1.5" /> {t("tm.joinReferee")}
             </Button>
@@ -261,10 +261,10 @@ const RefereeDashboardPage = () => {
           <Tabs defaultValue="matches" className="space-y-3">
             <TabsList className="w-full">
               <TabsTrigger value="matches" className="flex-1 gap-1">
-                <PlayCircle className="h-3.5 w-3.5" /> {t("ref.matches") || "Trận đấu"}
+                <PlayCircle className="h-3.5 w-3.5" /> {t("ref.matches")}
               </TabsTrigger>
               <TabsTrigger value="tournaments" className="flex-1 gap-1">
-                <Trophy className="h-3.5 w-3.5" /> {t("ref.tournaments") || "Giải"}
+                <Trophy className="h-3.5 w-3.5" /> {t("ref.tournaments")}
               </TabsTrigger>
             </TabsList>
 
@@ -275,7 +275,7 @@ const RefereeDashboardPage = () => {
                 <section className="space-y-2">
                   <h3 className="text-xs font-bold uppercase text-red-600 dark:text-red-400 flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                    {t("ref.liveSection") || "Đang đấu"} ({live.length})
+                    {t("ref.liveSection")} ({live.length})
                   </h3>
                   <div className="space-y-2">
                     {live.map((m) => <MatchRow key={m.id} m={m} />)}
@@ -287,7 +287,7 @@ const RefereeDashboardPage = () => {
                 <section className="space-y-2">
                   <h3 className="text-xs font-bold uppercase text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
                     <Clock className="h-3 w-3" />
-                    {t("ref.upcomingSection") || "Sắp đấu"} ({upcoming.length})
+                    {t("ref.upcomingSection")} ({upcoming.length})
                   </h3>
                   <div className="space-y-2">
                     {upcoming.map((m) => <MatchRow key={m.id} m={m} />)}
@@ -299,7 +299,7 @@ const RefereeDashboardPage = () => {
                 <section className="space-y-2">
                   <h3 className="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                     <CheckCircle2 className="h-3 w-3" />
-                    {t("ref.doneSection") || "Đã xong"} ({done.length})
+                    {t("ref.doneSection")} ({done.length})
                   </h3>
                   <div className="space-y-2">
                     {done.map((m) => <MatchRow key={m.id} m={m} />)}
@@ -309,7 +309,7 @@ const RefereeDashboardPage = () => {
 
               {myMatches.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
-                  {t("ref.noMatchesAssigned") || "Chưa có trận nào được gán cho bạn"}
+                  {t("ref.noMatchesAssigned")}
                 </div>
               )}
             </TabsContent>
@@ -353,7 +353,7 @@ const RefereeDashboardPage = () => {
                           {tourLive} {t("ref.live") || "Live"}
                         </span>
                         <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded font-medium">
-                          {tourUpcoming} {t("ref.upcoming") || "Sắp"}
+                          {tourUpcoming} {t("ref.upcoming")}
                         </span>
                         <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-medium">
                           {tourDone} {t("ref.done") || "Xong"}
@@ -374,11 +374,11 @@ const RefereeDashboardPage = () => {
           <DialogHeader>
             <DialogTitle>{t("tm.joinReferee")}</DialogTitle>
             <DialogDescription>
-              {t("ref.joinDesc") || "Nhập mã trọng tài (6 ký tự) mà host gửi cho bạn."}
+              {t("ref.joinDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label className="text-xs">{t("ref.accessCode") || "Mã tham gia"}</Label>
+            <Label className="text-xs">{t("ref.accessCode")}</Label>
             <Input
               value={accessCode}
               onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
@@ -389,7 +389,7 @@ const RefereeDashboardPage = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowJoinRef(false)}>
-              {t("common.cancel") || "Hủy"}
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleJoin} disabled={!accessCode.trim()}>
               <Gavel className="h-4 w-4 mr-1.5" /> {t("ref.joinAction") || "Tham gia"}

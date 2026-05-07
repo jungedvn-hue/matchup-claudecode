@@ -48,23 +48,23 @@ const TourManagerPage = () => {
 
   const handleJoinRef = () => {
     if (!user) {
-      toast.error("Vui lòng đăng nhập!");
+      toast.error(t("auth.loginRequired"));
       return;
     }
     if (!accessCode.trim()) return;
-    const target = tournaments.find(t => t.referees?.some(r => r.accessCode === accessCode.trim().toUpperCase()));
+    const target = tournaments.find(tn => tn.referees?.some(r => r.accessCode === accessCode.trim().toUpperCase()));
     if (!target) {
-      toast.error("Không tìm thấy giải đấu!");
+      toast.error(t("tm.invalidAccessCode"));
       return;
     }
     const ref = target.referees?.find(r => r.accessCode === accessCode.trim().toUpperCase());
     if (ref?.userId === user.id) {
-      toast.success("Bạn đã tham gia giải này rồi!");
+      toast.success(t("tm.alreadyJoined"));
       setShowJoinRef(false);
       return;
     }
     if (ref?.userId) {
-      toast.error("Mã này đã được người khác sử dụng!");
+      toast.error(t("tm.codeAlreadyUsed"));
       return;
     }
     const updated = {
@@ -122,7 +122,7 @@ const TourManagerPage = () => {
                     <AlertDialogHeader>
                       <AlertDialogTitle>{t("common.confirm")}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        {t("tm.deleteConfirmDesc") || "Hành động này không thể hoàn tác. Toàn bộ dữ liệu về các trận đấu và bảng xếp hạng của giải này sẽ bị xóa vĩnh viễn."}
+                        {t("tm.deleteConfirmDesc")}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -184,20 +184,20 @@ const TourManagerPage = () => {
             size="sm"
             className="h-9 gap-1.5 shrink-0"
             onClick={() => navigate("/my-matches")}
-            title={t("mm.title") || "Trận của tôi"}
+            title={t("mm.title")}
           >
             <PlayCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("mm.title") || "Trận của tôi"}</span>
+            <span className="hidden sm:inline">{t("mm.title")}</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             className="h-9 gap-1.5 shrink-0"
             onClick={() => navigate("/referee")}
-            title={t("ref.title") || "Trọng tài"}
+            title={t("ref.title")}
           >
             <Gavel className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("ref.title") || "Trọng tài"}</span>
+            <span className="hidden sm:inline">{t("ref.title")}</span>
           </Button>
           <Button size="sm" className="h-9 gap-1.5 shrink-0" onClick={() => navigate("/tour-manager/create")}>
             <Plus className="h-4 w-4" />
@@ -279,7 +279,7 @@ const TourManagerPage = () => {
             <div className="space-y-2">
               <Label>Access Code</Label>
               <Input
-                placeholder="Ví dụ: A1B2C3"
+                placeholder={t("tm.refereeCodePh")}
                 className="font-mono uppercase"
                 value={accessCode}
                 onChange={(e) => setAccessCode(e.target.value)}

@@ -40,7 +40,7 @@ const TourManagerCreatePage = () => {
 
   useEffect(() => {
     if (!user) {
-      toast.error("Vui lòng đăng nhập để sử dụng tính năng này");
+      toast.error(t("tm.toast.signInRequired"));
       navigate("/auth");
     }
   }, [user, navigate]);

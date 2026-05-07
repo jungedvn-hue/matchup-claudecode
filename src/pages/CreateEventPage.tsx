@@ -15,12 +15,12 @@ import { groups } from "@/data/groups";
 import { toast } from "@/hooks/use-toast";
 
 const eventTypes = [
-  { id: "open_play", label: "Open Play", emoji: "🏓", desc: "Chơi tự do, xếp trận ngẫu nhiên" },
-  { id: "round_robin", label: "Round Robin", emoji: "🔄", desc: "Mỗi người đấu với tất cả" },
-  { id: "clinic", label: "Clinic / Dạy", emoji: "📚", desc: "Buổi hướng dẫn kỹ thuật" },
-  { id: "mixer", label: "Mixer / Giao lưu", emoji: "🎉", desc: "Chơi vui, kết bạn" },
-  { id: "tournament", label: "Mini Tournament", emoji: "🏆", desc: "Giải đấu nhỏ trong nhóm" },
-  { id: "practice", label: "Tập luyện", emoji: "💪", desc: "Buổi tập theo chủ đề" },
+  { id: "open_play", labelKey: "event.create.type.openPlay", emoji: "🏓", descKey: "event.create.type.openPlayDesc" },
+  { id: "round_robin", labelKey: "event.create.type.roundRobin", emoji: "🔄", descKey: "event.create.type.roundRobinDesc" },
+  { id: "clinic", labelKey: "event.create.type.clinic", emoji: "📚", descKey: "event.create.type.clinicDesc" },
+  { id: "mixer", labelKey: "event.create.type.mixer", emoji: "🎉", descKey: "event.create.type.mixerDesc" },
+  { id: "tournament", labelKey: "event.create.type.tournament", emoji: "🏆", descKey: "event.create.type.tournamentDesc" },
+  { id: "practice", labelKey: "event.create.type.practice", emoji: "💪", descKey: "event.create.type.practiceDesc" },
 ];
 
 const timeSlots = [
@@ -31,13 +31,13 @@ const timeSlots = [
 ];
 
 const dateOptions = [
-  { label: "Hôm nay", value: "today" },
-  { label: "Ngày mai", value: "tomorrow" },
-  { label: "Thứ 4", value: "wed" },
-  { label: "Thứ 5", value: "thu" },
-  { label: "Thứ 6", value: "fri" },
-  { label: "Thứ 7", value: "sat" },
-  { label: "Chủ nhật", value: "sun" },
+  { labelKey: "event.create.day.today", value: "today" },
+  { labelKey: "event.create.day.tomorrow", value: "tomorrow" },
+  { labelKey: "event.create.day.wed", value: "wed" },
+  { labelKey: "event.create.day.thu", value: "thu" },
+  { labelKey: "event.create.day.fri", value: "fri" },
+  { labelKey: "event.create.day.sat", value: "sat" },
+  { labelKey: "event.create.day.sun", value: "sun" },
 ];
 
 const CreateEventPage = () => {
@@ -73,7 +73,7 @@ const CreateEventPage = () => {
   const handleTypeSelect = (typeId: string) => {
     setSelectedType(typeId);
     const type = eventTypes.find((t) => t.id === typeId);
-    if (type && !title) setTitle(type.label);
+    if (type && !title) setTitle(t(type.labelKey));
   };
 
   const canProceedStep1 = selectedGroup && selectedType;
@@ -86,7 +86,7 @@ const CreateEventPage = () => {
 
     toast({
       title: t("createEvent.success"),
-      description: `${title} · ${date?.label} ${selectedTime} · ${group?.name}`,
+      description: `${title} · ${date ? t(date.labelKey) : ""} ${selectedTime} · ${group?.name}`,
     });
 
     setTimeout(() => navigate("/dashboard"), 600);
@@ -163,8 +163,8 @@ const CreateEventPage = () => {
                     }`}
                   >
                     <span className="text-2xl">{type.emoji}</span>
-                    <p className="text-xs font-semibold text-card-foreground">{type.label}</p>
-                    <p className="text-[9px] text-muted-foreground text-center leading-tight">{type.desc}</p>
+                    <p className="text-xs font-semibold text-card-foreground">{t(type.labelKey)}</p>
+                    <p className="text-[9px] text-muted-foreground text-center leading-tight">{t(type.descKey)}</p>
                   </button>
                 ))}
               </div>
@@ -206,7 +206,7 @@ const CreateEventPage = () => {
                         : "bg-secondary text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {d.label}
+                    {t(d.labelKey)}
                   </button>
                 ))}
               </div>
@@ -306,7 +306,7 @@ const CreateEventPage = () => {
                   <h3 className="text-base font-display font-bold text-card-foreground">{title}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="secondary" className="text-[10px]">
-                      {eventTypes.find((t) => t.id === selectedType)?.emoji} {eventTypes.find((t) => t.id === selectedType)?.label}
+                      {eventTypes.find((et) => et.id === selectedType)?.emoji} {(() => { const et = eventTypes.find((x) => x.id === selectedType); return et ? t(et.labelKey) : ""; })()}
                     </Badge>
                     {Number(price) === 0 && <Badge variant="outline" className="text-[10px] text-primary border-primary/30">{t("common.free")}</Badge>}
                   </div>
@@ -318,7 +318,7 @@ const CreateEventPage = () => {
                     <Calendar className="h-3.5 w-3.5 text-primary" />
                     <div>
                       <p className="text-[10px] text-muted-foreground">{t("createEvent.date")}</p>
-                      <p className="text-xs font-semibold text-card-foreground">{dateOptions.find((d) => d.value === selectedDate)?.label}</p>
+                      <p className="text-xs font-semibold text-card-foreground">{(() => { const d = dateOptions.find((x) => x.value === selectedDate); return d ? t(d.labelKey) : ""; })()}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-2.5 rounded-lg bg-secondary/50">

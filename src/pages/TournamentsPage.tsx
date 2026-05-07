@@ -47,7 +47,7 @@ const TournamentsPage = () => {
           <div className="flex gap-1.5">
             <Button size="sm" variant="outline" className="rounded-xl gap-1 text-xs" onClick={() => navigate("/my-matches")}>
               <PlayCircle className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">{t("mm.title") || "Trận của tôi"}</span>
+              <span className="hidden sm:inline">{t("mm.title")}</span>
             </Button>
             <Button size="sm" className="rounded-xl gap-1 text-xs" onClick={() => navigate("/tour-manager/create")}>
               <Plus className="h-3.5 w-3.5" /> {t("tournaments.create")}

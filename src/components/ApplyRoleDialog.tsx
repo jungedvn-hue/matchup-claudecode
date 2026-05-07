@@ -98,7 +98,7 @@ const ApplyRoleDialog: React.FC<Props> = ({ role, open, onOpenChange, onSubmitte
             <Label htmlFor="reason">{t("apply.reasonLabel")} <span className="text-destructive">*</span></Label>
             <Textarea
               id="reason"
-              placeholder="Mô tả ngắn về kinh nghiệm, mục đích sử dụng vai trò này..."
+              placeholder={t("applyRole.descPh")}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}

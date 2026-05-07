@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { groupEvents } from "@/data/events";
 import { groups } from "@/data/groups";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // Demo: players to check in at assigned courts
 const courtPlayers: Record<string, { id: string; name: string; avatar: string; ticketCode: string }[]> = {
@@ -29,6 +30,7 @@ const courtPlayers: Record<string, { id: string; name: string; avatar: string; t
 
 const AssistantCheckInPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const groupId = searchParams.get("group") || "sunset-smashers";
   const courts = searchParams.get("courts")?.split(",") || ["Sân 1"];
@@ -50,16 +52,16 @@ const AssistantCheckInPage = () => {
       const unchecked = players.find((p) => !checkedInIds.has(p.id));
       if (unchecked) {
         setCheckedInIds((prev) => new Set(prev).add(unchecked.id));
-        toast({ title: "✅ Check-in thành công!", description: `${unchecked.name} — ${activeCourt}` });
+        toast({ title: t("assistant.toast.checkInSuccess"), description: `${unchecked.name} — ${activeCourt}` });
       } else {
-        toast({ title: "Tất cả đã check-in", description: `${activeCourt} — Không còn vé nào cần quét.` });
+        toast({ title: t("assistant.toast.allCheckedIn"), description: t("assistant.toast.allCheckedInDesc", { court: activeCourt }) });
       }
     }, 1500);
   };
 
   const handleManualCheckIn = (playerId: string, playerName: string) => {
     setCheckedInIds((prev) => new Set(prev).add(playerId));
-    toast({ title: "✅ Check-in thành công!", description: `${playerName} — ${activeCourt}` });
+    toast({ title: t("assistant.toast.checkInSuccess"), description: `${playerName} — ${activeCourt}` });
   };
 
   return (
@@ -71,12 +73,12 @@ const AssistantCheckInPage = () => {
             <ArrowLeft className="h-4 w-4 text-foreground" />
           </button>
           <div className="flex-1">
-            <h1 className="text-base font-display font-bold text-foreground">Trợ lý Check-in</h1>
+            <h1 className="text-base font-display font-bold text-foreground">{t("assistant.title")}</h1>
             <p className="text-[10px] text-muted-foreground">{group?.name} · {group?.courtName}</p>
           </div>
           <div className="text-right">
             <p className="text-sm font-bold text-primary">{totalCheckedIn}/{totalPlayers.length}</p>
-            <p className="text-[9px] text-muted-foreground">đã vào</p>
+            <p className="text-[9px] text-muted-foreground">{t("assistant.checkedIn")}</p>
           </div>
         </div>
       </div>
@@ -87,11 +89,11 @@ const AssistantCheckInPage = () => {
           <div className="flex items-center gap-2 text-xs text-foreground">
             <span className="text-lg">{group?.emoji}</span>
             <span className="font-medium">{group?.name}</span>
-            <Badge variant="outline" className="text-[9px] ml-auto">Trợ lý cố định</Badge>
+            <Badge variant="outline" className="text-[9px] ml-auto">{t("assistant.fixedAssistant")}</Badge>
           </div>
           <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
             <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{group?.location}</span>
-            <span className="flex items-center gap-1"><Users className="h-3 w-3" />{group?.members} thành viên</span>
+            <span className="flex items-center gap-1"><Users className="h-3 w-3" />{group?.members} {t("assistant.membersSuffix")}</span>
           </div>
         </Card>
 
@@ -99,7 +101,7 @@ const AssistantCheckInPage = () => {
         {groupEventsList.length > 0 && (
           <div>
             <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5 text-primary" /> Sự kiện hôm nay
+              <Calendar className="h-3.5 w-3.5 text-primary" /> {t("assistant.eventToday")}
             </p>
             <div className="flex gap-2 overflow-x-auto pb-1">
               {groupEventsList.slice(0, 3).map((evt) => (
@@ -116,7 +118,7 @@ const AssistantCheckInPage = () => {
 
         {/* Court tabs */}
         <div>
-          <p className="text-xs font-semibold text-foreground mb-2">Sân được phân công</p>
+          <p className="text-xs font-semibold text-foreground mb-2">{t("assistant.assignedCourts")}</p>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {courts.map((court) => {
               const cp = courtPlayers[court] || [];
@@ -152,23 +154,23 @@ const AssistantCheckInPage = () => {
           <div className="text-center z-10">
             <ScanLine className={`h-10 w-10 mx-auto mb-2 ${scanning ? "text-primary animate-pulse" : "text-muted-foreground"}`} />
             <p className="text-xs text-muted-foreground">
-              {scanning ? "Đang quét..." : "Hướng camera vào QR code"}
+              {scanning ? t("assistant.scanning") : t("assistant.scanHint")}
             </p>
           </div>
         </div>
 
         <Button className="w-full rounded-xl gap-2" onClick={handleScan} disabled={scanning}>
           <ScanLine className="h-4 w-4" />
-          {scanning ? "Đang quét..." : "Quét QR Check-in"}
+          {scanning ? t("assistant.scanning") : t("assistant.scanQR")}
         </Button>
 
         {/* Player list for active court */}
         <div>
           <p className="text-xs font-semibold text-foreground mb-2">
-            Danh sách {activeCourt} ({players.filter((p) => checkedInIds.has(p.id)).length}/{players.length})
+            {t("assistant.list", { court: activeCourt, checked: players.filter((p) => checkedInIds.has(p.id)).length, total: players.length })}
           </p>
           {players.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">Chưa có người chơi tại sân này</p>
+            <p className="text-xs text-muted-foreground text-center py-4">{t("assistant.noPlayers")}</p>
           ) : (
             <div className="space-y-2">
               {players.map((player) => {
@@ -191,7 +193,7 @@ const AssistantCheckInPage = () => {
                     </div>
                     {done ? (
                       <Badge variant="outline" className="text-[10px] gap-1 bg-primary/10 text-primary border-primary/20">
-                        <CheckCircle2 className="h-3 w-3" /> Đã vào
+                        <CheckCircle2 className="h-3 w-3" /> {t("assistant.checkedInBadge")}
                       </Badge>
                     ) : (
                       <Button

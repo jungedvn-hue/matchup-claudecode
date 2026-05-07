@@ -9,8 +9,10 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Chrome, Mail, Lock, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const AuthPage = () => {
+  const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +32,7 @@ const AuthPage = () => {
           password,
         });
         if (error) throw error;
-        toast({ title: "Chào mừng trở lại!", description: "Đăng nhập thành công." });
+        toast({ title: t("auth.toast.welcomeBack"), description: t("auth.toast.signInSuccess") });
         navigate("/profile");
       } else {
         const { error } = await supabase.auth.signUp({
@@ -38,15 +40,15 @@ const AuthPage = () => {
           password,
         });
         if (error) throw error;
-        toast({ 
-          title: "Đăng ký thành công!", 
-          description: "Vui lòng kiểm tra email để xác nhận tài khoản." 
+        toast({
+          title: t("auth.toast.signUpSuccess"),
+          description: t("auth.toast.checkEmail")
         });
       }
     } catch (error: any) {
       toast({
-        title: "Lỗi",
-        description: error.message || "Đã có lỗi xảy ra",
+        title: t("auth.toast.error"),
+        description: error.message || t("auth.toast.genericError"),
         variant: "destructive",
       });
     } finally {
@@ -59,8 +61,8 @@ const AuthPage = () => {
       await signInWithGoogle();
     } catch (error: any) {
       toast({
-        title: "Lỗi",
-        description: error.message || "Không thể đăng nhập Google",
+        title: t("auth.toast.error"),
+        description: error.message || t("auth.toast.googleError"),
         variant: "destructive",
       });
     }
@@ -86,7 +88,7 @@ const AuthPage = () => {
             Matchupvn
           </h1>
           <p className="text-muted-foreground">
-            {isLogin ? "Đăng nhập để tiếp tục đam mê" : "Gia nhập cộng đồng Pickleball số 1"}
+            {isLogin ? t("auth.tagline.login") : t("auth.tagline.signup")}
           </p>
         </div>
 
@@ -109,7 +111,7 @@ const AuthPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -133,7 +135,7 @@ const AuthPage = () => {
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
                 <span className="flex items-center gap-2">
-                  {isLogin ? "Đăng nhập" : "Đăng ký thành viên"} <ArrowRight className="h-4 w-4" />
+                  {isLogin ? t("auth.signIn") : t("auth.signUp")} <ArrowRight className="h-4 w-4" />
                 </span>
               )}
             </Button>
@@ -144,7 +146,7 @@ const AuthPage = () => {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-transparent px-2 text-muted-foreground">Hoặc tiếp tục với</span>
+              <span className="bg-transparent px-2 text-muted-foreground">{t("auth.orContinueWith")}</span>
             </div>
           </div>
 
@@ -163,16 +165,16 @@ const AuthPage = () => {
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               {isLogin ? (
-                <>Bạn chưa có tài khoản? <span className="font-bold text-primary">Đăng ký ngay</span></>
+                <>{t("auth.noAccount")} <span className="font-bold text-primary">{t("auth.signUpNow")}</span></>
               ) : (
-                <>Đã có tài khoản? <span className="font-bold text-primary">Đăng nhập</span></>
+                <>{t("auth.haveAccount")} <span className="font-bold text-primary">{t("auth.signIn")}</span></>
               )}
             </button>
           </div>
         </Card>
 
         <p className="mt-8 text-center text-xs text-muted-foreground px-8">
-          Bằng cách tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của Matchupvn.
+          {t("auth.terms")}
         </p>
       </motion.div>
     </div>

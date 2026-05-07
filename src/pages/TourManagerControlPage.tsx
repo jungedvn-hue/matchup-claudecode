@@ -110,7 +110,7 @@ const TourManagerControlPage = () => {
       if (prev && prev !== "completed" && m.status === "completed") {
         const real = m.entryAName !== "BYE" && m.entryBName !== "BYE";
         if (real) {
-          toast.message(t("tm.matchSubmitted") || "Có trận vừa hoàn thành", {
+          toast.message(t("tm.matchSubmitted"), {
             description: `${m.entryAName} ${m.scoreA} : ${m.scoreB} ${m.entryBName}`,
           });
         }
@@ -613,7 +613,7 @@ const TourManagerControlPage = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>{t("common.confirm")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      {t("tm.deleteConfirmDesc") || "Hành động này không thể hoàn tác. Toàn bộ dữ liệu về các trận đấu và bảng xếp hạng của giải này sẽ bị xóa vĩnh viễn."}
+                      {t("tm.deleteConfirmDesc")}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -1164,7 +1164,7 @@ const TourManagerControlPage = () => {
                   <div>
                     <p className="text-sm font-semibold">{t("tm.referees")}</p>
                     <p className="text-[10px] text-muted-foreground">
-                      {tournament.referees?.length || 0} {t("tm.refereesAssigned") || "trọng tài"}
+                      {tournament.referees?.length || 0} {t("tm.refereesAssigned")}
                     </p>
                   </div>
                 </div>
@@ -1181,7 +1181,7 @@ const TourManagerControlPage = () => {
                       }}
                     >
                       <ListChecks className="h-3.5 w-3.5" />
-                      <span className="hidden sm:inline">{t("tm.bulkAssign") || "Gán hàng loạt"}</span>
+                      <span className="hidden sm:inline">{t("tm.bulkAssign")}</span>
                     </Button>
                   )}
                   <Button
@@ -1202,7 +1202,7 @@ const TourManagerControlPage = () => {
               <CardContent className="p-3 space-y-2">
                 {(tournament.referees || []).length === 0 && (
                   <div className="text-center py-6 text-xs text-muted-foreground">
-                    {t("tm.noReferees") || "Chưa có trọng tài. Thêm trọng tài để gán cho từng trận."}
+                    {t("tm.noReferees")}
                   </div>
                 )}
                 {(tournament.referees || []).map((ref, i) => {
@@ -1233,7 +1233,7 @@ const TourManagerControlPage = () => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                        title={t("tm.removeReferee") || "Xoá trọng tài"}
+                        title={t("tm.removeReferee")}
                         onClick={async () => {
                           await save({ ...tournament, referees: tournament.referees.filter((r) => r.id !== ref.id) });
                         }}
@@ -1247,10 +1247,10 @@ const TourManagerControlPage = () => {
                           type="button"
                           onClick={() => {
                             navigator.clipboard?.writeText(ref.accessCode!);
-                            toast.success(t("tm.codeCopied") || "Đã copy mã!");
+                            toast.success(t("tm.codeCopied"));
                           }}
                           className="flex items-center gap-1.5 text-[11px] hover:opacity-80 transition-opacity"
-                          title={t("tm.copyCode") || "Click để copy"}
+                          title={t("tm.copyCode")}
                         >
                           <span className="text-muted-foreground">{t("tm.accessCode") || "Code"}:</span>
                           <strong className="font-mono text-primary bg-primary/10 px-2 py-0.5 rounded select-all tracking-widest">
@@ -1259,11 +1259,11 @@ const TourManagerControlPage = () => {
                         </button>
                         {ref.userId ? (
                           <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 text-[10px] h-5">
-                            ✓ {t("tm.joined") || "Đã tham gia"}
+                            ✓ {t("tm.joined")}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-[10px] h-5 text-amber-600 dark:text-amber-400 border-amber-500/40">
-                            {t("tm.pendingJoin") || "Chờ tham gia"}
+                            {t("tm.pendingJoin")}
                           </Badge>
                         )}
                       </div>
@@ -1275,7 +1275,7 @@ const TourManagerControlPage = () => {
                         variant="ghost"
                         size="sm"
                         className="h-7 text-[11px] gap-1"
-                        title={t("tm.regenCode") || "Tạo mã mới"}
+                        title={t("tm.regenCode")}
                         onClick={async () => {
                           const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
                           await save({
@@ -1284,17 +1284,17 @@ const TourManagerControlPage = () => {
                               r.id === ref.id ? { ...r, accessCode: newCode, userId: undefined } : r
                             ),
                           });
-                          toast.success(t("tm.codeRegenerated") || "Đã tạo mã mới");
+                          toast.success(t("tm.codeRegenerated"));
                         }}
                       >
-                        <RefreshCw className="h-3 w-3" /> {t("tm.regenCode") || "Mã mới"}
+                        <RefreshCw className="h-3 w-3" /> {t("tm.regenCode")}
                       </Button>
                       {ref.userId && (
                         <Button
                           variant="ghost"
                           size="sm"
                           className="h-7 text-[11px] gap-1 text-amber-600 dark:text-amber-400"
-                          title={t("tm.kickReferee") || "Đẩy ra khỏi giải"}
+                          title={t("tm.kickReferee")}
                           onClick={async () => {
                             await save({
                               ...tournament,
@@ -1302,10 +1302,10 @@ const TourManagerControlPage = () => {
                                 r.id === ref.id ? { ...r, userId: undefined } : r
                               ),
                             });
-                            toast.success(t("tm.refereeKicked") || "Đã đẩy trọng tài ra");
+                            toast.success(t("tm.refereeKicked"));
                           }}
                         >
-                          <UserX className="h-3 w-3" /> {t("tm.kick") || "Đẩy ra"}
+                          <UserX className="h-3 w-3" /> {t("tm.kick")}
                         </Button>
                       )}
                       <Button
@@ -1314,7 +1314,7 @@ const TourManagerControlPage = () => {
                         className="h-7 text-[11px] gap-1 ml-auto"
                         onClick={() => setExpandedRefId(isExpanded ? null : ref.id)}
                       >
-                        <Eye className="h-3 w-3" /> {refMatchCount} {t("tm.matches") || "trận"}
+                        <Eye className="h-3 w-3" /> {refMatchCount} {t("tm.matches")}
                         {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                       </Button>
                     </div>
@@ -1323,7 +1323,7 @@ const TourManagerControlPage = () => {
                     {isExpanded && (
                       <div className="pl-8 pt-1 space-y-1 border-t border-border/40">
                         {refMatchCount === 0 ? (
-                          <p className="text-[11px] text-muted-foreground py-2">{t("tm.noMatchesAssigned") || "Chưa được gán trận nào"}</p>
+                          <p className="text-[11px] text-muted-foreground py-2">{t("tm.noMatchesAssigned")}</p>
                         ) : (
                           allMatches
                             .filter((m) => m.refereeId === ref.id)
@@ -1454,9 +1454,9 @@ const TourManagerControlPage = () => {
       <Dialog open={bulkAssignOpen} onOpenChange={setBulkAssignOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("tm.bulkAssign") || "Gán hàng loạt"}</DialogTitle>
+            <DialogTitle>{t("tm.bulkAssign")}</DialogTitle>
             <DialogDescription>
-              {t("tm.bulkAssignDesc") || "Gán 1 trọng tài cho nhiều trận cùng lúc."}
+              {t("tm.bulkAssignDesc")}
             </DialogDescription>
           </DialogHeader>
           {(() => {
@@ -1475,7 +1475,7 @@ const TourManagerControlPage = () => {
             return (
               <div className="space-y-3 text-sm">
                 <div className="space-y-2">
-                  <Label className="text-xs">{t("tm.selectReferee") || "Chọn trọng tài"}</Label>
+                  <Label className="text-xs">{t("tm.selectReferee")}</Label>
                   <Select value={bulkRefId} onValueChange={setBulkRefId}>
                     <SelectTrigger className="h-9">
                       <SelectValue />
@@ -1488,42 +1488,42 @@ const TourManagerControlPage = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">{t("tm.scope") || "Phạm vi"}</Label>
+                  <Label className="text-xs">{t("tm.scope")}</Label>
                   <RadioGroup value={bulkScope} onValueChange={(v) => setBulkScope(v as any)} className="space-y-1.5">
                     <div className="flex items-center gap-2 rounded border p-2">
                       <RadioGroupItem value="unassigned" id="bs-un" />
                       <Label htmlFor="bs-un" className="cursor-pointer text-xs flex-1">
-                        {t("tm.scopeUnassigned") || "Chỉ trận chưa gán"} <span className="text-muted-foreground">({catMatches.filter((m) => !m.refereeId).length})</span>
+                        {t("tm.scopeUnassigned")} <span className="text-muted-foreground">({catMatches.filter((m) => !m.refereeId).length})</span>
                       </Label>
                     </div>
                     <div className="flex items-center gap-2 rounded border p-2">
                       <RadioGroupItem value="pools" id="bs-pools" />
                       <Label htmlFor="bs-pools" className="cursor-pointer text-xs flex-1">
-                        {t("tm.scopePools") || "Tất cả trận vòng bảng"} <span className="text-muted-foreground">({catMatches.filter((m) => !!m.poolId).length})</span>
+                        {t("tm.scopePools")} <span className="text-muted-foreground">({catMatches.filter((m) => !!m.poolId).length})</span>
                       </Label>
                     </div>
                     <div className="flex items-center gap-2 rounded border p-2">
                       <RadioGroupItem value="bracket" id="bs-br" />
                       <Label htmlFor="bs-br" className="cursor-pointer text-xs flex-1">
-                        {t("tm.scopeBracket") || "Tất cả trận knockout"} <span className="text-muted-foreground">({catMatches.filter((m) => !!m.bracketRoundId).length})</span>
+                        {t("tm.scopeBracket")} <span className="text-muted-foreground">({catMatches.filter((m) => !!m.bracketRoundId).length})</span>
                       </Label>
                     </div>
                     <div className="flex items-center gap-2 rounded border p-2">
                       <RadioGroupItem value="category" id="bs-cat" />
                       <Label htmlFor="bs-cat" className="cursor-pointer text-xs flex-1">
-                        {t("tm.scopeAll") || "Toàn bộ category"} <span className="text-muted-foreground">({catMatches.length})</span>
+                        {t("tm.scopeAll")} <span className="text-muted-foreground">({catMatches.length})</span>
                       </Label>
                     </div>
                   </RadioGroup>
                 </div>
                 <div className="rounded-md bg-muted p-2 text-xs">
-                  {t("tm.willAssign") || "Sẽ gán"} <b>{targetMatches.length}</b> {t("tm.matchesShort") || "trận"}
+                  {t("tm.willAssign")} <b>{targetMatches.length}</b> {t("tm.matchesShort")}
                 </div>
               </div>
             );
           })()}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBulkAssignOpen(false)}>{t("common.cancel") || "Hủy"}</Button>
+            <Button variant="outline" onClick={() => setBulkAssignOpen(false)}>{t("common.cancel")}</Button>
             <Button
               disabled={!bulkRefId}
               onClick={async () => {
@@ -1562,10 +1562,10 @@ const TourManagerControlPage = () => {
                 };
                 await save(updated);
                 setBulkAssignOpen(false);
-                toast.success(`${t("tm.assignedReferee") || "Đã gán"}: ${count} ${t("tm.matchesShort") || "trận"}`);
+                toast.success(`${t("tm.assignedReferee")}: ${count} ${t("tm.matchesShort")}`);
               }}
             >
-              <Check className="h-4 w-4 mr-1.5" /> {t("common.confirm") || "Xác nhận"}
+              <Check className="h-4 w-4 mr-1.5" /> {t("common.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1577,8 +1577,7 @@ const TourManagerControlPage = () => {
           <DialogHeader>
             <DialogTitle>{t("tm.generateBracket")}</DialogTitle>
             <DialogDescription>
-              {t("tm.bracketFillModeDesc") ||
-                "Chọn cách lấp đầy bracket khi số đội qualified không phải lũy thừa của 2."}
+              {t("tm.bracketFillModeDesc")}
             </DialogDescription>
           </DialogHeader>
           {(() => {
@@ -1599,13 +1598,13 @@ const TourManagerControlPage = () => {
               <div className="space-y-3 text-sm">
                 <div className="rounded-md bg-muted p-3 text-xs">
                   <div>
-                    {t("tm.directQualified") || "Đội trực tiếp qua vòng"}: <b>{autoCount}</b>
+                    {t("tm.directQualified")}: <b>{autoCount}</b>
                   </div>
                   <div>
-                    {t("tm.bracketSize") || "Kích thước bracket"}: <b>{target}</b>
+                    {t("tm.bracketSize")}: <b>{target}</b>
                   </div>
                   <div>
-                    {t("tm.slotsToFill") || "Slot cần lấp"}: <b>{padCount}</b>
+                    {t("tm.slotsToFill")}: <b>{padCount}</b>
                   </div>
                 </div>
                 <RadioGroup
@@ -1617,12 +1616,12 @@ const TourManagerControlPage = () => {
                     <RadioGroupItem value="wildcard" id="fm-wc" className="mt-1" />
                     <Label htmlFor="fm-wc" className="cursor-pointer leading-tight">
                       <div className="font-medium">
-                        {t("tm.fillWildcard") || "Wildcard (Top thành tích cao nhất)"}
+                        {t("tm.fillWildcard")}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {padCount > 0
-                          ? `Lấy thêm ${padCount} đội xếp hạng tốt nhất từ các đội chưa qualified.`
-                          : "Không cần lấp slot, bracket đã đủ."}
+                          ? t("tm.wildcardFillDesc", { count: padCount })
+                          : t("tm.wildcardNoFillNeeded")}
                       </div>
                     </Label>
                   </div>
@@ -1632,8 +1631,8 @@ const TourManagerControlPage = () => {
                       <div className="font-medium">{t("tm.fillBye") || "BYE"}</div>
                       <div className="text-xs text-muted-foreground">
                         {padCount > 0
-                          ? `Pad ${padCount} BYE — top seed sẽ nghỉ vòng đầu.`
-                          : "Không cần BYE."}
+                          ? t("tm.byeFillDesc", { count: padCount })
+                          : t("tm.byeNoFillNeeded")}
                       </div>
                     </Label>
                   </div>
@@ -1656,7 +1655,7 @@ const TourManagerControlPage = () => {
           })()}
           <DialogFooter>
             <Button variant="outline" onClick={() => setBracketDialogOpen(false)}>
-              {t("common.cancel") || "Hủy"}
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={async () => {

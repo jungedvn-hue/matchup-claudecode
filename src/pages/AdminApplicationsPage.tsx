@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type Status = "pending" | "approved" | "rejected";
 
@@ -38,6 +39,7 @@ const AdminApplicationsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [tab, setTab] = useState<Status>("pending");
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ const AdminApplicationsPage = () => {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast({ title: "Lỗi tải đơn", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.apps.toast.loadError"), description: error.message, variant: "destructive" });
       setApps([]);
       setLoading(false);
       return;
@@ -91,10 +93,10 @@ const AdminApplicationsPage = () => {
       .eq("id", app.id);
     setActing(null);
     if (error) {
-      toast({ title: "Lỗi duyệt", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.apps.toast.approveError"), description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Đã duyệt", description: `${ROLE_LABEL[app.requested_role]} cho ${app.profile?.display_name ?? "user"}` });
+    toast({ title: t("admin.apps.toast.approved"), description: t("admin.apps.toast.approvedDesc", { role: ROLE_LABEL[app.requested_role], name: app.profile?.display_name ?? "user" }) });
     load();
   };
 
@@ -112,10 +114,10 @@ const AdminApplicationsPage = () => {
       .eq("id", rejectTarget.id);
     setActing(null);
     if (error) {
-      toast({ title: "Lỗi từ chối", description: error.message, variant: "destructive" });
+      toast({ title: t("admin.apps.toast.rejectError"), description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Đã từ chối" });
+    toast({ title: t("admin.apps.toast.rejected") });
     setRejectTarget(null);
     setRejectNote("");
     load();
@@ -165,7 +167,7 @@ const AdminApplicationsPage = () => {
                     {(app.profile?.display_name ?? "?").substring(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{app.profile?.display_name ?? "Không rõ"}</p>
+                    <p className="text-sm font-semibold truncate">{app.profile?.display_name ?? t("admin.unknown")}</p>
                     <p className="text-xs text-muted-foreground font-mono truncate">{app.user_id}</p>
                   </div>
                   <Badge variant="outline">{ROLE_LABEL[app.requested_role] ?? app.requested_role}</Badge>
@@ -189,7 +191,7 @@ const AdminApplicationsPage = () => {
 
                 <p className="text-xs text-muted-foreground">
                   Gửi: {new Date(app.created_at).toLocaleString("vi-VN")}
-                  {app.reviewed_at && ` • Xét: ${new Date(app.reviewed_at).toLocaleString("vi-VN")}`}
+                  {app.reviewed_at && ` • ${t("admin.apps.reviewedAt")}: ${new Date(app.reviewed_at).toLocaleString()}`}
                 </p>
 
                 {app.reviewer_note && (
@@ -236,7 +238,7 @@ const AdminApplicationsPage = () => {
             </DialogDescription>
           </DialogHeader>
           <Textarea
-            placeholder="Lý do từ chối (tùy chọn — sẽ hiển thị cho user)"
+            placeholder={t("admin.apps.rejectReasonPh")}
             value={rejectNote}
             onChange={(e) => setRejectNote(e.target.value)}
             rows={3}

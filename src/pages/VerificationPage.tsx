@@ -5,16 +5,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { pendingMatches } from "@/data/profile";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const VerificationPage = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleVerify = (id: string, status: "confirm" | "dispute") => {
     toast({
-      title: status === "confirm" ? "Xác nhận thành công" : "Đã gửi khiếu nại",
-      description: status === "confirm" 
-        ? "Điểm DUPR và XP của cả hai đã được cập nhật." 
-        : "Hệ thống sẽ xem xét lại kết quả này.",
+      title: status === "confirm" ? t("verify.toast.confirmed") : t("verify.toast.disputed"),
+      description: status === "confirm"
+        ? t("verify.toast.confirmedDesc")
+        : t("verify.toast.disputedDesc"),
     });
   };
 
@@ -25,7 +27,7 @@ const VerificationPage = () => {
           <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="text-lg font-display font-bold text-foreground">Xác thực kết quả</h1>
+          <h1 className="text-lg font-display font-bold text-foreground">{t("verify.title")}</h1>
         </div>
       </div>
 
@@ -33,14 +35,12 @@ const VerificationPage = () => {
         <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 flex items-start gap-3">
           <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           <div>
-            <h3 className="text-sm font-bold text-primary">Tính minh bạch của cộng đồng</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Xác thực kết quả giúp xây dựng bảng xếp hạng DUPR chính xác cho mọi người. Hãy trung thực!
-            </p>
+            <h3 className="text-sm font-bold text-primary">{t("verify.transparencyTitle")}</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("verify.transparencyDesc")}</p>
           </div>
         </div>
 
-        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Đang chờ xác nhận</h2>
+        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">{t("verify.pendingTitle")}</h2>
 
         <div className="space-y-3">
           {pendingMatches.map((match, i) => (
@@ -78,9 +78,9 @@ const VerificationPage = () => {
 
                 <div className="bg-secondary/50 rounded-xl p-3 mb-4">
                   <div className="flex justify-between items-center text-xs mb-2">
-                    <span className="text-muted-foreground">Kết quả ghi nhận:</span>
+                    <span className="text-muted-foreground">{t("verify.recordedResult")}</span>
                     <span className={`font-bold ${match.result === "won" ? "text-primary" : "text-destructive"}`}>
-                      BẠN {match.result === "won" ? "THẮNG" : "THUA"}
+                      {match.result === "won" ? t("verify.youWin") : t("verify.youLose")}
                     </span>
                   </div>
                   <div className="flex justify-center items-center gap-4 text-2xl font-display font-black text-foreground">

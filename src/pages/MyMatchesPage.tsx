@@ -123,7 +123,7 @@ const MyMatchesPage = () => {
       setMyMatches(enriched);
     } catch (e: any) {
       console.error("[MyMatches] scoped fetch failed:", e);
-      toast.error(e.message || "Lỗi tải dữ liệu");
+      toast.error(e.message || t("mm.toast.loadError"));
     } finally {
       setLoadingScope(false);
     }
@@ -150,7 +150,7 @@ const MyMatchesPage = () => {
   // link to current user_id. Lets a player attach themselves to entries the host created.
   const handleClaim = async () => {
     if (!user) {
-      toast.error(t("auth.loginRequired") || "Vui lòng đăng nhập!");
+      toast.error(t("auth.loginRequired"));
       return;
     }
     const q = claimQuery.trim().toLowerCase();
@@ -164,7 +164,7 @@ const MyMatchesPage = () => {
       if (error) throw error;
       const matches = (data || []).filter((p) => p.name.toLowerCase().includes(q));
       if (matches.length === 0) {
-        toast.error(t("mm.noMatchFound") || "Không tìm thấy tên này trong giải nào");
+        toast.error(t("mm.noMatchFound"));
         return;
       }
       const ids = matches.map((m) => m.id);
@@ -173,7 +173,7 @@ const MyMatchesPage = () => {
         .update({ user_id: user.id })
         .in("id", ids);
       if (updErr) throw updErr;
-      toast.success(`${t("mm.claimedCount") || "Đã nhận"} ${ids.length} ${t("mm.entries") || "lượt thi đấu"}`);
+      toast.success(`${t("mm.claimedCount")} ${ids.length} ${t("mm.entries")}`);
       setShowClaim(false);
       setClaimQuery("");
       await refetchScoped();
@@ -199,7 +199,7 @@ const MyMatchesPage = () => {
       m.status === "completed" ? (
         iWon ? (
           <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px] h-5">
-            🏆 {t("mm.won") || "Thắng"}
+            🏆 {t("mm.won")}
           </Badge>
         ) : (
           <Badge variant="secondary" className="text-[10px] h-5">{t("mm.lost") || "Thua"}</Badge>
@@ -207,7 +207,7 @@ const MyMatchesPage = () => {
       ) : m.status === "in_progress" ? (
         <Badge className="text-[10px] h-5 bg-red-500 hover:bg-red-500 animate-pulse">{t("ref.live") || "Live"}</Badge>
       ) : (
-        <Badge variant="outline" className="text-[10px] h-5">{t("ref.upcoming") || "Sắp đấu"}</Badge>
+        <Badge variant="outline" className="text-[10px] h-5">{t("ref.upcoming")}</Badge>
       );
 
     return (
@@ -255,11 +255,11 @@ const MyMatchesPage = () => {
           </Button>
           <h1 className="text-lg font-bold flex items-center gap-2 flex-1 min-w-0 truncate">
             <PlayCircle className="h-5 w-5 text-primary shrink-0" />
-            <span className="truncate">{t("mm.title") || "Trận của tôi"}</span>
+            <span className="truncate">{t("mm.title")}</span>
           </h1>
           <Button size="sm" variant="outline" className="h-9 gap-1.5 shrink-0" onClick={() => setShowClaim(true)}>
             <UserPlus className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("mm.claim") || "Nhận tên"}</span>
+            <span className="hidden sm:inline">{t("mm.claim")}</span>
           </Button>
         </div>
 
@@ -270,7 +270,7 @@ const MyMatchesPage = () => {
             <p className="text-lg font-bold text-red-600 dark:text-red-400">{live.length}</p>
           </div>
           <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-2 text-center">
-            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium uppercase">{t("ref.upcoming") || "Sắp đấu"}</p>
+            <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium uppercase">{t("ref.upcoming")}</p>
             <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{upcoming.length}</p>
           </div>
           <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2 text-center">
@@ -286,20 +286,20 @@ const MyMatchesPage = () => {
             <div className="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center">
               <PlayCircle className="h-8 w-8 opacity-40" />
             </div>
-            <p className="text-sm">{t("mm.empty") || "Bạn chưa được gán vào giải nào"}</p>
-            <p className="text-xs text-muted-foreground">{t("mm.emptyHint") || "Nhấn 'Nhận tên' để liên kết tên thi đấu của bạn với host."}</p>
+            <p className="text-sm">{t("mm.empty")}</p>
+            <p className="text-xs text-muted-foreground">{t("mm.emptyHint")}</p>
             <Button size="sm" onClick={() => setShowClaim(true)}>
-              <UserPlus className="h-4 w-4 mr-1.5" /> {t("mm.claim") || "Nhận tên"}
+              <UserPlus className="h-4 w-4 mr-1.5" /> {t("mm.claim")}
             </Button>
           </div>
         ) : (
           <Tabs defaultValue="matches" className="space-y-3">
             <TabsList className="w-full">
               <TabsTrigger value="matches" className="flex-1 gap-1">
-                <PlayCircle className="h-3.5 w-3.5" /> {t("mm.matches") || "Trận đấu"}
+                <PlayCircle className="h-3.5 w-3.5" /> {t("mm.matches")}
               </TabsTrigger>
               <TabsTrigger value="tournaments" className="flex-1 gap-1">
-                <Trophy className="h-3.5 w-3.5" /> {t("mm.tournaments") || "Giải"}
+                <Trophy className="h-3.5 w-3.5" /> {t("mm.tournaments")}
               </TabsTrigger>
             </TabsList>
 
@@ -308,7 +308,7 @@ const MyMatchesPage = () => {
                 <section className="space-y-2">
                   <h3 className="text-xs font-bold uppercase text-red-600 dark:text-red-400 flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                    {t("ref.liveSection") || "Đang đấu"} ({live.length})
+                    {t("ref.liveSection")} ({live.length})
                   </h3>
                   <div className="space-y-2">{live.map((m) => <MatchRow key={m.id} m={m} />)}</div>
                 </section>
@@ -316,7 +316,7 @@ const MyMatchesPage = () => {
               {upcoming.length > 0 && (
                 <section className="space-y-2">
                   <h3 className="text-xs font-bold uppercase text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                    <Clock className="h-3 w-3" /> {t("ref.upcomingSection") || "Sắp đấu"} ({upcoming.length})
+                    <Clock className="h-3 w-3" /> {t("ref.upcomingSection")} ({upcoming.length})
                   </h3>
                   <div className="space-y-2">{upcoming.map((m) => <MatchRow key={m.id} m={m} />)}</div>
                 </section>
@@ -324,14 +324,14 @@ const MyMatchesPage = () => {
               {done.length > 0 && (
                 <section className="space-y-2">
                   <h3 className="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-3 w-3" /> {t("ref.doneSection") || "Đã hoàn thành"} ({done.length})
+                    <CheckCircle2 className="h-3 w-3" /> {t("ref.doneSection")} ({done.length})
                   </h3>
                   <div className="space-y-2">{done.map((m) => <MatchRow key={m.id} m={m} />)}</div>
                 </section>
               )}
               {myMatches.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
-                  {t("mm.noMatchesScheduled") || "Chưa có trận nào được lên lịch"}
+                  {t("mm.noMatchesScheduled")}
                 </div>
               )}
             </TabsContent>
@@ -361,7 +361,7 @@ const MyMatchesPage = () => {
                         <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
                       </div>
                       <p className="text-[11px] text-muted-foreground">
-                        {tourMatches.length} {t("mm.myMatches") || "trận của tôi"}
+                        {tourMatches.length} {t("mm.myMatches")}
                       </p>
                     </CardContent>
                   </Card>
@@ -376,26 +376,26 @@ const MyMatchesPage = () => {
       <Dialog open={showClaim} onOpenChange={setShowClaim}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("mm.claimTitle") || "Nhận tên thi đấu"}</DialogTitle>
+            <DialogTitle>{t("mm.claimTitle")}</DialogTitle>
             <DialogDescription>
-              {t("mm.claimDesc") || "Nhập tên mà host đã đăng ký cho bạn ở các giải đấu. Hệ thống sẽ liên kết các tên trùng khớp với tài khoản của bạn."}
+              {t("mm.claimDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label className="text-xs">{t("mm.yourName") || "Tên thi đấu"}</Label>
+            <Label className="text-xs">{t("mm.yourName")}</Label>
             <Input
               value={claimQuery}
               onChange={(e) => setClaimQuery(e.target.value)}
-              placeholder="VD: Đức + Sơn"
+              placeholder={t("mm.claimPh")}
             />
             <p className="text-[10px] text-muted-foreground">
-              {t("mm.claimHint") || "Tìm kiếm sẽ chỉ áp với các entry chưa được ai nhận."}
+              {t("mm.claimHint")}
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowClaim(false)}>{t("common.cancel") || "Hủy"}</Button>
+            <Button variant="outline" onClick={() => setShowClaim(false)}>{t("common.cancel")}</Button>
             <Button onClick={handleClaim} disabled={claiming || claimQuery.trim().length < 2}>
-              <UserPlus className="h-4 w-4 mr-1.5" /> {claiming ? "..." : (t("mm.claimAction") || "Nhận")}
+              <UserPlus className="h-4 w-4 mr-1.5" /> {claiming ? "..." : (t("mm.claimAction"))}
             </Button>
           </DialogFooter>
         </DialogContent>

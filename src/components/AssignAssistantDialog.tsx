@@ -11,6 +11,7 @@ import {
 } from "@/data/events";
 import { Group, GroupAssistant } from "@/data/groups";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface AssignAssistantDialogProps {
   open: boolean;
@@ -22,6 +23,7 @@ interface AssignAssistantDialogProps {
 const allPermissions: AssistantPermission[] = ["check_in", "approve_tickets", "manage_players", "view_stats"];
 
 const AssignAssistantDialog = ({ open, onOpenChange, group, onAssign }: AssignAssistantDialogProps) => {
+  const { t } = useLanguage();
   const [step, setStep] = useState<"select" | "configure">("select");
   const [selectedMember, setSelectedMember] = useState<typeof availableMembers[0] | null>(null);
   const [selectedCourts, setSelectedCourts] = useState<string[]>([]);
@@ -30,7 +32,7 @@ const AssignAssistantDialog = ({ open, onOpenChange, group, onAssign }: AssignAs
   // Parse court count from courtName like "Sunset Park Courts (4 sân)"
   const courtMatch = group.courtName.match(/\((\d+)\s*sân\)/);
   const courtCount = courtMatch ? parseInt(courtMatch[1]) : 2;
-  const courtOptions = Array.from({ length: courtCount }, (_, i) => `Sân ${i + 1}`);
+  const courtOptions = Array.from({ length: courtCount }, (_, i) => t("assistant.checkin.court", { n: i + 1 }));
 
   const existingAssistantIds = group.assistants.map((a) => a.id);
   const filteredMembers = availableMembers.filter((m) => !existingAssistantIds.includes(m.id));
@@ -57,12 +59,12 @@ const AssignAssistantDialog = ({ open, onOpenChange, group, onAssign }: AssignAs
       phone: selectedMember.phone,
       assignedCourts: selectedCourts,
       permissions: selectedPermissions,
-      assignedAt: "Vừa xong",
+      assignedAt: t("assistant.assign.justNow"),
     };
     onAssign(assistant);
     toast({
-      title: `✅ Đã phân công ${selectedMember.name}`,
-      description: `Phụ trách ${selectedCourts.join(", ")} — ${group.name}`,
+      title: t("assistant.assign.toast.assigned", { name: selectedMember.name }),
+      description: t("assistant.assign.toast.assignedDesc", { courts: selectedCourts.join(", "), group: group.name }),
     });
     resetAndClose();
   };
@@ -81,21 +83,21 @@ const AssignAssistantDialog = ({ open, onOpenChange, group, onAssign }: AssignAs
         <DialogHeader>
           <DialogTitle className="text-base flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-primary" />
-            {step === "select" ? "Chọn trợ lý" : "Phân quyền"}
+            {step === "select" ? t("assistant.assign.title.select") : t("assistant.assign.title.assign")}
           </DialogTitle>
         </DialogHeader>
 
         {step === "select" ? (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground">
-              Chọn thành viên để làm trợ lý cho <span className="font-semibold text-foreground">{group.name}</span>
+              {t("assistant.assign.choosePrompt")} <span className="font-semibold text-foreground">{group.name}</span>
             </p>
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/5 border border-primary/10">
               <MapPin className="h-3 w-3 text-primary" />
               <p className="text-[10px] text-muted-foreground">{group.courtName}</p>
             </div>
             {filteredMembers.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-4">Không còn thành viên khả dụng</p>
+              <p className="text-xs text-muted-foreground text-center py-4">{t("assistant.assign.noMembers")}</p>
             ) : (
               <div className="space-y-2">
                 {filteredMembers.map((member) => (
@@ -138,13 +140,13 @@ const AssignAssistantDialog = ({ open, onOpenChange, group, onAssign }: AssignAs
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-secondary/50">
               <span className="text-sm">{group.emoji}</span>
               <p className="text-[10px] font-medium text-foreground">{group.name}</p>
-              <span className="text-[9px] text-muted-foreground">· Trợ lý cố định</span>
+              <span className="text-[9px] text-muted-foreground">· {t("assistant.assign.fixedAssistant")}</span>
             </div>
 
             {/* Court assignment */}
             <div>
               <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-primary" /> Phân công sân
+                <MapPin className="h-3.5 w-3.5 text-primary" /> {t("assistant.assign.assignCourts")}
               </p>
               <div className="flex flex-wrap gap-2">
                 {courtOptions.map((court) => (
@@ -166,7 +168,7 @@ const AssignAssistantDialog = ({ open, onOpenChange, group, onAssign }: AssignAs
             {/* Permissions */}
             <div>
               <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                <Shield className="h-3.5 w-3.5 text-primary" /> Quyền hạn
+                <Shield className="h-3.5 w-3.5 text-primary" /> {t("assistant.assign.permissions")}
               </p>
               <div className="space-y-2">
                 {allPermissions.map((perm) => (
@@ -189,14 +191,14 @@ const AssignAssistantDialog = ({ open, onOpenChange, group, onAssign }: AssignAs
             {/* Actions */}
             <div className="flex gap-2 pt-2">
               <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setStep("select")}>
-                Quay lại
+                {t("assistant.assign.back")}
               </Button>
               <Button
                 className="flex-1 rounded-xl gap-1.5"
                 disabled={selectedCourts.length === 0 || selectedPermissions.length === 0}
                 onClick={handleAssign}
               >
-                <Check className="h-4 w-4" /> Phân công
+                <Check className="h-4 w-4" /> {t("assistant.assign.confirm")}
               </Button>
             </div>
           </div>
