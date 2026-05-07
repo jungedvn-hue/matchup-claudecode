@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { calculateDUPRDelta } from "@/lib/scoring";
+import { awardMatchPlayedXP, awardMatchVerifiedXP, awardVerifyXP } from "@/lib/gamification";
 
 // Loose typed Supabase client — schema not yet regenerated for new tables
 const sb = supabase as unknown as {
@@ -94,6 +95,8 @@ export const useCreateMatch = () => {
         ...setMap,
       }).select("id").single();
       if (error) return { error: error.message };
+      // Award match_played XP to submitter immediately (logging the match)
+      await awardMatchPlayedXP(user.id, data.id);
       return { id: data.id };
     } finally {
       setSubmitting(false);
@@ -181,6 +184,20 @@ export const useVerifyMatch = () => {
 
         await sb.from("profiles").update({ dupr_rating: subRating + subDelta }).eq("user_id", match.submitter_user_id);
         await sb.from("profiles").update({ dupr_rating: oppRating + oppDelta }).eq("user_id", match.opponent_user_id);
+
+        // Compute match-level totals + max margin for gamification
+        const sumSub = sets.reduce((s, [a]) => s + (a ?? 0), 0);
+        const sumOpp = sets.reduce((s, [, b]) => s + (b ?? 0), 0);
+        const maxMargin = Math.max(...sets.map(([a, b]) => Math.abs((a ?? 0) - (b ?? 0))), 0);
+
+        // Opponent already played the match → award MATCH_PLAYED to opponent now (submitter got it on create)
+        await awardMatchPlayedXP(match.opponent_user_id, match.id);
+        // Win/loss XP for both
+        await awardMatchVerifiedXP(match.submitter_user_id, match.id, match.result === "won", sumSub, maxMargin);
+        await awardMatchVerifiedXP(match.opponent_user_id, match.id, match.result === "lost", sumOpp, maxMargin);
+        // Reward verifier (the user acting now) for verifying
+        await awardVerifyXP(user.id, match.id);
+        await sb.from("match_records").update({ xp_awarded: true }).eq("id", matchId);
       }
 
       const { error } = await sb.from("match_records").update(update).eq("id", matchId);

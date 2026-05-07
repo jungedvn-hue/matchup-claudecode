@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import type { AppRole } from '@/hooks/use-roles';
+import { updateDailyStreak, generateDailyQuests, updateQuestProgress } from '@/lib/gamification';
 
 interface AuthContextType {
   session: Session | null;
@@ -85,12 +86,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
+    const onAuthed = async (uid: string) => {
+      try {
+        await updateDailyStreak(uid);
+        await generateDailyQuests(uid);
+        await updateQuestProgress(uid, { type: "daily_login" });
+      } catch {
+        // Silent: gamification side-effects shouldn't block auth
+      }
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       if (session?.user) {
         migrateLegacyRoles(session.user.id).finally(() => fetchRoles(session.user.id));
+        onAuthed(session.user.id);
       }
     });
 
@@ -100,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       if (session?.user) {
         migrateLegacyRoles(session.user.id).finally(() => fetchRoles(session.user.id));
+        onAuthed(session.user.id);
       } else {
         setRoles([]);
       }

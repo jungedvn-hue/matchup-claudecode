@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 import {
   Settings, ChevronRight, Trophy, Target, TrendingUp,
-  Users, Star, BarChart3, MapPin, Edit, Flame, LogOut,
+  Users, Star, BarChart3, MapPin, Edit, Flame, LogOut, Sparkles,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import LogMatchDialog from "@/components/LogMatchDialog";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { usePlayerProfile, usePlayerStats, useMatchRecords, type MatchRecord } from "@/hooks/useMatches";
+import { useStreak } from "@/hooks/useGamification";
 
 type SkillLevel = "beginner" | "intermediate" | "advanced" | "pro";
 
@@ -27,6 +28,7 @@ const ProfilePage = () => {
   const { profile } = usePlayerProfile();
   const { stats } = usePlayerStats();
   const { matches, refetch: refetchMatches } = useMatchRecords({ limit: 4 });
+  const { streak } = useStreak();
 
   const handleLogout = async () => {
     try {
@@ -137,7 +139,7 @@ const ProfilePage = () => {
             { tone: "primary", icon: Target, value: stats.totalMatches, label: t("common.matches") },
             { tone: "emerald", icon: TrendingUp, value: `${stats.winRate}%`, label: t("statistics.winRate") },
             { tone: "amber", icon: Star, value: dupr.toFixed(2), label: "DUPR" },
-            { tone: "blue", icon: Flame, value: 0, label: t("profile.streak") || "Streak" },
+            { tone: "blue", icon: Flame, value: streak?.current_streak ?? 0, label: t("profile.streak") || "Streak" },
           ].map((s, i) => (
             <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
               <Card className="p-2.5 shadow-card text-center bg-card">
@@ -198,6 +200,7 @@ const ProfilePage = () => {
         {/* Menu */}
         <section className="space-y-1">
           {[
+            { label: t("gamification.title") || "Tiến trình", path: "/gamification", icon: <Sparkles className="h-4 w-4" /> },
             { label: t("profile.myTickets"), path: "/my-tickets" },
             { label: t("profile.favoritePartners"), path: "/favorite-partners" },
             { label: t("profile.matchHistory"), path: "/match-history" },

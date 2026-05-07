@@ -33,6 +33,7 @@ import TourManagerControlPage from "./pages/TourManagerControlPage";
 import RefereeDashboardPage from "./pages/RefereeDashboardPage";
 import MyMatchesPage from "./pages/MyMatchesPage";
 import VerificationPage from "./pages/VerificationPage";
+import GamificationHubPage from "./pages/GamificationHubPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
 import StoreDashboardPage from "./pages/StoreDashboardPage";
 import StoreProductsPage from "./pages/StoreProductsPage";
@@ -87,6 +88,7 @@ const AppShell = () => {
         <Route path="/assistant-checkin" element={<AssistantCheckInPage />} />
         <Route path="/favorite-partners" element={<FavoritePartnersPage />} />
         <Route path="/match-history" element={<MatchHistoryPage />} />
+        <Route path="/gamification" element={<ProtectedRoute><GamificationHubPage /></ProtectedRoute>} />
         <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/create-event" element={<CreateEventPage />} />
         
