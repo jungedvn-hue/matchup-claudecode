@@ -49,6 +49,7 @@ export interface TournamentMatch {
   entryBName: string;
   scoreA: number;
   scoreB: number;
+  setScores?: { a: number; b: number }[];
   winner?: string;
   status: MatchStatus;
   courtId?: string;
@@ -108,6 +109,8 @@ export interface Tournament {
   format: TournamentFormat;
   pointsPerGame: number;
   winByTwo: boolean;
+  numSets?: number;
+  maxPoints?: number;
   courtsAvailable: number;
   matchDuration: number;
   playersPerPool: number;

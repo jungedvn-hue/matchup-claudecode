@@ -7,7 +7,7 @@ interface TournamentContextValue {
   loading: boolean;
   addTournament: (t: Tournament) => Promise<void>;
   updateTournament: (t: Tournament) => Promise<void>;
-  updateMatchScore: (matchId: string, scoreA: number, scoreB: number, status: string, winnerId?: string) => Promise<void>;
+  updateMatchScore: (matchId: string, scoreA: number, scoreB: number, status: string, winnerId?: string, setScores?: { a: number; b: number }[]) => Promise<void>;
   deleteTournament: (id: string) => Promise<void>;
   getTournament: (id: string) => Tournament | undefined;
   refreshTournaments: () => Promise<void>;
@@ -71,6 +71,8 @@ interface DBTournament {
   format: string;
   points_per_game: number;
   win_by_two: boolean;
+  num_sets?: number;
+  max_points?: number | null;
   status: string;
   ranking_priority: any[];
   host_id: string;
@@ -125,6 +127,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
         referees: t.referees || [],
         courts: t.courts || [],
         rankingPriority: t.ranking_priority || ["wins", "head_to_head", "point_diff", "points_scored"],
+        numSets: t.num_sets ?? 1,
+        maxPoints: t.max_points ?? undefined,
         categories: (t.categories || []).map((c) => {
           // Build a lookup of live match data (scores, status, winner) keyed by match id
           const liveMatches = (c.matches || []).map((m) => ({
@@ -139,6 +143,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             entryBName: m.entry_b_name,
             scoreA: m.score_a,
             scoreB: m.score_b,
+            setScores: ((m as any).set_scores as { a: number; b: number }[] | undefined) || [],
             winner: m.winner_id,
             status: m.status as any,
             courtId: m.court_id,
@@ -256,6 +261,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           format: t.format,
           points_per_game: t.pointsPerGame,
           win_by_two: t.winByTwo,
+          num_sets: t.numSets ?? 1,
+          max_points: t.maxPoints ?? null,
           status: t.status,
           ranking_priority: t.rankingPriority,
           host_id: user?.id,
@@ -379,16 +386,18 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateMatchScore = async (matchId: string, scoreA: number, scoreB: number, status: string, winnerId?: string) => {
+  const updateMatchScore = async (matchId: string, scoreA: number, scoreB: number, status: string, winnerId?: string, setScores?: { a: number; b: number }[]) => {
     try {
+      const payload: Record<string, unknown> = {
+        score_a: scoreA,
+        score_b: scoreB,
+        status: status,
+        winner_id: winnerId,
+      };
+      if (setScores !== undefined) payload.set_scores = setScores;
       const { error } = await supabase
         .from('tour_matches')
-        .update({
-          score_a: scoreA,
-          score_b: scoreB,
-          status: status,
-          winner_id: winnerId
-        })
+        .update(payload as never)
         .eq('id', matchId);
 
       if (error) throw error;

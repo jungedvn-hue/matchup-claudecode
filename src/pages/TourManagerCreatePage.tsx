@@ -52,6 +52,8 @@ const TourManagerCreatePage = () => {
   const [format, setFormat] = useState<TournamentFormat>("round_robin");
   const [pointsPerGame, setPointsPerGame] = useState(11);
   const [winByTwo, setWinByTwo] = useState(true);
+  const [maxPoints, setMaxPoints] = useState<string>("");
+  const [numSets, setNumSets] = useState(1);
   const [courts, setCourts] = useState(4);
   const [matchDuration, setMatchDuration] = useState(20);
   const [playersPerPool, setPlayersPerPool] = useState(4);
@@ -156,6 +158,8 @@ const TourManagerCreatePage = () => {
       format,
       pointsPerGame,
       winByTwo,
+      maxPoints: maxPoints ? Math.max(pointsPerGame, Math.min(50, Number(maxPoints))) : undefined,
+      numSets,
       courtsAvailable: courts,
       matchDuration,
       playersPerPool,
@@ -236,19 +240,62 @@ const TourManagerCreatePage = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>{t("tm.pointsPerGame")}</Label>
-                  <Select value={String(pointsPerGame)} onValueChange={(v) => setPointsPerGame(Number(v))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="11">11</SelectItem>
-                      <SelectItem value="15">15</SelectItem>
-                      <SelectItem value="21">21</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex gap-1.5 mt-1">
+                    {[11, 15, 21].map((v) => (
+                      <Button
+                        key={v}
+                        type="button"
+                        size="sm"
+                        variant={pointsPerGame === v ? "default" : "outline"}
+                        className="h-9 px-2.5 text-xs"
+                        onClick={() => setPointsPerGame(v)}
+                      >
+                        {v}
+                      </Button>
+                    ))}
+                    <Input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={pointsPerGame}
+                      onChange={(e) => {
+                        const n = Math.max(1, Math.min(50, Number(e.target.value) || 1));
+                        setPointsPerGame(n);
+                      }}
+                      className="h-9 w-16"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">{t("tm.pointsPerGameHint")}</p>
                 </div>
                 <div className="flex items-end gap-2 pb-1">
                   <Switch checked={winByTwo} onCheckedChange={setWinByTwo} />
                   <Label className="text-sm">{t("tm.winByTwo")}</Label>
                 </div>
+              </div>
+              <div>
+                <Label>{t("tm.maxPoints")}</Label>
+                <Input
+                  type="number"
+                  min={pointsPerGame}
+                  max={50}
+                  value={maxPoints}
+                  onChange={(e) => setMaxPoints(e.target.value)}
+                  placeholder={String(pointsPerGame + 4)}
+                  className="h-9"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">{t("tm.maxPointsHint")}</p>
+              </div>
+              <div>
+                <Label>{t("tm.numSets")}</Label>
+                <Select value={String(numSets)} onValueChange={(v) => setNumSets(Number(v))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">{t("tm.numSets.bo1")}</SelectItem>
+                    <SelectItem value="3">{t("tm.numSets.bo3")}</SelectItem>
+                    <SelectItem value="5">{t("tm.numSets.bo5")}</SelectItem>
+                    <SelectItem value="7">{t("tm.numSets.bo7")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

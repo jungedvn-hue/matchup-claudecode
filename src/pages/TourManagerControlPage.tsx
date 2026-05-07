@@ -245,11 +245,11 @@ const TourManagerControlPage = () => {
     toast.success(t("tm.poolsGenerated"));
   };
 
-  const updateMatchScore = async (matchId: string, scoreA: number, scoreB: number) => {
-    await syncMatchScore(matchId, scoreA, scoreB, "in_progress");
+  const updateMatchScore = async (matchId: string, scoreA: number, scoreB: number, setScores?: { a: number; b: number }[]) => {
+    await syncMatchScore(matchId, scoreA, scoreB, "in_progress", undefined, setScores);
   };
 
-  const completeMatch = async (matchId: string, scoreA?: number, scoreB?: number) => {
+  const completeMatch = async (matchId: string, scoreA?: number, scoreB?: number, setScores?: { a: number; b: number }[]) => {
     const match = allMatches.find(m => m.id === matchId);
     if (!match) return;
 
@@ -257,7 +257,7 @@ const TourManagerControlPage = () => {
     const finalB = scoreB ?? match.scoreB;
     const winnerId = finalA > finalB ? match.entryAId : match.entryBId;
 
-    await syncMatchScore(matchId, finalA, finalB, "completed", winnerId);
+    await syncMatchScore(matchId, finalA, finalB, "completed", winnerId, setScores);
 
     // If this is a bracket match, cascade winner into next round(s) and persist.
     // Use a targeted DB-first approach (read fresh bracket_rounds from DB, advance,
@@ -866,6 +866,10 @@ const TourManagerControlPage = () => {
                         courtMap={courtMap}
                         t={t}
                         readonly={readonly}
+                        numSets={tournament.numSets ?? 1}
+                        pointsPerGame={tournament.pointsPerGame}
+                        winByTwo={tournament.winByTwo}
+                        maxPoints={tournament.maxPoints}
                       />
                     );
                   })}
@@ -1035,6 +1039,10 @@ const TourManagerControlPage = () => {
                               courtMap={courtMap}
                               t={t}
                               compact
+                              numSets={tournament.numSets ?? 1}
+                              pointsPerGame={tournament.pointsPerGame}
+                              winByTwo={tournament.winByTwo}
+                              maxPoints={tournament.maxPoints}
                             />
                           );
                         })}
@@ -1679,10 +1687,14 @@ function MatchCard({
   t,
   compact,
   readonly,
+  numSets = 1,
+  pointsPerGame = 11,
+  winByTwo = true,
+  maxPoints,
 }: {
   match: TournamentMatch;
-  onScoreChange: (id: string, a: number, b: number) => void;
-  onComplete: (id: string, scoreA?: number, scoreB?: number) => void;
+  onScoreChange: (id: string, a: number, b: number, setScores?: { a: number; b: number }[]) => void;
+  onComplete: (id: string, scoreA?: number, scoreB?: number, setScores?: { a: number; b: number }[]) => void;
   onUndo?: (id: string) => void;
   onResourceChange?: (id: string, field: "refereeId" | "courtId", value: string | undefined) => void;
   referees?: { id: string; name: string }[];
@@ -1692,6 +1704,10 @@ function MatchCard({
   t: (key: string) => string;
   compact?: boolean;
   readonly?: boolean;
+  numSets?: number;
+  pointsPerGame?: number;
+  winByTwo?: boolean;
+  maxPoints?: number;
 }) {
   const statusBg = {
     not_started: "bg-muted",
@@ -1701,15 +1717,53 @@ function MatchCard({
 
   const hasResources = (referees && referees.length > 0) || (courts && courts.length > 0);
 
+  const isMultiSet = numSets > 1;
+  const setsToWin = Math.ceil(numSets / 2);
+
   // Local state for scores so typing isn't reverted by React's controlled-input reconciliation
   // before the optimistic Supabase round-trip + realtime listener catches up.
   const [localA, setLocalA] = useState(match.scoreA);
   const [localB, setLocalB] = useState(match.scoreB);
+  const [localSets, setLocalSets] = useState<{ a: number; b: number }[]>(
+    match.setScores && match.setScores.length > 0
+      ? match.setScores
+      : Array.from({ length: numSets }, () => ({ a: 0, b: 0 }))
+  );
   useEffect(() => { setLocalA(match.scoreA); }, [match.scoreA]);
   useEffect(() => { setLocalB(match.scoreB); }, [match.scoreB]);
+  useEffect(() => {
+    setLocalSets(
+      match.setScores && match.setScores.length > 0
+        ? match.setScores
+        : Array.from({ length: numSets }, () => ({ a: 0, b: 0 }))
+    );
+  }, [match.setScores, numSets]);
+
+  // A set is "won" when: leader reaches pointsPerGame with required gap (winByTwo ? 2 : 1)
+  // OR leader reaches maxPoints (cap) regardless of gap.
+  const setWinner = (s: { a: number; b: number }): "a" | "b" | null => {
+    const hi = Math.max(s.a, s.b);
+    const lo = Math.min(s.a, s.b);
+    const gap = hi - lo;
+    const needGap = winByTwo ? 2 : 1;
+    const reachedTarget = hi >= pointsPerGame && gap >= needGap;
+    const hitCap = maxPoints != null && hi >= maxPoints && hi > lo;
+    if (!reachedTarget && !hitCap) return null;
+    return s.a > s.b ? "a" : "b";
+  };
+  const setsWonA = localSets.filter((s) => setWinner(s) === "a").length;
+  const setsWonB = localSets.filter((s) => setWinner(s) === "b").length;
 
   const updateA = (v: number) => { setLocalA(v); onScoreChange(match.id, v, localB); };
   const updateB = (v: number) => { setLocalB(v); onScoreChange(match.id, localA, v); };
+
+  const updateSet = (idx: number, side: "a" | "b", v: number) => {
+    const next = localSets.map((s, i) => (i === idx ? { ...s, [side]: Math.max(0, Math.min(50, v)) } : s));
+    setLocalSets(next);
+    const wonA = next.filter((s) => setWinner(s) === "a").length;
+    const wonB = next.filter((s) => setWinner(s) === "b").length;
+    onScoreChange(match.id, wonA, wonB, next);
+  };
 
   return (
     <Card className={`${statusBg[match.status]} border`}>
@@ -1751,7 +1805,47 @@ function MatchCard({
 
           {/* Score Controls */}
           <div className="flex items-center gap-1.5 bg-secondary/50 rounded-xl p-1 shadow-inner">
-            {!readonly && match.status !== "completed" ? (
+            {isMultiSet ? (
+              <div className="px-2 py-1.5 flex flex-col items-center gap-1 min-w-[120px]">
+                <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  BO{numSets} • {pointsPerGame}{winByTwo ? "+" : ""}{maxPoints ? `/${maxPoints}` : ""} • {setsWonA}-{setsWonB}
+                </span>
+                {(match.status === "completed" || readonly) ? (
+                  <div className="flex flex-col gap-0.5 text-center">
+                    {(match.setScores && match.setScores.length > 0 ? match.setScores : localSets).map((s, i) => (
+                      <span key={i} className="text-xs font-display font-bold tabular-nums text-foreground">
+                        {s.a}-{s.b}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-1">
+                    {localSets.map((s, i) => (
+                      <div key={i} className="flex items-center gap-1">
+                        <span className="text-[9px] text-muted-foreground w-3">S{i + 1}</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={50}
+                          value={s.a}
+                          onChange={(e) => updateSet(i, "a", parseInt(e.target.value) || 0)}
+                          className="text-xs font-bold w-9 h-6 text-center rounded bg-card border border-border focus:outline-none focus:ring-1 focus:ring-primary tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <span className="text-[10px] text-muted-foreground">:</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={50}
+                          value={s.b}
+                          onChange={(e) => updateSet(i, "b", parseInt(e.target.value) || 0)}
+                          className="text-xs font-bold w-9 h-6 text-center rounded bg-card border border-border focus:outline-none focus:ring-1 focus:ring-primary tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : !readonly && match.status !== "completed" ? (
               <>
                 <div className="flex flex-col items-center gap-1">
                   <Button
@@ -1861,15 +1955,30 @@ function MatchCard({
         )}
 
         {/* Complete button */}
-        {match.status !== "completed" && (localA > 0 || localB > 0) && (
-          <Button
-            size="sm"
-            className="w-full mt-3 h-10 text-sm font-bold shadow-md active:scale-95 transition-transform"
-            onClick={() => onComplete(match.id, localA, localB)}
-            disabled={localA === localB}
-          >
-            <Check className="h-4 w-4 mr-2" /> {t("tm.completeMatch")}
-          </Button>
+        {match.status !== "completed" && (
+          isMultiSet ? (
+            (setsWonA > 0 || setsWonB > 0) && (
+              <Button
+                size="sm"
+                className="w-full mt-3 h-10 text-sm font-bold shadow-md active:scale-95 transition-transform"
+                onClick={() => onComplete(match.id, setsWonA, setsWonB, localSets)}
+                disabled={setsWonA === setsWonB || (setsWonA < setsToWin && setsWonB < setsToWin)}
+              >
+                <Check className="h-4 w-4 mr-2" /> {t("tm.completeMatch")}
+              </Button>
+            )
+          ) : (
+            (localA > 0 || localB > 0) && (
+              <Button
+                size="sm"
+                className="w-full mt-3 h-10 text-sm font-bold shadow-md active:scale-95 transition-transform"
+                onClick={() => onComplete(match.id, localA, localB)}
+                disabled={localA === localB}
+              >
+                <Check className="h-4 w-4 mr-2" /> {t("tm.completeMatch")}
+              </Button>
+            )
+          )
         )}
       </CardContent>
     </Card>

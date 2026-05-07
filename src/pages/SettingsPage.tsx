@@ -31,11 +31,11 @@ const SettingsPage = () => {
   const [applyRole, setApplyRole] = useState<ApplicableRole | null>(null);
 
   const roleOptions: { id: AppRole; label: string; emoji: string; desc: string }[] = [
-    { id: "player", label: t("settings.player"), emoji: "🏓", desc: t("settings.playerDesc") },
+    { id: "player", label: t("settings.player"), emoji: "🎾", desc: t("settings.playerDesc") },
     { id: "host", label: t("settings.host"), emoji: "🎯", desc: t("settings.hostDesc") },
     { id: "court_owner", label: t("settings.courtOwner"), emoji: "🏟️", desc: t("settings.courtOwnerDesc") },
     { id: "store_owner", label: t("settings.storeOwner"), emoji: "🛍️", desc: t("settings.storeOwnerDesc") },
-    { id: "referee", label: "Verified Referee", emoji: "🦓", desc: "Trọng tài chính thức, được host mời từ pool" },
+    { id: "referee", label: t("settings.referee"), emoji: "🦓", desc: t("settings.refereeDesc") },
   ];
 
   const languages: { id: Language; label: string; flag: string }[] = [
@@ -81,16 +81,16 @@ const SettingsPage = () => {
   const onRoleClick = (role: AppRole) => {
     if (role === "master") return; // master không tự apply
     if (role === "player") {
-      toast({ title: "Vai trò Player luôn được kích hoạt." });
+      toast({ title: t("settings.toast.playerAlways") });
       return;
     }
     const status = getRoleStatus(role);
     if (status === "active") {
-      toast({ title: "Đã có vai trò này", description: "Liên hệ master nếu muốn gỡ bỏ." });
+      toast({ title: t("settings.toast.alreadyHasRole"), description: t("settings.toast.contactMaster") });
       return;
     }
     if (status === "pending") {
-      toast({ title: "Đơn đang chờ duyệt", description: "Master sẽ xét duyệt sớm." });
+      toast({ title: t("settings.toast.pending"), description: t("settings.toast.pendingDesc") });
       return;
     }
     setApplyRole(role as ApplicableRole);
@@ -135,36 +135,36 @@ const SettingsPage = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-2 px-1">
               <Shield className="h-4 w-4 text-primary" />
-              <p className="text-sm font-semibold text-primary">Master Account</p>
+              <p className="text-sm font-semibold text-primary">{t("settings.admin.title")}</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Card
                 className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
                 onClick={() => navigate("/admin/applications")}
               >
-                <p className="text-xs font-semibold text-primary">Đơn đăng ký</p>
-                <p className="text-[10px] text-muted-foreground">Approve / Reject</p>
+                <p className="text-xs font-semibold text-primary">{t("settings.admin.applications")}</p>
+                <p className="text-[10px] text-muted-foreground">{t("settings.admin.applicationsDesc")}</p>
               </Card>
               <Card
                 className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
                 onClick={() => navigate("/admin/users")}
               >
-                <p className="text-xs font-semibold text-primary">Quản lý User</p>
-                <p className="text-[10px] text-muted-foreground">Cấp / gỡ vai trò</p>
+                <p className="text-xs font-semibold text-primary">{t("settings.admin.users")}</p>
+                <p className="text-[10px] text-muted-foreground">{t("settings.admin.usersDesc")}</p>
               </Card>
               <Card
                 className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
                 onClick={() => navigate("/admin/tournaments")}
               >
-                <p className="text-xs font-semibold text-primary">Tournament</p>
-                <p className="text-[10px] text-muted-foreground">Quản lý mọi giải</p>
+                <p className="text-xs font-semibold text-primary">{t("settings.admin.tournaments")}</p>
+                <p className="text-[10px] text-muted-foreground">{t("settings.admin.tournamentsDesc")}</p>
               </Card>
               <Card
                 className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
                 onClick={() => navigate("/admin/stats")}
               >
-                <p className="text-xs font-semibold text-primary">Thống kê</p>
-                <p className="text-[10px] text-muted-foreground">User, signup, role</p>
+                <p className="text-xs font-semibold text-primary">{t("settings.admin.stats")}</p>
+                <p className="text-[10px] text-muted-foreground">{t("settings.admin.statsDesc")}</p>
               </Card>
             </div>
           </div>
@@ -173,7 +173,7 @@ const SettingsPage = () => {
         <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
 
         {(rolesLoading || appsLoading) && (
-          <p className="text-xs text-muted-foreground">Đang tải vai trò...</p>
+          <p className="text-xs text-muted-foreground">{t("settings.loadingRoles")}</p>
         )}
 
         <div className="space-y-3">
@@ -200,21 +200,21 @@ const SettingsPage = () => {
                     </div>
                     {status === "active" && (
                       <Badge className="bg-primary text-primary-foreground gap-1">
-                        <Check className="h-3 w-3" /> Active
+                        <Check className="h-3 w-3" /> {t("settings.status.active")}
                       </Badge>
                     )}
                     {status === "pending" && (
                       <Badge variant="secondary" className="gap-1">
-                        <Clock className="h-3 w-3" /> Đang xét duyệt
+                        <Clock className="h-3 w-3" /> {t("settings.status.pending")}
                       </Badge>
                     )}
                     {status === "rejected" && (
                       <Badge variant="destructive" className="gap-1">
-                        <X className="h-3 w-3" /> Bị từ chối
+                        <X className="h-3 w-3" /> {t("settings.status.rejected")}
                       </Badge>
                     )}
                     {status === "none" && role.id !== "player" && (
-                      <Badge variant="outline">Đăng ký</Badge>
+                      <Badge variant="outline">{t("settings.status.apply")}</Badge>
                     )}
                   </div>
                 </Card>
