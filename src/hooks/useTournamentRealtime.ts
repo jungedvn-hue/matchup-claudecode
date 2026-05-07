@@ -2,86 +2,85 @@ import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTournaments } from "@/context/TournamentContext";
 
+const POLL_INTERVAL_MS = 5000;
+
 /**
- * Subscribe to realtime changes ONLY for the given tournament IDs.
- * Pages call this on mount with the tournaments they care about — replaces the
- * old global subscription so a viewer of giải A no longer receives events from
- * giải B/C/D… etc.
+ * Poll-based updates for the given tournament IDs.
+ * Replaces the previous WebSocket subscription to avoid Supabase Realtime
+ * connection limits when many viewers are on tournament pages at once.
  *
- * Pass a stable list (memoized or sorted) to avoid resubscribing every render.
+ * Every POLL_INTERVAL_MS, fetches rows updated since the last poll and feeds
+ * them through the same applyMatchUpdate / applyCategoryUpdate handlers, so
+ * callers and downstream consumers see identical behavior — just with up to
+ * ~5s of latency instead of sub-second realtime.
+ *
+ * Pass a stable list (memoized or sorted) to avoid restarting the poller every render.
  */
 export const useTournamentRealtime = (tournamentIds: string[]) => {
   const { applyMatchUpdate, applyCategoryUpdate } = useTournaments();
-  // Use refs so we don't resubscribe when context-provided functions change identity
   const matchHandlerRef = useRef(applyMatchUpdate);
   const categoryHandlerRef = useRef(applyCategoryUpdate);
   matchHandlerRef.current = applyMatchUpdate;
   categoryHandlerRef.current = applyCategoryUpdate;
 
-  // Stringify the list to use as a stable effect dependency
   const ids = [...tournamentIds].filter(Boolean).sort();
   const idsKey = ids.join(",");
 
   useEffect(() => {
     if (ids.length === 0) return;
 
-    // Postgres-changes filter syntax: tournament_id=in.(id1,id2,id3)
-    const filter = `tournament_id=in.(${ids.join(",")})`;
+    let cancelled = false;
+    let lastPolledAt = new Date().toISOString();
 
-    // Batched match updates so rapid score changes don't thrash setState
-    let queue: any[] = [];
-    let timeout: ReturnType<typeof setTimeout> | null = null;
-    const flush = () => {
-      if (queue.length === 0) return;
-      const batch = queue;
-      queue = [];
-      timeout = null;
-      batch.forEach((u) => matchHandlerRef.current(u));
+    const poll = async () => {
+      const since = lastPolledAt;
+      const nextSince = new Date().toISOString();
+
+      const [matchesRes, catsRes] = await Promise.all([
+        supabase
+          .from("tour_matches")
+          .select(
+            "id,category_id,pool_id,bracket_round_id,match_no,entry_a_id,entry_b_id,entry_a_name,entry_b_name,score_a,score_b,winner_id,status,court_id,referee_id"
+          )
+          .in("tournament_id", ids)
+          .gt("updated_at", since),
+        supabase
+          .from("tour_categories")
+          .select("*")
+          .in("tournament_id", ids)
+          .gt("updated_at", since),
+      ]);
+
+      if (cancelled) return;
+      lastPolledAt = nextSince;
+
+      (matchesRes.data ?? []).forEach((raw: any) => {
+        matchHandlerRef.current({
+          id: raw.id,
+          categoryId: raw.category_id,
+          poolId: raw.pool_id,
+          bracketRoundId: raw.bracket_round_id,
+          matchNo: raw.match_no,
+          entryAId: raw.entry_a_id,
+          entryBId: raw.entry_b_id,
+          entryAName: raw.entry_a_name,
+          entryBName: raw.entry_b_name,
+          scoreA: raw.score_a,
+          scoreB: raw.score_b,
+          winner: raw.winner_id,
+          status: raw.status,
+          courtId: raw.court_id,
+          refereeId: raw.referee_id,
+        });
+      });
+
+      (catsRes.data ?? []).forEach((row: any) => categoryHandlerRef.current(row));
     };
 
-    const matchChan = supabase
-      .channel(`scoped-matches-${idsKey}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "tour_matches", filter },
-        (payload: any) => {
-          const raw = payload.new;
-          queue.push({
-            id: raw.id,
-            categoryId: raw.category_id,
-            poolId: raw.pool_id,
-            bracketRoundId: raw.bracket_round_id,
-            matchNo: raw.match_no,
-            entryAId: raw.entry_a_id,
-            entryBId: raw.entry_b_id,
-            entryAName: raw.entry_a_name,
-            entryBName: raw.entry_b_name,
-            scoreA: raw.score_a,
-            scoreB: raw.score_b,
-            winner: raw.winner_id,
-            status: raw.status,
-            courtId: raw.court_id,
-            refereeId: raw.referee_id,
-          });
-          if (timeout) clearTimeout(timeout);
-          timeout = setTimeout(flush, 500);
-        }
-      )
-      .subscribe();
-
-    const catChan = supabase
-      .channel(`scoped-categories-${idsKey}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "tour_categories", filter },
-        (payload: any) => categoryHandlerRef.current(payload.new)
-      )
-      .subscribe();
-
+    const interval = setInterval(poll, POLL_INTERVAL_MS);
     return () => {
-      if (timeout) clearTimeout(timeout);
-      supabase.removeChannel(matchChan);
-      supabase.removeChannel(catChan);
+      cancelled = true;
+      clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey]);
