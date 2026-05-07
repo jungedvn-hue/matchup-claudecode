@@ -271,29 +271,86 @@ export function nearestBracketSize(n: number): number {
   return s;
 }
 
+// Standard Seeding Pattern (recursive for power of 2): [1,8,4,5,2,7,3,6] for n=8.
+const getSeedingPattern = (n: number): number[] => {
+  if (n === 1) return [1];
+  const prev = getSeedingPattern(n / 2);
+  const result: number[] = [];
+  prev.forEach((seed) => {
+    result.push(seed);
+    result.push(n - seed + 1);
+  });
+  return result;
+};
+
+// Reorder qualified entries so same-pool teams land in opposite bracket halves
+// (and, where possible, opposite quarters). Uses a greedy fewer-teammates-first
+// placement: each entry is assigned to the half/quarter currently holding the
+// fewest of its teammates, breaking ties by which half has more free slots so
+// the bracket stays balanced.
+export function separatePoolEntries<T extends { id: string; name: string; poolId?: string }>(
+  entries: T[],
+  size: number
+): T[] {
+  const seedPattern = getSeedingPattern(size);
+  const halfSize = size / 2;
+  // seedsHalf1 / seedsHalf2: seed numbers (1-based) belonging to each bracket half,
+  // sorted ascending so we assign best seeds within the half first.
+  const seedsHalf1 = seedPattern.slice(0, halfSize).sort((a, b) => a - b);
+  const seedsHalf2 = seedPattern.slice(halfSize).sort((a, b) => a - b);
+
+  const result: (T | undefined)[] = new Array(size);
+  let cur1 = 0;
+  let cur2 = 0;
+  const countByPoolHalf: Record<string, { 1: number; 2: number }> = {};
+
+  for (const entry of entries) {
+    const pool = entry.poolId;
+    let preferred: 1 | 2;
+
+    if (pool) {
+      const counts = countByPoolHalf[pool] ?? { 1: 0, 2: 0 };
+      if (counts[1] < counts[2]) preferred = 1;
+      else if (counts[2] < counts[1]) preferred = 2;
+      else preferred = cur1 <= cur2 ? 1 : 2;
+    } else {
+      preferred = cur1 <= cur2 ? 1 : 2;
+    }
+
+    // Fall back to the other half if preferred is full.
+    if (preferred === 1 && cur1 >= seedsHalf1.length) preferred = 2;
+    else if (preferred === 2 && cur2 >= seedsHalf2.length) preferred = 1;
+
+    const seed = preferred === 1 ? seedsHalf1[cur1++] : seedsHalf2[cur2++];
+    result[seed - 1] = entry;
+
+    if (pool) {
+      const counts = countByPoolHalf[pool] ?? { 1: 0, 2: 0 };
+      counts[preferred]++;
+      countByPoolHalf[pool] = counts;
+    }
+  }
+
+  return result as T[];
+}
+
 export function generateBracket(
-  qualifiedEntries: { id: string; name: string }[],
-  categoryId: string
+  qualifiedEntries: { id: string; name: string; poolId?: string }[],
+  categoryId: string,
+  options?: { separatePools?: boolean }
 ): BracketRound[] {
   const size = nearestBracketSize(qualifiedEntries.length);
   const padded = [...qualifiedEntries];
   while (padded.length < size) padded.push({ id: `bye-${padded.length}`, name: "BYE" });
 
-  // 1. Group by Seed (Standard Seeding Pattern: 1 vs 8, 4 vs 5, 2 vs 7, 3 vs 6)
-  // This is a recursive pattern for power of 2
-  const getSeeding = (n: number): number[] => {
-    if (n === 1) return [1];
-    const prev = getSeeding(n / 2);
-    const result: number[] = [];
-    prev.forEach((seed) => {
-      result.push(seed);
-      result.push(n - seed + 1);
-    });
-    return result;
-  };
+  // If pool separation is requested, reorder padded[] so that padded[k-1] is the
+  // entry assigned to seed k after teammate-spreading. Standard rank order otherwise.
+  const seedOrdered = options?.separatePools
+    ? separatePoolEntries(padded, size)
+    : padded;
 
-  const seedPattern = getSeeding(size);
-  const reordered = seedPattern.map((sIdx) => padded[sIdx - 1]);
+  const seedPattern = getSeedingPattern(size);
+  const reordered = seedPattern.map((sIdx) => seedOrdered[sIdx - 1]);
 
   const roundNames: Record<number, string> = {
     2: "Final",

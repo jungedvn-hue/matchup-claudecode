@@ -97,6 +97,7 @@ export interface TournamentCategory {
   wildcardCount: number;
   poolAllocationMode: PoolAllocationMode;
   bracketFillMode?: BracketFillMode;
+  separatePools?: boolean;
 }
 
 export interface Tournament {

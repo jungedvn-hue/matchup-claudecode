@@ -74,6 +74,7 @@ const TourManagerControlPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
   const [pendingFillMode, setPendingFillMode] = useState<"wildcard" | "bye">("wildcard");
+  const [pendingSeparatePools, setPendingSeparatePools] = useState(false);
   const [expandedRefId, setExpandedRefId] = useState<string | null>(null);
   const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
   const [bulkRefId, setBulkRefId] = useState<string>("");
@@ -409,7 +410,7 @@ const TourManagerControlPage = () => {
     toast.success(t("tm.matchUndone"));
   };
 
-  const generateKnockout = async (overrideMode?: "wildcard" | "bye") => {
+  const generateKnockout = async (overrideMode?: "wildcard" | "bye", separatePools?: boolean) => {
     if (!activeCat || !tournament) return;
 
     // 1. Get Auto-Qualified entries (ranked 1..advancingPerPool)
@@ -459,7 +460,15 @@ const TourManagerControlPage = () => {
       return 0;
     });
 
-    const finalQualified = allQualifiedStats.map(s => ({ id: s.entryId, name: s.entryName }));
+    // Build entryId → poolId map so generateBracket can separate same-pool teams when requested.
+    const entryPoolMap: Record<string, string> = {};
+    (activeCat.pools || []).forEach((p) => p.entryIds.forEach((eid) => { entryPoolMap[eid] = p.id; }));
+
+    const finalQualified = allQualifiedStats.map(s => ({
+      id: s.entryId,
+      name: s.entryName,
+      poolId: entryPoolMap[s.entryId],
+    }));
 
     if (finalQualified.length < 2) {
       toast.error(t("tm.notEnoughQualified"));
@@ -467,7 +476,7 @@ const TourManagerControlPage = () => {
     }
 
     const wildcardIds = new Set(wildcards.map((w) => w.id));
-    const bracketRounds = generateBracket(finalQualified, activeCat.id).map((r) => ({
+    const bracketRounds = generateBracket(finalQualified, activeCat.id, { separatePools }).map((r) => ({
       ...r,
       matches: r.matches.map((m) => ({
         ...m,
@@ -1621,6 +1630,19 @@ const TourManagerControlPage = () => {
                     </Label>
                   </div>
                 </RadioGroup>
+
+                <label className="flex items-start gap-2 rounded border p-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={pendingSeparatePools}
+                    onChange={(e) => setPendingSeparatePools(e.target.checked)}
+                  />
+                  <span className="leading-tight">
+                    <span className="font-medium block">{t("tm.separatePools")}</span>
+                    <span className="text-xs text-muted-foreground">{t("tm.separatePoolsDesc")}</span>
+                  </span>
+                </label>
               </div>
             );
           })()}
@@ -1631,7 +1653,7 @@ const TourManagerControlPage = () => {
             <Button
               onClick={async () => {
                 setBracketDialogOpen(false);
-                await generateKnockout(pendingFillMode);
+                await generateKnockout(pendingFillMode, pendingSeparatePools);
               }}
             >
               <Trophy className="h-4 w-4 mr-1" /> {t("tm.generateBracket")}
