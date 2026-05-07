@@ -1,50 +1,27 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import { translations, type Language } from "./translations";
+import { type ReactNode, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import i18n, { SUPPORTED_LANGUAGES, type Language } from "./index";
 
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
-}
-
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+export type { Language };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    try {
-      const saved = localStorage.getItem("pickleplay_language");
-      return (saved === "vi" ? "vi" : "en") as Language;
-    } catch {
-      return "en";
+  // i18next is initialized at module load. The provider is a no-op boundary
+  // that ensures the i18n module is imported before consumers run.
+  useEffect(() => {
+    if (!SUPPORTED_LANGUAGES.includes(i18n.language as Language)) {
+      i18n.changeLanguage("en");
     }
-  });
-
-  const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang);
-    localStorage.setItem("pickleplay_language", lang);
   }, []);
-
-  const t = useCallback(
-    (key: string): string => {
-      return translations[language][key] || translations["en"][key] || key;
-    },
-    [language]
-  );
-
-  return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
-
-const fallback: LanguageContextType = {
-  language: "en",
-  setLanguage: () => {},
-  t: (key: string) => translations["en"][key] || key,
+  return <>{children}</>;
 };
 
 export const useLanguage = () => {
-  const ctx = useContext(LanguageContext);
-  return ctx ?? fallback;
+  const { t, i18n: instance } = useTranslation();
+  return {
+    language: (instance.language || "en") as Language,
+    setLanguage: (lang: Language) => {
+      instance.changeLanguage(lang);
+    },
+    t: (key: string) => t(key),
+  };
 };

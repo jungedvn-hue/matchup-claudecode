@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-import type { Language } from "@/i18n/translations";
+import { LANGUAGE_META, SUPPORTED_LANGUAGES, type Language } from "@/i18n";
 import type { AppRole } from "@/hooks/use-roles";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,10 +38,9 @@ const SettingsPage = () => {
     { id: "referee", label: t("settings.referee"), emoji: "🦓", desc: t("settings.refereeDesc") },
   ];
 
-  const languages: { id: Language; label: string; flag: string }[] = [
-    { id: "en", label: "English", flag: "🇺🇸" },
-    { id: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
-  ];
+  const languages: { id: Language; label: string; flag: string }[] = SUPPORTED_LANGUAGES.map(
+    (id) => ({ id, ...LANGUAGE_META[id] })
+  );
 
   const fetchApplications = useCallback(async () => {
     if (!user) return;
@@ -113,19 +112,19 @@ const SettingsPage = () => {
           <p className="text-sm font-display font-semibold text-foreground mb-2 flex items-center gap-1.5">
             <Globe className="h-4 w-4 text-primary" /> {t("settings.language")}
           </p>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {languages.map((lang) => (
               <button
                 key={lang.id}
                 onClick={() => setLanguage(lang.id)}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border-2 ${
+                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border-2 ${
                   language === lang.id
                     ? "border-primary bg-primary/5 text-foreground"
                     : "border-transparent bg-secondary text-muted-foreground"
                 }`}
               >
                 <span className="text-lg">{lang.flag}</span>
-                {lang.label}
+                <span className="truncate">{lang.label}</span>
               </button>
             ))}
           </div>
