@@ -89,7 +89,7 @@ const HomePage = () => {
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-display font-bold text-foreground">{t("home.title")}</h1>
+            <img src="/logo.png" alt="MatchUp" className="h-7" />
             <div className="flex items-center gap-1.5 mt-0.5">
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <MapPin className="h-3 w-3" /> San Francisco, CA

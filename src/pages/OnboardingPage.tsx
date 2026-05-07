@@ -206,7 +206,7 @@ const OnboardingPage = () => {
           <div className="space-y-6">
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-display font-bold text-foreground leading-tight">
-                How will you use PicklePlay?
+                How will you use MatchUp?
               </h2>
               <p className="text-sm text-muted-foreground">
                 Select all that apply — you can be a player AND a host!

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Chrome, Mail, Lock, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { Chrome, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -81,12 +81,7 @@ const AuthPage = () => {
         className="w-full max-w-md z-10"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-primary/10 mb-4">
-            <Sparkles className="h-6 w-6 text-primary" />
-          </div>
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">
-            Matchupvn
-          </h1>
+          <img src="/logo.png" alt="MatchUp" className="h-16 mx-auto mb-4 drop-shadow-sm" />
           <p className="text-muted-foreground">
             {isLogin ? t("auth.tagline.login") : t("auth.tagline.signup")}
           </p>
