@@ -150,6 +150,20 @@ const OnboardingPage = () => {
       };
     });
     await supabase.from("role_applications").insert(rows);
+
+    // If user registered as Store Owner, also create a stores row so they
+    // have a real store record from day one. Lowercase the categories to
+    // align with the marketplace category enum.
+    if (selectedRoles.includes("store_owner") && storeName.trim()) {
+      const sb = supabase as unknown as { from: (t: string) => any };
+      await sb.from("stores").upsert({
+        owner_user_id: user.id,
+        name: storeName,
+        address: location || null,
+        categories: storeCategories.map((c) => c.toLowerCase()),
+        status: "active",
+      }, { onConflict: "owner_user_id" });
+    }
   };
 
   const goNext = async () => {

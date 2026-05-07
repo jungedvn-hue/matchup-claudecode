@@ -34,6 +34,10 @@ import RefereeDashboardPage from "./pages/RefereeDashboardPage";
 import MyMatchesPage from "./pages/MyMatchesPage";
 import VerificationPage from "./pages/VerificationPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
+import StoreDashboardPage from "./pages/StoreDashboardPage";
+import StoreProductsPage from "./pages/StoreProductsPage";
+import StoreBookingsPage from "./pages/StoreBookingsPage";
+import StoreProfilePage from "./pages/StoreProfilePage";
 import HealthHub from "./pages/health-hub/HealthHub";
 import NotFound from "./pages/NotFound";
 
@@ -70,6 +74,10 @@ const AppShell = () => {
         <Route path="/tournament-live" element={<TournamentLivePage />} />
         <Route path="/tournament-live/:tournamentId" element={<TournamentLivePage />} />
         <Route path="/marketplace" element={<MarketplacePage />} />
+        <Route path="/store/:storeId" element={<StoreProfilePage />} />
+        <Route path="/my-store" element={<ProtectedRoute><FeatureGate role="store_owner"><StoreDashboardPage /></FeatureGate></ProtectedRoute>} />
+        <Route path="/my-store/products" element={<ProtectedRoute><FeatureGate role="store_owner"><StoreProductsPage /></FeatureGate></ProtectedRoute>} />
+        <Route path="/my-store/bookings" element={<ProtectedRoute><FeatureGate role="store_owner"><StoreBookingsPage /></FeatureGate></ProtectedRoute>} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />

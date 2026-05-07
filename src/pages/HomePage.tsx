@@ -71,7 +71,7 @@ const HomePage = () => {
     isHost && { emoji: "🏆", label: t("tile.tournaments"), desc: t("tile.tournamentsDesc"), path: "/tournaments" },
     isPlayer && { emoji: "⚡", label: "Ghi điểm DUPR", desc: "Cập nhật rating ngay", action: () => setLogDialogOpen(true) },
     isCourtOwner && { emoji: "🏟️", label: t("tile.myCourts"), desc: t("tile.myCourtsDesc"), path: "/dashboard" },
-    isStoreOwner && { emoji: "🛒", label: t("tile.myStore"), desc: t("tile.myStoreDesc"), path: "/marketplace" },
+    isStoreOwner && { emoji: "🛒", label: t("tile.myStore"), desc: t("tile.myStoreDesc"), path: "/my-store" },
   ].filter(Boolean) as { emoji: string; label: string; desc: string; path?: string; action?: () => void }[];
 
   return (

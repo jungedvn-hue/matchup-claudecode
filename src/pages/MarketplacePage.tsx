@@ -1,56 +1,53 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, MapPin, Star, Clock, Phone, ExternalLink, Dumbbell, Wrench, ShoppingBag, HeartPulse, GraduationCap, Utensils } from "lucide-react";
+import {
+  Search, MapPin, Star, Phone, Loader2, Store as StoreIcon,
+  GraduationCap, Wrench, ShoppingBag, HeartPulse, Dumbbell, Utensils,
+  Volleyball, Footprints, Shirt, Backpack, HandHeart, Circle,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useStores, STORE_CATEGORIES, type Store } from "@/hooks/useStores";
 
-const serviceCategories = [
-  { id: "all", labelKey: "common.all", icon: ShoppingBag },
-  { id: "coaching", label: "Coaching", icon: GraduationCap },
-  { id: "repair", label: "Repair", icon: Wrench },
-  { id: "shop", label: "Pro Shops", icon: ShoppingBag },
-  { id: "physio", label: "Physio", icon: HeartPulse },
-  { id: "fitness", label: "Fitness", icon: Dumbbell },
-  { id: "food", label: "Food", icon: Utensils },
-];
-
-const services = [
-  { id: 1, name: "Ace Pickleball Coaching", category: "coaching", description: "Private & group lessons for all skill levels. IPTPA certified coaches.", distance: "0.3 mi", rating: 4.9, reviews: 127, price: "From $45/hr", hours: "7am – 8pm", image: "🎯", featured: true },
-  { id: 2, name: "Court Side Pro Shop", category: "shop", description: "Paddles, balls, shoes, and accessories. Demo paddles available.", distance: "0.8 mi", rating: 4.7, reviews: 89, price: "$$", hours: "9am – 7pm", image: "🏪", featured: true },
-  { id: 3, name: "Rally Racket Repair", category: "repair", description: "Grip replacement, edge guard repair, and paddle resurfacing.", distance: "1.2 mi", rating: 4.8, reviews: 64, price: "From $15", hours: "10am – 6pm", image: "🔧", featured: false },
-  { id: 4, name: "Peak Performance Physio", category: "physio", description: "Sports physiotherapy specializing in paddle sport injuries.", distance: "1.5 mi", rating: 4.9, reviews: 203, price: "From $80", hours: "8am – 6pm", image: "💪", featured: false },
-  { id: 5, name: "Dink & Drink Café", category: "food", description: "Post-game smoothies, protein bowls, and cold brew. Court-side location.", distance: "0.1 mi", rating: 4.6, reviews: 312, price: "$", hours: "6am – 4pm", image: "🥤", featured: true },
-  { id: 6, name: "Volley Fit Studio", category: "fitness", description: "Pickleball-specific conditioning, agility drills, and strength training.", distance: "2.1 mi", rating: 4.5, reviews: 56, price: "From $30/class", hours: "6am – 9pm", image: "🏋️", featured: false },
-  { id: 7, name: "Sole Survivor Shoe Repair", category: "repair", description: "Court shoe resoling, cleaning, and custom insoles for players.", distance: "1.8 mi", rating: 4.4, reviews: 41, price: "From $25", hours: "9am – 5pm", image: "👟", featured: false },
-  { id: 8, name: "Drop Shot Academy", category: "coaching", description: "Tournament prep, strategy sessions, and video analysis.", distance: "3.2 mi", rating: 4.8, reviews: 98, price: "From $60/hr", hours: "8am – 7pm", image: "🏆", featured: false },
-];
+const CATEGORY_ICONS: Record<string, typeof ShoppingBag> = {
+  paddles: Volleyball,
+  balls: Circle,
+  shoes: Footprints,
+  apparel: Shirt,
+  bags: Backpack,
+  accessories: HandHeart,
+  coaching: GraduationCap,
+  repair: Wrench,
+  physio: HeartPulse,
+  fitness: Dumbbell,
+  food: Utensils,
+};
 
 const MarketplacePage = () => {
+  const navigate = useNavigate();
   const { t } = useLanguage();
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-
-  const filtered = services.filter(s => {
-    const matchesCategory = activeCategory === "all" || s.category === activeCategory;
-    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+  const { stores, loading } = useStores({
+    category: activeCategory === "all" ? undefined : activeCategory,
+    search: searchQuery || undefined,
   });
 
-  const featured = filtered.filter(s => s.featured);
-  const regular = filtered.filter(s => !s.featured);
+  const featured = stores.filter(s => s.is_featured);
+  const regular = stores.filter(s => !s.is_featured);
 
   return (
     <div className="pb-20 min-h-screen">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between max-w-2xl mx-auto">
           <h1 className="text-lg font-display font-bold text-foreground">{t("marketplace.title")}</h1>
-          <span className="text-xs text-muted-foreground">{filtered.length} {t("marketplace.servicesNearby")}</span>
+          <span className="text-xs text-muted-foreground">{stores.length} {t("marketplace.servicesNearby")}</span>
         </div>
 
-        <div className="relative">
+        <div className="relative max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             value={searchQuery}
@@ -60,96 +57,163 @@ const MarketplacePage = () => {
           />
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
-          {serviceCategories.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                activeCategory === cat.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              }`}
-            >
-              <cat.icon className="h-3.5 w-3.5" />
-              {cat.labelKey ? t(cat.labelKey) : cat.label}
-            </button>
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 max-w-2xl mx-auto">
+          <CatChip
+            id="all"
+            label={t("common.all")}
+            icon={ShoppingBag}
+            active={activeCategory === "all"}
+            onClick={() => setActiveCategory("all")}
+          />
+          {STORE_CATEGORIES.map(c => (
+            <CatChip
+              key={c}
+              id={c}
+              label={t(`store.cat.${c}`)}
+              icon={CATEGORY_ICONS[c] ?? ShoppingBag}
+              active={activeCategory === c}
+              onClick={() => setActiveCategory(c)}
+            />
           ))}
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-5">
-        {featured.length > 0 && (
-          <section>
-            <h2 className="text-sm font-display font-semibold text-foreground mb-2.5">{t("marketplace.featured")}</h2>
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
-              {featured.map((service, i) => (
-                <motion.div key={service.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="snap-start shrink-0 w-[260px]">
-                  <Card className="p-0 overflow-hidden shadow-card hover:shadow-elevated transition-shadow cursor-pointer">
-                    <div className="h-24 bg-gradient-to-br from-primary/15 to-accent/10 flex items-center justify-center text-4xl">{service.image}</div>
-                    <div className="p-3.5 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-sm font-display font-semibold text-card-foreground leading-tight">{service.name}</h3>
-                        <Badge variant="secondary" className="shrink-0 text-[10px]">{service.price}</Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{service.description}</p>
-                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-0.5"><Star className="h-3 w-3 text-accent fill-accent" />{service.rating}</span>
-                        <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{service.distance}</span>
-                        <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{service.hours}</span>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
+      <div className="px-4 pt-4 space-y-5 max-w-2xl mx-auto">
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+        ) : stores.length === 0 ? (
+          <Card className="p-10 text-center shadow-card mt-4">
+            <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+              <StoreIcon className="h-6 w-6 text-primary" />
             </div>
-          </section>
-        )}
-
-        <section>
-          <h2 className="text-sm font-display font-semibold text-foreground mb-2.5">
-            {activeCategory === "all" ? t("marketplace.allServices") : serviceCategories.find(c => c.id === activeCategory)?.label}
-          </h2>
-          <div className="space-y-2.5">
-            {regular.length === 0 && featured.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-3xl mb-2">🔍</p>
-                <p className="text-sm text-muted-foreground">{t("marketplace.noServices")}</p>
-              </div>
+            <p className="text-sm text-muted-foreground">{t("store.empty.stores")}</p>
+          </Card>
+        ) : (
+          <>
+            {featured.length > 0 && (
+              <section>
+                <h2 className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2.5">
+                  {t("marketplace.featured")}
+                </h2>
+                <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory">
+                  {featured.map((store, i) => (
+                    <FeaturedCard key={store.id} store={store} index={i} onClick={() => navigate(`/store/${store.id}`)} t={t} />
+                  ))}
+                </div>
+              </section>
             )}
-            {(activeCategory === "all" ? filtered : regular).map((service, i) => (
-              <motion.div key={service.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}>
-                <Card className="p-3.5 shadow-card hover:shadow-elevated transition-all cursor-pointer active:scale-[0.98]">
-                  <div className="flex gap-3">
-                    <div className="h-14 w-14 rounded-xl bg-primary/8 flex items-center justify-center text-2xl shrink-0">{service.image}</div>
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-sm font-display font-semibold text-card-foreground">{service.name}</h3>
-                        <span className="text-[11px] font-medium text-primary shrink-0">{service.price}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{service.description}</p>
-                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-0.5"><Star className="h-3 w-3 text-accent fill-accent" />{service.rating} ({service.reviews})</span>
-                        <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{service.distance}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-3 pt-2.5 border-t border-border">
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs rounded-lg">
-                      <Phone className="h-3 w-3 mr-1" /> {t("marketplace.contact")}
-                    </Button>
-                    <Button size="sm" className="flex-1 h-8 text-xs rounded-lg">
-                      <ExternalLink className="h-3 w-3 mr-1" /> {t("marketplace.viewDetails")}
-                    </Button>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+
+            <section>
+              <h2 className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2.5">
+                {activeCategory === "all" ? t("marketplace.allServices") : t(`store.cat.${activeCategory}`)}
+              </h2>
+              <div className="space-y-2.5">
+                {(activeCategory === "all" ? regular : stores).map((store, i) => (
+                  <StoreCard key={store.id} store={store} index={i} onClick={() => navigate(`/store/${store.id}`)} t={t} />
+                ))}
+              </div>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
 };
+
+const CatChip = ({ label, icon: Icon, active, onClick }: { id: string; label: string; icon: typeof ShoppingBag; active: boolean; onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+      active ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+    }`}
+  >
+    <Icon className="h-3.5 w-3.5" />
+    {label}
+  </button>
+);
+
+const FeaturedCard = ({ store, index, onClick, t }: { store: Store; index: number; onClick: () => void; t: (k: string) => string }) => (
+  <motion.div
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay: index * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    className="snap-start shrink-0 w-[260px]"
+  >
+    <Card onClick={onClick} className="p-0 overflow-hidden shadow-card hover:shadow-elevated transition-shadow cursor-pointer">
+      <div className="h-24 bg-gradient-to-br from-primary/15 to-accent/10 flex items-center justify-center">
+        {store.logo_url ? (
+          <img src={store.logo_url} alt={store.name} className="h-full w-full object-cover" />
+        ) : (
+          <StoreIcon className="h-8 w-8 text-primary" />
+        )}
+      </div>
+      <div className="p-3.5 space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-sm font-display font-semibold text-card-foreground leading-tight">{store.name}</h3>
+          <Badge variant="secondary" className="shrink-0 text-[10px]">⭐ {t("store.profile.featured")}</Badge>
+        </div>
+        {store.description && <p className="text-xs text-muted-foreground line-clamp-2">{store.description}</p>}
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+          {store.avg_rating > 0 && (
+            <span className="flex items-center gap-0.5"><Star className="h-3 w-3 text-amber-500 fill-amber-500" />{store.avg_rating.toFixed(1)}</span>
+          )}
+          {store.address && <span className="flex items-center gap-0.5 truncate"><MapPin className="h-3 w-3" />{store.address}</span>}
+        </div>
+      </div>
+    </Card>
+  </motion.div>
+);
+
+const StoreCard = ({ store, index, onClick, t }: { store: Store; index: number; onClick: () => void; t: (k: string) => string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+  >
+    <Card onClick={onClick} className="p-3.5 shadow-card hover:shadow-elevated transition-all cursor-pointer active:scale-[0.99]">
+      <div className="flex gap-3">
+        <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center text-2xl shrink-0 overflow-hidden">
+          {store.logo_url ? (
+            <img src={store.logo_url} alt={store.name} className="h-full w-full object-cover" />
+          ) : (
+            <StoreIcon className="h-6 w-6 text-primary" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-sm font-display font-semibold text-card-foreground">{store.name}</h3>
+            {store.avg_rating > 0 && (
+              <span className="flex items-center gap-0.5 text-[11px] font-medium text-foreground shrink-0">
+                <Star className="h-3 w-3 text-amber-500 fill-amber-500" />{store.avg_rating.toFixed(1)}
+              </span>
+            )}
+          </div>
+          {store.description && <p className="text-xs text-muted-foreground line-clamp-1">{store.description}</p>}
+          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+            {store.review_count > 0 && <span>{store.review_count} reviews</span>}
+            {store.address && <span className="flex items-center gap-0.5 truncate"><MapPin className="h-3 w-3" />{store.address}</span>}
+          </div>
+          {store.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-0.5">
+              {store.categories.slice(0, 3).map(c => (
+                <span key={c} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/8 text-primary font-medium">{t(`store.cat.${c}`)}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {store.phone && (
+        <div className="flex gap-2 mt-3 pt-2.5 border-t border-border/50">
+          <Button asChild variant="outline" size="sm" className="flex-1 h-8 text-xs rounded-lg" onClick={(e) => e.stopPropagation()}>
+            <a href={`tel:${store.phone}`}><Phone className="h-3 w-3 mr-1" /> {t("marketplace.contact")}</a>
+          </Button>
+          <Button size="sm" className="flex-1 h-8 text-xs rounded-lg" onClick={onClick}>
+            {t("marketplace.viewDetails")}
+          </Button>
+        </div>
+      )}
+    </Card>
+  </motion.div>
+);
 
 export default MarketplacePage;
