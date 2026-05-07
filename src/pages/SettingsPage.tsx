@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { LANGUAGE_META, SUPPORTED_LANGUAGES, type Language } from "@/i18n";
@@ -38,9 +39,6 @@ const SettingsPage = () => {
     { id: "referee", label: t("settings.referee"), emoji: "🦓", desc: t("settings.refereeDesc") },
   ];
 
-  const languages: { id: Language; label: string; flag: string }[] = SUPPORTED_LANGUAGES.map(
-    (id) => ({ id, ...LANGUAGE_META[id] })
-  );
 
   const fetchApplications = useCallback(async () => {
     if (!user) return;
@@ -112,22 +110,26 @@ const SettingsPage = () => {
           <p className="text-sm font-display font-semibold text-foreground mb-2 flex items-center gap-1.5">
             <Globe className="h-4 w-4 text-primary" /> {t("settings.language")}
           </p>
-          <div className="grid grid-cols-2 gap-2">
-            {languages.map((lang) => (
-              <button
-                key={lang.id}
-                onClick={() => setLanguage(lang.id)}
-                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border-2 ${
-                  language === lang.id
-                    ? "border-primary bg-primary/5 text-foreground"
-                    : "border-transparent bg-secondary text-muted-foreground"
-                }`}
-              >
-                <span className="text-lg">{lang.flag}</span>
-                <span className="truncate">{lang.label}</span>
-              </button>
-            ))}
-          </div>
+          <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
+            <SelectTrigger className="h-11 rounded-xl bg-secondary border-transparent">
+              <SelectValue>
+                <span className="flex items-center gap-2">
+                  <span className="text-lg">{LANGUAGE_META[language].flag}</span>
+                  <span className="font-medium">{LANGUAGE_META[language].label}</span>
+                </span>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {SUPPORTED_LANGUAGES.map((id) => (
+                <SelectItem key={id} value={id}>
+                  <span className="flex items-center gap-2">
+                    <span className="text-lg">{LANGUAGE_META[id].flag}</span>
+                    <span>{LANGUAGE_META[id].label}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {isMaster && (

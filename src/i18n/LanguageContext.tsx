@@ -22,6 +22,6 @@ export const useLanguage = () => {
     setLanguage: (lang: Language) => {
       instance.changeLanguage(lang);
     },
-    t: (key: string) => t(key),
+    t: (key: string, options?: Record<string, unknown>) => t(key, options) as string,
   };
 };

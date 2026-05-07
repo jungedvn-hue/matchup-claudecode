@@ -62,15 +62,15 @@ export const getPaidAmount = (b: TournamentBudget): number =>
 // =============================================
 // Category Metadata
 // =============================================
-export const CATEGORY_META: Record<BudgetCategory, { label: string; emoji: string; color: string }> = {
-  venue:      { label: "Thuê sân",           emoji: "🏟️", color: "blue" },
-  referee:    { label: "Trọng tài",           emoji: "🎯", color: "purple" },
-  branding:   { label: "Branding & Agency",   emoji: "🎨", color: "pink" },
-  livestream: { label: "Livestream & Media",  emoji: "📹", color: "red" },
-  prizes:     { label: "Giải thưởng",         emoji: "🏆", color: "yellow" },
-  catering:   { label: "Hậu cần & Catering",  emoji: "🍹", color: "green" },
-  marketing:  { label: "Marketing",           emoji: "📢", color: "orange" },
-  misc:       { label: "Chi phí khác",        emoji: "➕", color: "gray" },
+export const CATEGORY_META: Record<BudgetCategory, { labelKey: string; emoji: string; color: string }> = {
+  venue:      { labelKey: "budget.cat.venue",      emoji: "🏟️", color: "blue" },
+  referee:    { labelKey: "budget.cat.referee",    emoji: "🎯", color: "purple" },
+  branding:   { labelKey: "budget.cat.branding",   emoji: "🎨", color: "pink" },
+  livestream: { labelKey: "budget.cat.livestream", emoji: "📹", color: "red" },
+  prizes:     { labelKey: "budget.cat.prizes",     emoji: "🏆", color: "yellow" },
+  catering:   { labelKey: "budget.cat.catering",   emoji: "🍹", color: "green" },
+  marketing:  { labelKey: "budget.cat.marketing",  emoji: "📢", color: "orange" },
+  misc:       { labelKey: "budget.cat.misc",       emoji: "➕", color: "gray" },
 };
 
 // =============================================
@@ -79,18 +79,18 @@ export const CATEGORY_META: Record<BudgetCategory, { label: string; emoji: strin
 export type TemplateSize = "small" | "medium" | "large";
 
 interface BudgetTemplate {
-  name: string;
-  description: string;
-  participantRange: string;
+  nameKey: string;
+  descriptionKey: string;
+  participantRangeKey: string;
   revenue: RevenueSource;
   items: Omit<BudgetItem, "id" | "isPaid">[];
 }
 
 export const BUDGET_TEMPLATES: Record<TemplateSize, BudgetTemplate> = {
   small: {
-    name: "Giải Nhỏ",
-    description: "Phù hợp với giải nội bộ, câu lạc bộ hoặc sự kiện thân mật",
-    participantRange: "Dưới 32 người",
+    nameKey: "budget.tpl.small.name",
+    descriptionKey: "budget.tpl.small.desc",
+    participantRangeKey: "budget.tpl.small.range",
     revenue: { entryFeePerPerson: 150000, estimatedParticipants: 24, sponsorship: 0, currency: "VND" },
     items: [
       { category: "venue",     description: "Thuê sân thi đấu", unit: "sân/giờ", quantity: 4, unitPrice: 100000, currency: "VND", notes: "4 sân × 4 giờ" },
@@ -102,9 +102,9 @@ export const BUDGET_TEMPLATES: Record<TemplateSize, BudgetTemplate> = {
     ],
   },
   medium: {
-    name: "Giải Trung",
-    description: "Phù hợp với giải cộng đồng, liên quận hoặc giải mở",
-    participantRange: "33 – 64 người",
+    nameKey: "budget.tpl.medium.name",
+    descriptionKey: "budget.tpl.medium.desc",
+    participantRangeKey: "budget.tpl.medium.range",
     revenue: { entryFeePerPerson: 200000, estimatedParticipants: 48, sponsorship: 5000000, currency: "VND" },
     items: [
       { category: "venue",      description: "Thuê sân thi đấu", unit: "sân/giờ", quantity: 48, unitPrice: 120000, currency: "VND", notes: "6 sân × 8 giờ" },
@@ -118,9 +118,9 @@ export const BUDGET_TEMPLATES: Record<TemplateSize, BudgetTemplate> = {
     ],
   },
   large: {
-    name: "Giải Lớn",
-    description: "Phù hợp với giải tỉnh/thành phố, giải mở chuyên nghiệp",
-    participantRange: "65+ người",
+    nameKey: "budget.tpl.large.name",
+    descriptionKey: "budget.tpl.large.desc",
+    participantRangeKey: "budget.tpl.large.range",
     revenue: { entryFeePerPerson: 350000, estimatedParticipants: 96, sponsorship: 30000000, currency: "VND" },
     items: [
       { category: "venue",      description: "Thuê venue cao cấp", unit: "ngày", quantity: 2, unitPrice: 20000000, currency: "VND", notes: "Kèm sân dự phòng" },

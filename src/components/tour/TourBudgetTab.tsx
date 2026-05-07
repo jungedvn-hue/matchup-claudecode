@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { useLanguage } from "@/i18n/LanguageContext";
 import type { Tournament } from "@/lib/tournament/types";
 import {
   type TournamentBudget, type BudgetItem, type BudgetCategory, type Currency, type TemplateSize,
@@ -27,6 +28,7 @@ interface TourBudgetTabProps {
 }
 
 const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
+  const { t } = useLanguage();
   const [budget, setBudget] = useState<TournamentBudget>(() =>
     loadBudget(tournament.id) ?? createEmptyBudget(tournament.id)
   );
@@ -63,12 +65,12 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
   };
 
   const addItem = (category: BudgetCategory) => {
-    if (!newItem.description) { toast.error("Vui lòng nhập mô tả"); return; }
+    if (!newItem.description) { toast.error(t("budget.toast.descRequired")); return; }
     const item: BudgetItem = {
       id: `item-${Date.now()}`,
       category,
       description: newItem.description,
-      unit: newItem.unit || "lần",
+      unit: newItem.unit || t("budget.unit.times"),
       quantity: newItem.quantity,
       unitPrice: newItem.unitPrice,
       currency: budget.currency,
@@ -78,7 +80,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
     setBudget(prev => ({ ...prev, items: [...prev.items, item] }));
     setNewItem({ description: "", unit: "", quantity: 1, unitPrice: 0, notes: "" });
     setAddingCategory(null);
-    toast.success("Đã thêm mục chi phí");
+    toast.success(t("budget.toast.itemAdded"));
   };
 
   const removeItem = (id: string) => {
@@ -93,20 +95,20 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
   };
 
   const applyTemplate = (size: TemplateSize) => {
-    const t = BUDGET_TEMPLATES[size];
-    const items: BudgetItem[] = t.items.map((item, idx) => ({
+    const tpl = BUDGET_TEMPLATES[size];
+    const items: BudgetItem[] = tpl.items.map((item, idx) => ({
       ...item,
       id: `tpl-${size}-${idx}`,
       isPaid: false,
     }));
     setBudget(prev => ({
       ...prev,
-      currency: t.revenue.currency,
-      revenue: t.revenue,
+      currency: tpl.revenue.currency,
+      revenue: tpl.revenue,
       items,
     }));
     setShowTemplates(false);
-    toast.success(`Đã áp dụng template "${t.name}"`);
+    toast.success(t("budget.toast.templateApplied", { name: t(tpl.nameKey) }));
   };
 
   const applySmartEstimate = () => {
@@ -122,7 +124,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
       isPaid: false,
     }));
     setBudget(prev => ({ ...prev, items: [...prev.items, ...newItems] }));
-    toast.success("Đã điền ước tính thông minh!");
+    toast.success(t("budget.toast.smartEstimateDone"));
   };
 
   const setCurrency = (c: Currency) => {
@@ -141,14 +143,14 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calculator className="h-5 w-5 text-primary" />
-          <h2 className="text-base font-display font-bold">Lập kế hoạch ngân sách</h2>
+          <h2 className="text-base font-display font-bold">{t("budget.title")}</h2>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-lg gap-1.5 text-xs" onClick={() => setShowTemplates(!showTemplates)}>
-            <LayoutTemplate className="h-3.5 w-3.5" /> Templates
+            <LayoutTemplate className="h-3.5 w-3.5" /> {t("budget.templates")}
           </Button>
           <Button variant="outline" size="sm" className="rounded-lg gap-1.5 text-xs" onClick={applySmartEstimate}>
-            <Wand2 className="h-3.5 w-3.5 text-primary" /> Ước tính thông minh
+            <Wand2 className="h-3.5 w-3.5 text-primary" /> {t("budget.smartEstimate")}
           </Button>
         </div>
       </div>
@@ -160,18 +162,18 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="pb-3 pt-4 px-4">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <LayoutTemplate className="h-4 w-4 text-primary" /> Chọn mẫu ngân sách
+                  <LayoutTemplate className="h-4 w-4 text-primary" /> {t("budget.chooseTemplate")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4 grid grid-cols-3 gap-2">
                 {(["small", "medium", "large"] as TemplateSize[]).map(size => {
-                  const t = BUDGET_TEMPLATES[size];
+                  const tpl = BUDGET_TEMPLATES[size];
                   return (
                     <button key={size} onClick={() => applyTemplate(size)}
                       className="text-left p-3 rounded-xl border border-border/50 bg-background hover:border-primary/50 hover:bg-primary/5 transition-all space-y-1">
-                      <p className="font-bold text-sm text-foreground">{t.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{t.participantRange}</p>
-                      <p className="text-[10px] text-muted-foreground line-clamp-2">{t.description}</p>
+                      <p className="font-bold text-sm text-foreground">{t(tpl.nameKey)}</p>
+                      <p className="text-[11px] text-muted-foreground">{t(tpl.participantRangeKey)}</p>
+                      <p className="text-[10px] text-muted-foreground line-clamp-2">{t(tpl.descriptionKey)}</p>
                     </button>
                   );
                 })}
@@ -186,7 +188,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
         <Card className="p-3 bg-emerald-500/5 border-emerald-500/20">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="h-4 w-4 text-emerald-500" />
-            <span className="text-xs font-medium text-muted-foreground">Tổng Thu</span>
+            <span className="text-xs font-medium text-muted-foreground">{t("budget.totalRevenue")}</span>
           </div>
           <p className="text-lg font-display font-bold text-emerald-600 dark:text-emerald-400">
             {formatMoney(totalRevenue, budget.currency)}
@@ -195,7 +197,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
         <Card className="p-3 bg-rose-500/5 border-rose-500/20">
           <div className="flex items-center gap-2 mb-1">
             <TrendingDown className="h-4 w-4 text-rose-500" />
-            <span className="text-xs font-medium text-muted-foreground">Tổng Chi</span>
+            <span className="text-xs font-medium text-muted-foreground">{t("budget.totalExpense")}</span>
           </div>
           <p className="text-lg font-display font-bold text-rose-600 dark:text-rose-400">
             {formatMoney(totalExpense, budget.currency)}
@@ -205,7 +207,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Wallet className={`h-4 w-4 ${isProfit ? "text-blue-500" : "text-orange-500"}`} />
-              <span className="text-sm font-bold text-foreground">{isProfit ? "🎉 Dự kiến có lãi" : "⚠️ Dự kiến lỗ"}</span>
+              <span className="text-sm font-bold text-foreground">{isProfit ? t("budget.profitExpected") : t("budget.lossExpected")}</span>
             </div>
             <p className={`text-lg font-display font-bold ${isProfit ? "text-blue-600 dark:text-blue-400" : "text-orange-600 dark:text-orange-400"}`}>
               {isProfit ? "+" : ""}{formatMoney(profitLoss, budget.currency)}
@@ -213,7 +215,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
           </div>
           <div className="mt-2 space-y-1">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" /> Đã thanh toán</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" /> {t("budget.paid")}</span>
               <span>{paidPercent}% ({formatMoney(paidAmount, budget.currency)})</span>
             </div>
             <Progress value={paidPercent} className="h-1.5" />
@@ -226,7 +228,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
         <CardHeader className="pb-3 pt-4 px-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-primary" /> Cấu hình Nguồn thu
+              <DollarSign className="h-4 w-4 text-primary" /> {t("budget.revenueConfig")}
             </CardTitle>
             <Select value={budget.currency} onValueChange={(v) => setCurrency(v as Currency)}>
               <SelectTrigger className="w-24 h-8 text-xs rounded-lg">
@@ -242,14 +244,14 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
         <CardContent className="px-4 pb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Phí đăng ký/người</Label>
+              <Label className="text-xs">{t("budget.entryFee")}</Label>
               <Input type="number" className="h-9 rounded-lg text-sm"
                 value={budget.revenue.entryFeePerPerson || ""}
                 onChange={e => updateRevenue("entryFeePerPerson", parseFloat(e.target.value) || 0)}
                 placeholder={budget.currency === "VND" ? "200,000" : "8"} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Số VĐV dự kiến</Label>
+              <Label className="text-xs">{t("budget.estimatedParticipants")}</Label>
               <Input type="number" className="h-9 rounded-lg text-sm"
                 value={budget.revenue.estimatedParticipants || ""}
                 onChange={e => updateRevenue("estimatedParticipants", parseInt(e.target.value) || 0)}
@@ -257,14 +259,14 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs">Tài trợ bổ sung</Label>
+            <Label className="text-xs">{t("budget.sponsorship")}</Label>
             <Input type="number" className="h-9 rounded-lg text-sm"
               value={budget.revenue.sponsorship || ""}
               onChange={e => updateRevenue("sponsorship", parseFloat(e.target.value) || 0)}
               placeholder={budget.currency === "VND" ? "5,000,000" : "200"} />
           </div>
           <div className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
-            <span className="text-xs font-medium text-muted-foreground">Tổng doanh thu dự kiến</span>
+            <span className="text-xs font-medium text-muted-foreground">{t("budget.totalRevenueExpected")}</span>
             <span className="text-sm font-bold text-emerald-600">{formatMoney(totalRevenue, budget.currency)}</span>
           </div>
         </CardContent>
@@ -272,7 +274,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
 
       {/* Expense Categories */}
       <div className="space-y-2">
-        <p className="text-sm font-semibold text-foreground px-1">Chi phí theo hạng mục</p>
+        <p className="text-sm font-semibold text-foreground px-1">{t("budget.expensesByCategory")}</p>
         {(Object.keys(CATEGORY_META) as BudgetCategory[]).map(cat => {
           const meta = CATEGORY_META[cat];
           const items = itemsByCategory[cat];
@@ -288,7 +290,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
               >
                 <div className="flex items-center gap-2.5">
                   <span className="text-lg">{meta.emoji}</span>
-                  <span className="text-sm font-medium text-foreground">{meta.label}</span>
+                  <span className="text-sm font-medium text-foreground">{t(meta.labelKey)}</span>
                   {items.length > 0 && (
                     <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{items.length}</Badge>
                   )}
@@ -328,14 +330,14 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
                         {isAdding && (
                           <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                             className="space-y-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
-                            <Input placeholder="Mô tả (VD: Thuê sân Kỳ Hòa)" className="h-8 text-xs rounded-lg"
+                            <Input placeholder={t("budget.descPlaceholder")} className="h-8 text-xs rounded-lg"
                               value={newItem.description} onChange={e => setNewItem(p => ({ ...p, description: e.target.value }))} />
                             <div className="grid grid-cols-3 gap-2">
-                              <Input placeholder="ĐVT" className="h-8 text-xs rounded-lg"
+                              <Input placeholder={t("budget.unit")} className="h-8 text-xs rounded-lg"
                                 value={newItem.unit} onChange={e => setNewItem(p => ({ ...p, unit: e.target.value }))} />
-                              <Input type="number" placeholder="SL" className="h-8 text-xs rounded-lg"
+                              <Input type="number" placeholder={t("budget.qty")} className="h-8 text-xs rounded-lg"
                                 value={newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: parseFloat(e.target.value) || 0 }))} />
-                              <Input type="number" placeholder="Đơn giá" className="h-8 text-xs rounded-lg"
+                              <Input type="number" placeholder={t("budget.unitPrice")} className="h-8 text-xs rounded-lg"
                                 value={newItem.unitPrice || ""} onChange={e => setNewItem(p => ({ ...p, unitPrice: parseFloat(e.target.value) || 0 }))} />
                             </div>
                             {newItem.quantity > 0 && newItem.unitPrice > 0 && (
@@ -344,8 +346,8 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
                               </p>
                             )}
                             <div className="flex gap-2">
-                              <Button size="sm" className="flex-1 h-8 rounded-lg text-xs" onClick={() => addItem(cat)}>Thêm</Button>
-                              <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs" onClick={() => setAddingCategory(null)}>Hủy</Button>
+                              <Button size="sm" className="flex-1 h-8 rounded-lg text-xs" onClick={() => addItem(cat)}>{t("budget.add")}</Button>
+                              <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs" onClick={() => setAddingCategory(null)}>{t("budget.cancel")}</Button>
                             </div>
                           </motion.div>
                         )}
@@ -354,7 +356,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
                       {!isAdding && (
                         <button onClick={() => setAddingCategory(cat)}
                           className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-primary hover:bg-primary/5 rounded-lg border border-dashed border-primary/30 transition-colors">
-                          <Plus className="h-3.5 w-3.5" /> Thêm mục chi phí
+                          <Plus className="h-3.5 w-3.5" /> {t("budget.addExpense")}
                         </button>
                       )}
                     </div>
@@ -369,9 +371,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
       {/* Bottom info */}
       <div className="flex items-start gap-2 p-3 rounded-xl bg-muted/50 border border-border/40">
         <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-        <p className="text-[11px] text-muted-foreground">
-          Ngân sách được lưu tự động vào thiết bị. Bật <strong>công tắc màu xanh</strong> trên từng mục để đánh dấu đã thanh toán và theo dõi tiến độ giải ngân.
-        </p>
+        <p className="text-[11px] text-muted-foreground">{t("budget.bottomInfo")}</p>
       </div>
     </div>
   );
