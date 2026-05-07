@@ -81,7 +81,8 @@ const AuthPage = () => {
         className="w-full max-w-md z-10"
       >
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="MatchUp" className="h-16 mx-auto mb-4 drop-shadow-sm" />
+          <img src="/logo.png" alt={t("app.name")} className="h-16 mx-auto mb-2 drop-shadow-sm" />
+          <p className="text-sm font-medium text-primary mb-3">{t("app.tagline")}</p>
           <p className="text-muted-foreground">
             {isLogin ? t("auth.tagline.login") : t("auth.tagline.signup")}
           </p>

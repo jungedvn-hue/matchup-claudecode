@@ -1,4 +1,6 @@
 {
+  "app.name": "MatchUp",
+  "app.tagline": "Where you belong",
   "common.save": "Save Changes",
   "common.back": "Back",
   "common.seeAll": "See all",
