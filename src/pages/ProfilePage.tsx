@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import {
   Settings, ChevronRight, Trophy, Target, TrendingUp,
   Users, Star, BarChart3, MapPin, Edit, Flame, LogOut, Sparkles,
+  Ticket, Heart, History, ShieldCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -201,10 +202,10 @@ const ProfilePage = () => {
         <section className="space-y-1">
           {[
             { label: t("arena.title"), path: "/arena", icon: <Sparkles className="h-4 w-4" /> },
-            { label: t("profile.myTickets"), path: "/my-tickets" },
-            { label: t("profile.favoritePartners"), path: "/favorite-partners" },
-            { label: t("profile.matchHistory"), path: "/match-history" },
-            { label: t("verify.title"), path: "/verify" },
+            { label: t("profile.myTickets"), path: "/my-tickets", icon: <Ticket className="h-4 w-4" /> },
+            { label: t("profile.favoritePartners"), path: "/favorite-partners", icon: <Heart className="h-4 w-4" /> },
+            { label: t("profile.matchHistory"), path: "/match-history", icon: <History className="h-4 w-4" /> },
+            { label: t("verify.title"), path: "/verify", icon: <ShieldCheck className="h-4 w-4" /> },
             { label: t("profile.statistics"), path: "/statistics", icon: <BarChart3 className="h-4 w-4" /> },
             { label: t("profile.roleSettings"), path: "/settings", icon: <Settings className="h-4 w-4" /> },
           ].map((item, i) => (
