@@ -1154,6 +1154,7 @@
 
   "common.optional": "optional",
 
+  "tm.matches": "matches assigned",
   "tm.reopen": "Reopen match",
   "tm.reopenConfirmTitle": "Reopen this match?",
   "tm.reopenConfirmDesc": "The match will return to in-progress so the score can be edited. Reopen actions are recorded.",
@@ -1176,5 +1177,8 @@
   "tm.livestream.platform.tiktok": "TikTok",
   "tm.livestream.platform.twitch": "Twitch",
   "tm.livestream.platform.custom": "Other",
-  "tm.livestream.invalidUrl": "Please enter a valid URL"
+  "tm.livestream.invalidUrl": "Please enter a valid URL",
+  "tm.livestream.matchUrl": "Match stream URL",
+  "tm.livestream.matchPlaceholder": "https://youtube.com/live/...",
+  "tm.livestream.watchMatch": "Watch live"
 }

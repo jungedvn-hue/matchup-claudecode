@@ -9,6 +9,7 @@ interface TournamentContextValue {
   addTournament: (t: Tournament) => Promise<void>;
   updateTournament: (t: Tournament) => Promise<void>;
   updateMatchScore: (matchId: string, scoreA: number, scoreB: number, status: string, winnerId?: string, setScores?: { a: number; b: number }[]) => Promise<void>;
+  updateMatchLivestream: (matchId: string, url: string) => Promise<void>;
   reopenMatch: (matchId: string) => Promise<void>;
   undoLastMatchAction: (matchId: string) => Promise<{ ok: true } | { error: string }>;
   deleteTournament: (id: string) => Promise<void>;
@@ -152,7 +153,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             winner: m.winner_id,
             status: m.status as any,
             courtId: m.court_id,
-            refereeId: m.referee_id
+            refereeId: m.referee_id,
+            livestreamUrl: (m as any).livestream_url ?? undefined,
           }));
           const liveMap = new Map(liveMatches.map(m => [m.id, m]));
 
@@ -498,6 +500,18 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateMatchLivestream = async (matchId: string, url: string) => {
+    try {
+      const { error } = await supabase
+        .from('tour_matches')
+        .update({ livestream_url: url || null } as never)
+        .eq('id', matchId);
+      if (error) throw error;
+    } catch {
+      toast.error("Failed to save stream URL");
+    }
+  };
+
   const deleteTournament = async (id: string) => {
     try {
       const { error } = await supabase.from('tournaments').delete().eq('id', id);
@@ -517,6 +531,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       addTournament,
       updateTournament,
       updateMatchScore,
+      updateMatchLivestream,
       reopenMatch,
       undoLastMatchAction,
       deleteTournament,

@@ -57,6 +57,7 @@ export interface TournamentMatch {
   timeSlot?: string;
   entryAIsWildcard?: boolean;
   entryBIsWildcard?: boolean;
+  livestreamUrl?: string;
 }
 
 export interface Pool {

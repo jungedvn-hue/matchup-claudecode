@@ -60,7 +60,7 @@ const TourManagerControlPage = () => {
   const { tournamentId } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { tournaments, loading, updateTournament, deleteTournament, updateMatchScore: syncMatchScore } = useTournaments();
+  const { tournaments, loading, updateTournament, deleteTournament, updateMatchScore: syncMatchScore, updateMatchLivestream } = useTournaments();
   const tournament = tournaments.find((t) => t.id === tournamentId);
 
   // Scoped realtime: this page only listens to events for the active tournament.
@@ -1734,6 +1734,8 @@ function MatchCard({
 
   // Local state for scores so typing isn't reverted by React's controlled-input reconciliation
   // before the optimistic Supabase round-trip + realtime listener catches up.
+  const { updateMatchLivestream: saveLivestream } = useTournaments();
+  const [localStream, setLocalStream] = useState(match.livestreamUrl ?? "");
   const [localA, setLocalA] = useState(match.scoreA);
   const [localB, setLocalB] = useState(match.scoreB);
   const [localSets, setLocalSets] = useState<{ a: number; b: number }[]>(
@@ -1962,6 +1964,29 @@ function MatchCard({
                   ))}
                 </SelectContent>
               </Select>
+            )}
+          </div>
+        )}
+
+        {/* Per-match livestream URL */}
+        {!readonly && (
+          <div className="mt-2 flex items-center gap-1.5">
+            <Input
+              value={localStream}
+              onChange={(e) => setLocalStream(e.target.value)}
+              placeholder={t("tm.livestream.matchPlaceholder")}
+              className="h-7 text-[10px] flex-1"
+              onKeyDown={(e) => { if (e.key === "Enter") saveLivestream(match.id, localStream); }}
+            />
+            {localStream !== (match.livestreamUrl ?? "") && (
+              <Button size="sm" className="h-7 px-2 text-[10px]" onClick={() => saveLivestream(match.id, localStream)}>
+                {t("common.save")}
+              </Button>
+            )}
+            {localStream && localStream === (match.livestreamUrl ?? "") && (
+              <a href={localStream} target="_blank" rel="noopener noreferrer" className="shrink-0 text-red-500 hover:text-red-600">
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
             )}
           </div>
         )}
