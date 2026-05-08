@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
+import { BrowserRouter, Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { TournamentProvider } from "@/context/TournamentContext";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -34,7 +35,6 @@ import RefereeDashboardPage from "./pages/RefereeDashboardPage";
 import MyMatchesPage from "./pages/MyMatchesPage";
 import VerificationPage from "./pages/VerificationPage";
 import ArenaPage from "./pages/ArenaPage";
-import HelpPage from "./pages/HelpPage";
 import CheckinScannerPage from "./pages/CheckinScannerPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
 import StoreDashboardPage from "./pages/StoreDashboardPage";
@@ -91,7 +91,8 @@ const AppShell = () => {
         <Route path="/favorite-partners" element={<FavoritePartnersPage />} />
         <Route path="/match-history" element={<MatchHistoryPage />} />
         <Route path="/arena" element={<ProtectedRoute><ArenaPage /></ProtectedRoute>} />
-        <Route path="/help" element={<HelpPage />} />
+        <Route path="/help" element={<Navigate to="/settings#faq-start" replace />} />
+        <Route path="/help/:section" element={<Navigate to="/settings" replace />} />
         <Route path="/checkin/:eventId" element={<ProtectedRoute><CheckinScannerPage /></ProtectedRoute>} />
         <Route path="/checkin" element={<ProtectedRoute><CheckinScannerPage /></ProtectedRoute>} />
         <Route path="/statistics" element={<StatisticsPage />} />
@@ -156,6 +157,7 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
     <LanguageProvider>
       <ErrorBoundary>
         <AuthProvider>
@@ -171,6 +173,7 @@ const App = () => (
         </AuthProvider>
       </ErrorBoundary>
     </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

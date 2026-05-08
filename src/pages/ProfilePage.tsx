@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Settings, ChevronRight, Trophy, Target, TrendingUp,
   Users, Star, BarChart3, MapPin, Edit, Flame, LogOut, Sparkles,
-  Ticket, Heart, History, ShieldCheck, Activity, LayoutDashboard, HelpCircle,
+  Ticket, Heart, History, ShieldCheck, Activity, LayoutDashboard,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -211,8 +211,7 @@ const ProfilePage = () => {
             { label: t("verify.title"), path: "/verify", icon: <ShieldCheck className="h-4 w-4" /> },
             { label: t("profile.statistics"), path: "/statistics", icon: <BarChart3 className="h-4 w-4" /> },
             (hasRole(roles, "host") || hasRole(roles, "court_owner")) && { label: t("nav.host"), path: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
-            { label: t("help.title"), path: "/help", icon: <HelpCircle className="h-4 w-4" /> },
-            { label: t("profile.roleSettings"), path: "/settings", icon: <Settings className="h-4 w-4" /> },
+            { label: t("settings.title"), path: "/settings", icon: <Settings className="h-4 w-4" /> },
           ].filter(Boolean).map((item: any, i) => (
             <button key={i} onClick={() => item.path && navigate(item.path)} className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-secondary/50 transition-colors">
               <div className="flex items-center gap-3">

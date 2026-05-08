@@ -64,8 +64,8 @@ const ArenaPage = () => {
             {t("arena.title")}
           </h1>
           <button
-            onClick={() => navigate("/help#arena")}
-            aria-label={t("help.title")}
+            onClick={() => navigate("/settings#faq-arena")}
+            aria-label={t("settings.faq")}
             className="ml-auto h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground"
           >
             <HelpCircle className="h-4 w-4" />
