@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,6 +9,8 @@ import SkillBadge from "@/components/SkillBadge";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useGroup, useGroupMembership } from "@/hooks/useGroups";
+import { useGroupEvents, useRSVP, type RSVPStatus } from "@/hooks/useGroupEvents";
+import CreateEventDialog from "@/components/CreateEventDialog";
 import { toast } from "sonner";
 
 const GroupDetailPage = () => {
@@ -18,7 +20,10 @@ const GroupDetailPage = () => {
   const { user } = useAuth();
   const { group, members, myMembership, loading, refetch } = useGroup(groupId);
   const { join, leave, approve, removeMember } = useGroupMembership(groupId);
+  const { events, refetch: refetchEvents } = useGroupEvents(groupId);
+  const { rsvp, cancelRSVP } = useRSVP();
   const [acting, setActing] = useState(false);
+  const [eventDialogOpen, setEventDialogOpen] = useState(false);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -70,6 +75,17 @@ const GroupDetailPage = () => {
     if (res.error) toast.error(res.error);
     else toast.success(t("groups.removed"));
     refetch();
+  };
+
+  const handleRSVP = async (eventId: string, current: RSVPStatus | null | undefined, next: RSVPStatus) => {
+    const res = current === next ? await cancelRSVP(eventId) : await rsvp(eventId, next);
+    if (res.error) toast.error(res.error);
+    refetchEvents();
+  };
+
+  const formatEventDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -134,6 +150,80 @@ const GroupDetailPage = () => {
             )}
           </Card>
         </motion.div>
+
+        {/* Events */}
+        {(isMember || events.length > 0) && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                {t("events.upcoming")} {events.length > 0 && `(${events.length})`}
+              </h2>
+              {isHost && (
+                <button onClick={() => setEventDialogOpen(true)}
+                  className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20">
+                  <Plus className="h-3 w-3" /> {t("events.newEvent")}
+                </button>
+              )}
+            </div>
+            {events.length === 0 ? (
+              <Card className="p-6 text-center shadow-card">
+                <Calendar className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-xs text-muted-foreground">{t("events.noUpcoming")}</p>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {events.map(ev => {
+                  const myRsvp = ev.my_rsvp;
+                  const full = ev.max_attendees != null && ev.attendee_count >= ev.max_attendees && myRsvp !== "going";
+                  return (
+                    <Card key={ev.id} className="p-3 shadow-card bg-gradient-to-br from-primary/5 via-card to-card">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">{ev.title}</p>
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <Clock className="h-3 w-3" /> {formatEventDate(ev.event_date)}
+                          </p>
+                          {ev.location && (
+                            <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                              <MapPin className="h-3 w-3" /> {ev.location}
+                            </p>
+                          )}
+                          <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">
+                            {ev.attendee_count}{ev.max_attendees ? `/${ev.max_attendees}` : ""} {t("events.going")}
+                          </p>
+                        </div>
+                      </div>
+                      {ev.description && (
+                        <p className="text-[11px] text-muted-foreground mb-2">{ev.description}</p>
+                      )}
+                      {isMember && (
+                        <div className="flex gap-1.5">
+                          {(["going", "maybe", "not_going"] as RSVPStatus[]).map(s => (
+                            <button key={s}
+                              disabled={s === "going" && full}
+                              onClick={() => handleRSVP(ev.id, myRsvp, s)}
+                              className={`flex-1 h-7 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                                myRsvp === s
+                                  ? s === "going" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/30"
+                                  : s === "maybe" ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-1 ring-amber-500/30"
+                                  : "bg-muted text-muted-foreground ring-1 ring-border"
+                                  : "bg-secondary/60 text-muted-foreground hover:text-foreground"
+                              }`}>
+                              {t(`events.rsvp.${s}`)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        <CreateEventDialog open={eventDialogOpen} onOpenChange={setEventDialogOpen} groupId={group.id} onCreated={refetchEvents} />
 
         {/* Pending approvals (host only) */}
         {isHost && pendingMembers.length > 0 && (

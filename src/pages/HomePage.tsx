@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Bell, ShieldCheck, ChevronRight, Trophy, Flame, Gem,
   Sparkles, MapPin, Star, Plus, Award, LayoutDashboard,
-  ShoppingBag, ExternalLink, Users,
+  ShoppingBag, ExternalLink, Users, Calendar, Clock,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { usePendingVerifications } from "@/hooks/useMatches";
 import { useTournaments } from "@/context/TournamentContext";
 import { useStores } from "@/hooks/useStores";
 import { useMyGroups } from "@/hooks/useGroups";
+import { useUpcomingEvents } from "@/hooks/useGroupEvents";
 import { getTierFromLevel } from "@/lib/gamification";
 import { useState } from "react";
 
@@ -34,6 +35,7 @@ const HomePage = () => {
   const { tournaments } = useTournaments();
   const { stores } = useStores();
   const { groups: myGroups } = useMyGroups();
+  const { events: upcomingEvents } = useUpcomingEvents();
   const [logDialogOpen, setLogDialogOpen] = useState(false);
 
   const isHost = hasRole(roles, "host");
@@ -161,6 +163,54 @@ const HomePage = () => {
                   </button>
                 </motion.div>
               ))}
+            </div>
+          </section>
+        )}
+
+        {/* Upcoming Events */}
+        {session && upcomingEvents.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-2.5">
+              <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-primary" />
+                {t("events.upcoming")}
+              </h2>
+            </div>
+            <div className="space-y-2">
+              {upcomingEvents.slice(0, 3).map((ev, i) => {
+                const d = new Date(ev.event_date);
+                const dateLabel = d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+                return (
+                  <motion.button
+                    key={ev.id}
+                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                    onClick={() => navigate(`/group/${ev.group_id}`)}
+                    className="w-full text-left"
+                  >
+                    <Card className="p-3 shadow-card bg-gradient-to-br from-primary/5 via-card to-card hover:border-primary/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl shrink-0">
+                          {ev.group_emoji ?? "🏓"}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-xs font-bold text-foreground truncate">{ev.title}</p>
+                            {ev.my_rsvp === "going" && (
+                              <span className="text-[9px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">{t("events.rsvp.going")}</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground truncate">{ev.group_name}</p>
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <Clock className="h-2.5 w-2.5" /> {dateLabel}
+                            {ev.location && <><span>·</span><span className="truncate">{ev.location}</span></>}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                      </div>
+                    </Card>
+                  </motion.button>
+                );
+              })}
             </div>
           </section>
         )}
