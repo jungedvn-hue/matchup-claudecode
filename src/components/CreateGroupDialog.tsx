@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ShareGroupDialog from "@/components/ShareGroupDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
   const [skill, setSkill] = useState<SkillLevel>("all");
   const [isOpen, setIsOpen] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [createdGroup, setCreatedGroup] = useState<{ id: string; name: string; cover_emoji: string } | null>(null);
 
   const reset = () => { setName(""); setDescription(""); setLocation(""); setEmoji("🏓"); setSkill("all"); setIsOpen(true); };
 
@@ -44,13 +46,30 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
     if (error) { toast.error(error); return; }
     toast.success(t("groups.created"));
     await refetchRoles(); // Pick up auto-granted 'host' role for Tour Manager access
-    reset();
-    onOpenChange(false);
     onCreated?.();
-    if (data) navigate(`/group/${data.id}`);
+    if (data) {
+      setCreatedGroup({ id: data.id, name: data.name, cover_emoji: data.cover_emoji });
+      onOpenChange(false); // close create dialog; share dialog opens via state below
+    } else {
+      reset();
+      onOpenChange(false);
+    }
+  };
+
+  const handleShareClose = () => {
+    const id = createdGroup?.id;
+    setCreatedGroup(null);
+    reset();
+    if (id) navigate(`/group/${id}`);
   };
 
   return (
+    <>
+    <ShareGroupDialog
+      open={!!createdGroup}
+      onOpenChange={v => { if (!v) handleShareClose(); }}
+      group={createdGroup ?? { id: "", name: "", cover_emoji: "🏓" }}
+    />
     <Dialog open={open} onOpenChange={v => { if (!v) reset(); onOpenChange(v); }}>
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader>
@@ -110,7 +129,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
             </div>
             <button onClick={() => setIsOpen(v => !v)}
               className={`relative h-6 w-11 rounded-full transition-colors ${isOpen ? "bg-primary" : "bg-secondary"}`}>
-              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isOpen ? "translate-x-5" : "translate-x-0.5"}`} />
+              <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isOpen ? "translate-x-5" : "translate-x-0"}`} />
             </button>
           </div>
 
@@ -126,6 +145,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 

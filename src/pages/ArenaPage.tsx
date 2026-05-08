@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Flame, Trophy, Target, Gem, Sparkles, Lock, Check } from "lucide-react";
+import { ArrowLeft, Flame, Trophy, Target, Gem, Sparkles, Lock, Check, HelpCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +63,13 @@ const ArenaPage = () => {
             <Sparkles className="h-5 w-5 text-primary" />
             {t("arena.title")}
           </h1>
+          <button
+            onClick={() => navigate("/help#arena")}
+            aria-label={t("help.title")}
+            className="ml-auto h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground"
+          >
+            <HelpCircle className="h-4 w-4" />
+          </button>
         </div>
       </div>
 

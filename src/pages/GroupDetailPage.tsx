@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useGroup, useGroupMembership } from "@/hooks/useGroups";
 import { useGroupEvents, useRSVP, type RSVPStatus } from "@/hooks/useGroupEvents";
 import CreateEventDialog from "@/components/CreateEventDialog";
+import ShareGroupDialog from "@/components/ShareGroupDialog";
 import { toast } from "sonner";
 
 const GroupDetailPage = () => {
@@ -24,6 +25,8 @@ const GroupDetailPage = () => {
   const { rsvp, cancelRSVP } = useRSVP();
   const [acting, setActing] = useState(false);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareEvent, setShareEvent] = useState<{ id: string; title: string } | null>(null);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -97,8 +100,18 @@ const GroupDetailPage = () => {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <h1 className="text-base font-display font-bold text-foreground truncate flex-1">{group.name}</h1>
+          <button onClick={() => { setShareEvent(null); setShareOpen(true); }} aria-label={t("share.title")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
+            <Share2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
+
+      <ShareGroupDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        group={{ id: group.id, name: group.name, cover_emoji: group.cover_emoji }}
+        event={shareEvent ?? undefined}
+      />
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
         {/* Hero */}
@@ -197,6 +210,22 @@ const GroupDetailPage = () => {
                       {ev.description && (
                         <p className="text-[11px] text-muted-foreground mb-2">{ev.description}</p>
                       )}
+                      <div className="flex gap-1.5 mb-1.5">
+                        <button
+                          onClick={() => { setShareEvent({ id: ev.id, title: ev.title }); setShareOpen(true); }}
+                          className="flex-1 h-7 rounded-lg text-[11px] font-semibold bg-secondary/60 text-foreground hover:bg-secondary transition-all flex items-center justify-center gap-1"
+                        >
+                          <Share2 className="h-3 w-3" /> {t("share.shareEvent")}
+                        </button>
+                        {isHost && (
+                          <button
+                            onClick={() => navigate(`/checkin/${ev.id}`)}
+                            className="flex-1 h-7 rounded-lg text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/15 transition-all flex items-center justify-center gap-1"
+                          >
+                            <ScanLine className="h-3 w-3" /> {t("checkin.openScanner")}
+                          </button>
+                        )}
+                      </div>
                       {isMember && (
                         <div className="flex gap-1.5">
                           {(["going", "maybe", "not_going"] as RSVPStatus[]).map(s => (

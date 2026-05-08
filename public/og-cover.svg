@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="80%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ball" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#facc15"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- decorative grid -->
+  <g stroke="#ffffff" stroke-opacity="0.04" stroke-width="1">
+    <line x1="0" y1="158" x2="1200" y2="158"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="472" x2="1200" y2="472"/>
+    <line x1="300" y1="0" x2="300" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="900" y1="0" x2="900" y2="630"/>
+  </g>
+
+  <!-- Pickleball + paddle decorative -->
+  <g transform="translate(900, 200)">
+    <ellipse cx="0" cy="180" rx="170" ry="14" fill="#000" opacity="0.25"/>
+    <circle cx="0" cy="0" r="100" fill="url(#ball)"/>
+    <g fill="#0f172a" opacity="0.85">
+      <circle cx="-30" cy="-25" r="9"/>
+      <circle cx="22" cy="-32" r="9"/>
+      <circle cx="40" cy="15" r="9"/>
+      <circle cx="-10" cy="22" r="9"/>
+      <circle cx="-45" cy="10" r="9"/>
+      <circle cx="20" cy="40" r="9"/>
+      <circle cx="-25" cy="55" r="9"/>
+      <circle cx="55" cy="-15" r="9"/>
+    </g>
+  </g>
+
+  <!-- Brand text -->
+  <g transform="translate(80, 230)">
+    <text x="0" y="0" font-family="Helvetica, Arial, sans-serif" font-size="120" font-weight="900" fill="#ffffff" letter-spacing="-3">MatchUp</text>
+    <text x="6" y="60" font-family="Helvetica, Arial, sans-serif" font-size="32" font-weight="600" fill="#a7f3d0" letter-spacing="0.5">Where you belong</text>
+    <text x="6" y="160" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="500" fill="#e2e8f0" opacity="0.92">Cộng đồng pickleball Việt Nam</text>
+    <text x="6" y="200" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#cbd5e1" opacity="0.85">Tìm nhóm · Giải đấu · Điểm số real-time</text>
+  </g>
+
+  <!-- bottom URL -->
+  <g transform="translate(80, 560)">
+    <rect x="-6" y="-30" width="280" height="42" rx="21" fill="#ffffff" fill-opacity="0.10"/>
+    <text x="20" y="-2" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#ffffff">matchup.piktv.asia</text>
+  </g>
+</svg>

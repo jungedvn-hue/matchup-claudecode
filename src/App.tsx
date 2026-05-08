@@ -34,6 +34,8 @@ import RefereeDashboardPage from "./pages/RefereeDashboardPage";
 import MyMatchesPage from "./pages/MyMatchesPage";
 import VerificationPage from "./pages/VerificationPage";
 import ArenaPage from "./pages/ArenaPage";
+import HelpPage from "./pages/HelpPage";
+import CheckinScannerPage from "./pages/CheckinScannerPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
 import StoreDashboardPage from "./pages/StoreDashboardPage";
 import StoreProductsPage from "./pages/StoreProductsPage";
@@ -89,6 +91,9 @@ const AppShell = () => {
         <Route path="/favorite-partners" element={<FavoritePartnersPage />} />
         <Route path="/match-history" element={<MatchHistoryPage />} />
         <Route path="/arena" element={<ProtectedRoute><ArenaPage /></ProtectedRoute>} />
+        <Route path="/help" element={<HelpPage />} />
+        <Route path="/checkin/:eventId" element={<ProtectedRoute><CheckinScannerPage /></ProtectedRoute>} />
+        <Route path="/checkin" element={<ProtectedRoute><CheckinScannerPage /></ProtectedRoute>} />
         <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/create-event" element={<CreateEventPage />} />
         

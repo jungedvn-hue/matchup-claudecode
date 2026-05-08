@@ -48,7 +48,10 @@ export const useGroups = (filter?: { skill?: SkillLevel; search?: string }) => {
     setLoading(true);
     let q = sb.from("groups").select("*").order("member_count", { ascending: false });
     if (filter?.skill && filter.skill !== "all") q = q.eq("skill_level", filter.skill);
-    if (filter?.search) q = q.ilike("name", `%${filter.search}%`);
+    if (filter?.search) {
+      const s = filter.search.replace(/[%,]/g, "");
+      q = q.or(`name.ilike.%${s}%,location.ilike.%${s}%`);
+    }
     const { data } = await q;
     setGroups((data as Group[]) ?? []);
     setLoading(false);

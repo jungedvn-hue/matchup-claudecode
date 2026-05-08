@@ -10,6 +10,7 @@ import SkillBadge from "@/components/SkillBadge";
 import CreateGroupDialog from "@/components/CreateGroupDialog";
 
 const SKILL_FILTERS: SkillLevel[] = ["all", "beginner", "intermediate", "advanced", "pro"];
+const CITY_CHIPS = ["TP.HCM", "Hà Nội", "Đà Nẵng", "Cần Thơ", "Hải Phòng", "Nha Trang", "Vũng Tàu"];
 
 const GroupsPage = () => {
   const { t } = useLanguage();
@@ -61,6 +62,17 @@ const GroupsPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <input placeholder={t("groups.searchPh")} value={search} onChange={e => setSearch(e.target.value)}
                 className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary/60 text-sm placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30" />
+            </div>
+            <div className="max-w-2xl mx-auto flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
+              {CITY_CHIPS.map(c => {
+                const active = search === c;
+                return (
+                  <button key={c} onClick={() => setSearch(active ? "" : c)}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all shrink-0 flex items-center gap-1 ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
+                    <MapPin className="h-3 w-3" /> {c}
+                  </button>
+                );
+              })}
             </div>
             <div className="max-w-2xl mx-auto flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
               {SKILL_FILTERS.map(s => (
