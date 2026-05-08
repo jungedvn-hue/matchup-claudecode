@@ -1,380 +1,263 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Bell, Search, Plus, Users, Calendar, ChevronRight, Crown, Navigation, Filter, X, Star, LayoutDashboard, ShoppingBag, Trophy } from "lucide-react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import {
+  Bell, ShieldCheck, ChevronRight, Trophy, Flame, Gem,
+  Sparkles, MapPin, Star, Plus, Award, LayoutDashboard,
+  ShoppingBag, ExternalLink,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import SkillBadge from "@/components/SkillBadge";
-import { GroupRating, StarDisplay } from "@/components/GroupRating";
-import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import XPProgressBar from "@/components/XPProgressBar";
 import LogMatchDialog from "@/components/LogMatchDialog";
-import { pendingMatches } from "@/data/profile";
-import { ShieldCheck } from "lucide-react";
-import { groups, nearbyGroups, Group } from "@/data/groups";
-import JoinGroupDialog from "@/components/JoinGroupDialog";
-import { toast } from "@/hooks/use-toast";
-import { useRoles, hasRole } from "@/hooks/use-roles";
 import { useLanguage } from "@/i18n/LanguageContext";
-
-const skillFilters = ["all", "beginner", "intermediate", "advanced", "pro"] as const;
+import { useAuth } from "@/context/AuthContext";
+import { useRoles, hasRole } from "@/hooks/use-roles";
+import { usePlayerProfile } from "@/hooks/useMatches";
+import { useStreak } from "@/hooks/useGamification";
+import { usePendingVerifications } from "@/hooks/useMatches";
+import { useTournaments } from "@/context/TournamentContext";
+import { useStores } from "@/hooks/useStores";
+import { getTierFromLevel } from "@/lib/gamification";
+import { useState } from "react";
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
+  const isVi = language === "vi";
+  const { user, session } = useAuth();
   const roles = useRoles();
-  const { t } = useLanguage();
-  const [activeFilter, setActiveFilter] = useState<string>("all");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [joinGroup, setJoinGroup] = useState<Group | null>(null);
-  const [joinMode, setJoinMode] = useState<"join" | "request">("join");
-  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const { profile } = usePlayerProfile();
+  const { streak } = useStreak();
+  const { matches: pendingMatches } = usePendingVerifications();
+  const { tournaments } = useTournaments();
+  const { stores } = useStores();
   const [logDialogOpen, setLogDialogOpen] = useState(false);
 
-  const isPlayer = hasRole(roles, "player");
   const isHost = hasRole(roles, "host");
-  const isCourtOwner = hasRole(roles, "court_owner");
   const isStoreOwner = hasRole(roles, "store_owner");
+  const isPlayer = hasRole(roles, "player");
 
-  const quickStats = [
-    isPlayer && { label: t("stats.myGroups"), value: "5", icon: Users },
-    isPlayer && { label: t("stats.upcoming"), value: "3", icon: Calendar },
-    isHost && { label: t("stats.hosting"), value: "3", icon: Crown },
-    isCourtOwner && { label: t("stats.courts"), value: "4", icon: MapPin },
-    isStoreOwner && { label: t("stats.orders"), value: "12", icon: ShoppingBag },
-  ].filter(Boolean) as { label: string; value: string; icon: any }[];
+  const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Player";
+  const level = profile?.current_level ?? 1;
+  const totalXP = profile?.total_xp ?? 0;
+  const gems = profile?.gems ?? 0;
+  const currentStreak = streak?.current_streak ?? 0;
+  const tier = getTierFromLevel(level);
 
-  const handleJoinClick = (e: React.MouseEvent, group: Group, mode: "join" | "request") => {
-    e.stopPropagation();
-    setJoinGroup(group);
-    setJoinMode(mode);
-  };
+  const flameColor = currentStreak >= 30 ? "text-purple-500" : currentStreak >= 7 ? "text-blue-500" : "text-orange-500";
 
-  const handleJoinConfirm = (groupId: string) => {
-    setJoinedIds((prev) => new Set(prev).add(groupId));
-    toast({
-      title: joinMode === "join" ? t("home.joinedGroup") : t("home.requestSent"),
-      description: joinMode === "join" ? t("home.joinedGroupDesc") : t("home.requestSentDesc"),
-    });
-  };
+  const activeTournaments = tournaments.filter(t => t.status === "active").slice(0, 3);
+  const featuredStores = stores.slice(0, 4);
 
-  const filterGroups = (list: Group[]) =>
-    list.filter((g) => {
-      const matchSkill = activeFilter === "all" || g.skill === activeFilter;
-      const matchSearch = !searchQuery || g.name.toLowerCase().includes(searchQuery.toLowerCase()) || g.location.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchSkill && matchSearch;
-    });
+  const quickActions = [
+    isPlayer && { icon: Trophy, label: t("common.logMatch"), tone: "primary", action: () => setLogDialogOpen(true) },
+    isPlayer && { icon: Sparkles, label: t("arena.title"), tone: "amber", path: "/arena" },
+    isHost && { icon: Award, label: t("nav.tourManager"), tone: "primary", path: "/tour-manager" },
+    isHost && { icon: LayoutDashboard, label: t("nav.host"), tone: "blue", path: "/dashboard" },
+    isStoreOwner && { icon: ShoppingBag, label: t("tile.myStore"), tone: "emerald", path: "/my-store" },
+    isPlayer && { icon: ShieldCheck, label: t("verify.title"), tone: "emerald", path: "/verify" },
+  ].filter(Boolean) as { icon: any; label: string; tone: string; path?: string; action?: () => void }[];
 
-  const filteredMyGroups = filterGroups(groups);
-  const filteredNearby = filterGroups(nearbyGroups);
-
-  const dashboardTiles = [
-    isHost && { emoji: "📋", label: t("tile.hostDashboard"), desc: t("tile.hostDashboardDesc"), path: "/dashboard" },
-    isHost && { emoji: "🏆", label: t("tile.tournaments"), desc: t("tile.tournamentsDesc"), path: "/tournaments" },
-    isPlayer && { emoji: "⚡", label: "Ghi điểm DUPR", desc: "Cập nhật rating ngay", action: () => setLogDialogOpen(true) },
-    isCourtOwner && { emoji: "🏟️", label: t("tile.myCourts"), desc: t("tile.myCourtsDesc"), path: "/dashboard" },
-    isStoreOwner && { emoji: "🛒", label: t("tile.myStore"), desc: t("tile.myStoreDesc"), path: "/my-store" },
-  ].filter(Boolean) as { emoji: string; label: string; desc: string; path?: string; action?: () => void }[];
+  const toneClass = (tone: string) =>
+    tone === "primary" ? "bg-primary/10 text-primary" :
+    tone === "amber" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
+    tone === "emerald" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+    "bg-blue-500/10 text-blue-600 dark:text-blue-400";
 
   return (
     <div className="pb-20 min-h-screen">
       <LogMatchDialog open={logDialogOpen} onOpenChange={setLogDialogOpen} />
-      <JoinGroupDialog
-        group={joinGroup}
-        open={!!joinGroup}
-        onOpenChange={(open) => !open && setJoinGroup(null)}
-        onJoin={handleJoinConfirm}
-        mode={joinMode}
-      />
 
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <img src="/logo.png" alt="MatchUp" className="h-7" />
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <MapPin className="h-3 w-3" /> San Francisco, CA
-              </p>
-              <div className="flex gap-1">
-                {roles.map(r => (
-                  <span key={r} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium capitalize">
-                    {r === "court_owner" ? "Court" : r === "store_owner" ? "Store" : r}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className={`h-9 w-9 rounded-xl flex items-center justify-center transition-colors ${
-                searchOpen ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {searchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
-            </button>
-            <button className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors relative">
-              <Bell className="h-4 w-4" />
-              <div className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-sport-orange" />
-            </button>
-          </div>
+        <div className="flex items-center justify-between max-w-2xl mx-auto">
+          <img src="/logo.png" alt="MatchUp" className="h-7" />
+          <button className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors relative">
+            <Bell className="h-4 w-4" />
+            <div className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500" />
+          </button>
         </div>
-
-        <AnimatePresence>
-          {searchOpen && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-              <div className="pt-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder={t("home.searchPlaceholder")}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-10 pl-10 pr-4 rounded-xl bg-secondary text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30"
-                    autoFocus
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      {/* Pending Verifications Alert */}
-      {pendingMatches.length > 0 && (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          className="px-4 pt-2"
-        >
-          <div 
-            onClick={() => navigate("/verify")}
-            className="flex items-center justify-between p-3 bg-sport-orange/10 border border-sport-orange/20 rounded-xl cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-sport-orange" />
-              <p className="text-[11px] font-bold text-sport-orange">BẠN CÓ {pendingMatches.length} TRẬN ĐẤU CẦN XÁC THỰC</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-sport-orange" />
-          </div>
-        </motion.div>
-      )}
+      <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
 
-      <div className="px-4 space-y-5 pt-4">
-        {/* Quick Stats */}
-        {quickStats.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`grid gap-2 ${quickStats.length <= 3 ? `grid-cols-${quickStats.length}` : "grid-cols-3"}`}
-            style={{ gridTemplateColumns: `repeat(${Math.min(quickStats.length, 4)}, 1fr)` }}
-          >
-            {quickStats.map((stat, i) => (
-              <Card key={i} className="p-3 text-center shadow-card">
-                <stat.icon className="h-4 w-4 mx-auto text-primary mb-1" />
-                <p className="text-lg font-display font-bold text-foreground">{stat.value}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{stat.label}</p>
-              </Card>
-            ))}
+        {/* Hero Card */}
+        {session && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="p-4 shadow-card overflow-hidden bg-gradient-to-br from-primary/5 via-card to-card space-y-3">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12 ring-2 ring-primary/20 shrink-0">
+                  {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                  <AvatarFallback className="bg-primary/10 text-primary font-display font-bold">
+                    {displayName[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">{isVi ? "Chào," : "Hey,"}</p>
+                  <h2 className="text-base font-display font-bold text-card-foreground truncate">{displayName}</h2>
+                  <p className="text-[11px] text-muted-foreground">Lv.{level} · {tier}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${currentStreak >= 30 ? "bg-purple-500/10" : currentStreak >= 7 ? "bg-blue-500/10" : "bg-orange-500/10"}`}>
+                    <Flame className={`h-3.5 w-3.5 ${flameColor}`} />
+                    <span className={`text-xs font-bold tabular-nums ${flameColor}`}>{currentStreak}</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-cyan-500/10">
+                    <Gem className="h-3.5 w-3.5 text-cyan-500" />
+                    <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400 tabular-nums">{gems}</span>
+                  </div>
+                </div>
+              </div>
+
+              <XPProgressBar currentXP={totalXP} level={level} />
+
+              <Button
+                onClick={() => setLogDialogOpen(true)}
+                className="w-full rounded-xl gap-2 font-bold shadow-lg shadow-primary/20"
+              >
+                <Plus className="h-4 w-4" /> {t("common.logMatch")}
+              </Button>
+            </Card>
           </motion.div>
         )}
 
-        {/* Dashboard Tiles */}
-        {dashboardTiles.length > 0 && (
-          <div>
-            <h2 className="text-base font-display font-semibold text-foreground mb-3">{t("common.manage")}</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {dashboardTiles.map((tile, i) => (
-                <motion.div key={tile.label} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}>
-                  <Card
-                    className="p-4 shadow-card hover:shadow-elevated transition-all cursor-pointer active:scale-[0.97]"
-                    onClick={() => tile.path ? navigate(tile.path) : tile.action?.()}
+        {/* Pending Verifications Alert */}
+        {pendingMatches.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+            <button
+              onClick={() => navigate("/verify")}
+              className="w-full flex items-center justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl"
+            >
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                  {pendingMatches.length} {t("home.pendingVerify")}
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-amber-500 shrink-0" />
+            </button>
+          </motion.div>
+        )}
+
+        {/* Quick Actions */}
+        {quickActions.length > 0 && (
+          <section>
+            <h2 className="text-sm font-display font-bold text-foreground mb-2.5">{t("common.quickActions")}</h2>
+            <div className="grid grid-cols-3 gap-2">
+              {quickActions.map((action, i) => (
+                <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.04 }}>
+                  <button
+                    onClick={() => action.path ? navigate(action.path) : action.action?.()}
+                    className="w-full p-3 rounded-xl bg-card border border-border hover:border-primary/30 hover:bg-primary/5 transition-all active:scale-95 text-left shadow-sm"
                   >
-                    <span className="text-2xl">{tile.emoji}</span>
-                    <h3 className="text-xs font-display font-bold text-card-foreground mt-2">{tile.label}</h3>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{tile.desc}</p>
-                  </Card>
+                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center mb-2 ${toneClass(action.tone)}`}>
+                      <action.icon className="h-4 w-4" />
+                    </div>
+                    <p className="text-[11px] font-semibold text-foreground leading-tight">{action.label}</p>
+                  </button>
                 </motion.div>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Player sections */}
-        {isPlayer && (
-          <>
-            {/* Skill Filter Chips */}
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                {skillFilters.map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setActiveFilter(filter)}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${
-                      activeFilter === filter
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-secondary text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {filter === "all" ? t("common.all") : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* My Groups */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-display font-semibold text-foreground">{t("home.myGroups")}</h2>
-                <Button size="sm" variant="outline" className="rounded-xl gap-1 text-xs h-8">
-                  <Plus className="h-3.5 w-3.5" /> {t("home.newGroup")}
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {filteredMyGroups.map((group, i) => {
-                  const isFeatured = i === 0;
-                  return (
-                    <motion.div key={group.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }} className={isFeatured ? "col-span-2" : ""}>
-                      <Card
-                        className={`overflow-hidden shadow-card hover:shadow-elevated transition-all cursor-pointer group relative ${isFeatured ? "p-0" : ""}`}
-                        onClick={() => navigate(`/group/${group.id}`)}
-                      >
-                        {isFeatured ? (
-                          <div className="relative">
-                            <div className="h-2 bg-gradient-to-r from-primary to-accent" />
-                            <div className="p-4">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-2xl">{group.emoji}</span>
-                                <div className="flex-1">
-                                  <h3 className="text-sm font-display font-bold text-card-foreground">{group.name}</h3>
-                                  <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold bg-primary/10 text-primary">{group.role}</span>
-                                    <SkillBadge level={group.skill} />
-                                  </div>
-                                </div>
-                                <div className="flex flex-col items-end gap-1">
-                                  <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                                    <Navigation className="h-2.5 w-2.5" /> {group.distance}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {group.members} {t("common.members")}</span>
-                                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {group.location}</span>
-                                <span className="flex items-center gap-1">
-                                  <StarDisplay rating={group.avgRating} />
-                                  <span className="text-[10px]">{group.avgRating}</span>
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between mt-3">
-                                <div className="flex items-center gap-1.5">
-                                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                                  <span className="text-xs text-primary font-medium">{group.activePlayers} {t("common.playingNow")}</span>
-                                </div>
-                                <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                                  Next: {group.nextEvent}
-                                  <ChevronRight className="h-3.5 w-3.5 group-hover:text-primary transition-colors" />
-                                </span>
-                              </div>
-                            </div>
+        {/* Active Tournaments */}
+        {activeTournaments.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-2.5">
+              <h2 className="text-sm font-display font-bold text-foreground">{t("home.activeTournaments")}</h2>
+              <button onClick={() => navigate("/tournaments")} className="text-xs text-primary font-medium">{t("common.seeAll")}</button>
+            </div>
+            <div className="space-y-2">
+              {activeTournaments.map((tour, i) => {
+                const total = tour.categories.flatMap(c => [...c.pools.flatMap(p => p.matches), ...c.bracketRounds.flatMap(r => r.matches)]).length;
+                const done = tour.categories.flatMap(c => [...c.pools.flatMap(p => p.matches), ...c.bracketRounds.flatMap(r => r.matches)]).filter(m => m.status === "completed").length;
+                const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                return (
+                  <motion.div key={tour.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
+                    <button
+                      onClick={() => navigate(`/tour-manager/${tour.id}`)}
+                      className="w-full text-left"
+                    >
+                      <Card className="p-3 shadow-card hover:border-primary/30 transition-colors">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{tour.name}</p>
+                            <p className="text-[11px] text-muted-foreground">{tour.date} · {tour.location}</p>
                           </div>
+                          <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full shrink-0 ml-2">LIVE</span>
+                        </div>
+                        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-1 tabular-nums">{done}/{total} {t("home.matchesDone")}</p>
+                      </Card>
+                    </button>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Marketplace Preview */}
+        {featuredStores.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-2.5">
+              <h2 className="text-sm font-display font-bold text-foreground">{t("home.featuredStores")}</h2>
+              <button onClick={() => navigate("/marketplace")} className="text-xs text-primary font-medium">{t("common.seeAll")}</button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {featuredStores.map((store, i) => (
+                <motion.div key={store.id} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.04 }}>
+                  <button onClick={() => navigate(`/store/${store.id}`)} className="w-full text-left">
+                    <Card className="p-3 shadow-card hover:border-primary/30 transition-colors h-full">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        {store.logo_url ? (
+                          <img src={store.logo_url} alt={store.name} className="h-8 w-8 rounded-lg object-cover shrink-0" />
                         ) : (
-                          <div className="p-3 flex flex-col h-full min-h-[140px] justify-between">
-                            <div>
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-xl">{group.emoji}</span>
-                                <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                                  <Navigation className="h-2 w-2" /> {group.distance}
-                                </span>
-                              </div>
-                              <h3 className="text-xs font-display font-bold text-card-foreground leading-tight">{group.name}</h3>
-                              <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-0.5">
-                                <MapPin className="h-2.5 w-2.5" /> {group.location}
-                              </p>
-                            </div>
-                            <div className="mt-auto pt-2 border-t border-border">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                                  <Users className="h-2.5 w-2.5" /> {group.members}
-                                </span>
-                                <SkillBadge level={group.skill} />
-                              </div>
-                              <p className="text-[10px] text-primary font-medium mt-1">{group.nextEvent}</p>
-                            </div>
+                          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <ShoppingBag className="h-4 w-4 text-primary" />
                           </div>
                         )}
-                      </Card>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Nearby Groups */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h2 className="text-base font-display font-semibold text-foreground flex items-center gap-1.5">
-                    <Navigation className="h-4 w-4 text-primary" /> {t("home.nearbyGroups")}
-                  </h2>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{t("home.exploreNearby")}</p>
-                </div>
-                <button className="text-[11px] text-primary font-medium" onClick={() => navigate("/discover")}>
-                  {t("home.viewAll")}
-                </button>
-              </div>
-              <div className="space-y-2.5">
-                {filteredNearby.map((group, i) => (
-                  <motion.div key={group.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 + i * 0.06 }}>
-                    <Card className="p-3 shadow-card hover:shadow-elevated transition-all cursor-pointer group" onClick={() => navigate(`/group/${group.id}`)}>
-                      <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0">
-                          {group.emoji}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="text-xs font-display font-bold text-card-foreground truncate">{group.name}</h3>
-                            <span className="text-[9px] text-muted-foreground flex items-center gap-0.5 shrink-0 ml-2">
-                              <Navigation className="h-2.5 w-2.5" /> {group.distance}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                              <MapPin className="h-2.5 w-2.5" /> {group.location}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                              <Users className="h-2.5 w-2.5" /> {group.members}
-                            </span>
-                            <span className="flex items-center gap-0.5">
-                              <StarDisplay rating={group.avgRating} />
-                              <span className="text-[9px] text-muted-foreground">{group.avgRating}</span>
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between mt-1.5">
-                            <div className="flex items-center gap-1.5">
-                              {group.activePlayers > 0 ? (
-                                <>
-                                  <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                                  <span className="text-[10px] text-primary font-medium">{group.activePlayers} {t("common.playingNow")}</span>
-                                </>
-                              ) : (
-                                <span className="text-[10px] text-muted-foreground">Next: {group.nextEvent}</span>
-                              )}
-                            </div>
-                            {joinedIds.has(group.id) ? (
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">✓ Joined</span>
-                            ) : group.isOpen ? (
-                              <Button size="sm" className="h-6 px-3 text-[10px] rounded-full font-semibold" onClick={(e) => handleJoinClick(e, group, "join")}>Join</Button>
-                            ) : (
-                              <button className="text-[9px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium hover:bg-primary/10 hover:text-primary transition-colors" onClick={(e) => handleJoinClick(e, group, "request")}>Request</button>
-                            )}
-                          </div>
-                        </div>
+                        <p className="text-xs font-semibold text-foreground truncate">{store.name}</p>
+                      </div>
+                      {store.address && (
+                        <p className="text-[10px] text-muted-foreground truncate flex items-center gap-0.5">
+                          <MapPin className="h-2.5 w-2.5 shrink-0" /> {store.address}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                        <span className="text-[10px] font-medium text-foreground tabular-nums">{store.avg_rating.toFixed(1)}</span>
+                        <span className="text-[10px] text-muted-foreground">({store.review_count})</span>
+                        {store.map_url && (
+                          <ExternalLink className="h-2.5 w-2.5 text-muted-foreground ml-auto" />
+                        )}
                       </div>
                     </Card>
-                  </motion.div>
-                ))}
-              </div>
+                  </button>
+                </motion.div>
+              ))}
             </div>
-          </>
+          </section>
+        )}
+
+        {/* Guest CTA */}
+        {!session && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="p-6 text-center shadow-card bg-gradient-to-br from-primary/5 via-card to-card space-y-3">
+              <Trophy className="h-10 w-10 mx-auto text-primary" />
+              <div>
+                <h2 className="text-base font-display font-bold text-foreground">{t("home.guestTitle")}</h2>
+                <p className="text-xs text-muted-foreground mt-1">{t("home.guestDesc")}</p>
+              </div>
+              <Button onClick={() => navigate("/login")} className="w-full rounded-xl font-bold">
+                {t("common.loginNow")}
+              </Button>
+            </Card>
+          </motion.div>
         )}
       </div>
     </div>
