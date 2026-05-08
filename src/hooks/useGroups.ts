@@ -162,13 +162,19 @@ export const useCreateGroup = () => {
     }).select().single();
     if (error) return { data: null, error: error.message };
 
-    // Auto-add host as member
+    // Auto-add creator as group host member
     await sb.from("group_members").insert({
       group_id: (data as Group).id,
       user_id: user.id,
       role: "host",
       status: "active",
     });
+
+    // Social Host inherits Tour Manager — grant 'host' app-role
+    // (upsert handles fresh grant AND reactivating a previously-revoked role)
+    await sb.from("user_roles").upsert({
+      user_id: user.id, role: "host", revoked_at: null,
+    }, { onConflict: "user_id,role" });
 
     return { data: data as Group, error: null };
   };

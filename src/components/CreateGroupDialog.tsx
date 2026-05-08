@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCreateGroup, type SkillLevel } from "@/hooks/useGroups";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -23,6 +24,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { createGroup } = useCreateGroup();
+  const { refetchRoles } = useAuth();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -41,6 +43,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
     setSaving(false);
     if (error) { toast.error(error); return; }
     toast.success(t("groups.created"));
+    await refetchRoles(); // Pick up auto-granted 'host' role for Tour Manager access
     reset();
     onOpenChange(false);
     onCreated?.();
