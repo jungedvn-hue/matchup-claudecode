@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Bell, ShieldCheck, ChevronRight, Trophy, Flame, Gem,
   Sparkles, MapPin, Star, Plus, Award, LayoutDashboard,
-  ShoppingBag, ExternalLink,
+  ShoppingBag, ExternalLink, Users,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { useStreak } from "@/hooks/useGamification";
 import { usePendingVerifications } from "@/hooks/useMatches";
 import { useTournaments } from "@/context/TournamentContext";
 import { useStores } from "@/hooks/useStores";
+import { useMyGroups } from "@/hooks/useGroups";
 import { getTierFromLevel } from "@/lib/gamification";
 import { useState } from "react";
 
@@ -32,6 +33,7 @@ const HomePage = () => {
   const { matches: pendingMatches } = usePendingVerifications();
   const { tournaments } = useTournaments();
   const { stores } = useStores();
+  const { groups: myGroups } = useMyGroups();
   const [logDialogOpen, setLogDialogOpen] = useState(false);
 
   const isHost = hasRole(roles, "host");
@@ -53,6 +55,7 @@ const HomePage = () => {
   const quickActions = [
     isPlayer && { icon: Trophy, label: t("common.logMatch"), tone: "primary", action: () => setLogDialogOpen(true) },
     isPlayer && { icon: Sparkles, label: t("arena.title"), tone: "amber", path: "/arena" },
+    isPlayer && { icon: Users, label: t("groups.title"), tone: "blue", path: "/groups" },
     isHost && { icon: Award, label: t("nav.tourManager"), tone: "primary", path: "/tour-manager" },
     isHost && { icon: LayoutDashboard, label: t("nav.host"), tone: "blue", path: "/dashboard" },
     isStoreOwner && { icon: ShoppingBag, label: t("tile.myStore"), tone: "emerald", path: "/my-store" },
@@ -157,6 +160,32 @@ const HomePage = () => {
                     <p className="text-[11px] font-semibold text-foreground leading-tight">{action.label}</p>
                   </button>
                 </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* My Groups */}
+        {session && myGroups.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-2.5">
+              <h2 className="text-sm font-display font-bold text-foreground">{t("home.myGroupsSection")}</h2>
+              <button onClick={() => navigate("/groups")} className="text-xs text-primary font-medium">{t("common.seeAll")}</button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+              {myGroups.slice(0, 5).map((g, i) => (
+                <motion.button
+                  key={g.id}
+                  initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.04 }}
+                  onClick={() => navigate(`/group/${g.id}`)}
+                  className="shrink-0 w-32 p-3 rounded-xl bg-gradient-to-br from-primary/5 via-card to-card border border-border hover:border-primary/30 transition-all text-left"
+                >
+                  <div className="text-2xl mb-1">{g.cover_emoji}</div>
+                  <p className="text-xs font-bold text-foreground truncate">{g.name}</p>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-0.5 mt-0.5">
+                    <Users className="h-2.5 w-2.5" /> {g.member_count}
+                  </p>
+                </motion.button>
               ))}
             </div>
           </section>
