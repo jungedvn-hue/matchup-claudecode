@@ -148,9 +148,24 @@ const StoreProfilePage = () => {
                 <p className="text-sm text-muted-foreground italic">—</p>
               )}
             </Card>
-            {(store.address || store.phone || store.email) && (
+            {(store.address || store.map_url || store.phone || store.email || store.website) && (
               <Card className="p-4 shadow-card space-y-2">
-                {store.address && <Row icon={MapPin}>{store.address}</Row>}
+                {store.address && (
+                  store.map_url ? (
+                    <a href={store.map_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{store.address}</span>
+                    </a>
+                  ) : (
+                    <Row icon={MapPin}>{store.address}</Row>
+                  )
+                )}
+                {!store.address && store.map_url && (
+                  <a href={store.map_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <span>{t("store.viewOnMap")}</span>
+                  </a>
+                )}
                 {store.phone && <Row icon={Phone}>{store.phone}</Row>}
                 {store.email && <Row icon={Send}>{store.email}</Row>}
                 {store.website && <Row icon={Globe}>{store.website}</Row>}

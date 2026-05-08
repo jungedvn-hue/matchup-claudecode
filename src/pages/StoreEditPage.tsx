@@ -22,6 +22,7 @@ const StoreEditPage = () => {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [mapUrl, setMapUrl] = useState("");
   const [website, setWebsite] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
@@ -34,6 +35,7 @@ const StoreEditPage = () => {
     setPhone(store.phone ?? "");
     setEmail(store.email ?? "");
     setAddress(store.address ?? "");
+    setMapUrl(store.map_url ?? "");
     setWebsite(store.website ?? "");
     setLogoUrl(store.logo_url);
     setCategories(store.categories);
@@ -59,6 +61,7 @@ const StoreEditPage = () => {
       phone: phone || null,
       email: email || null,
       address: address || null,
+      map_url: mapUrl || null,
       website: website || null,
       logo_url: logoUrl,
       categories,
@@ -109,8 +112,14 @@ const StoreEditPage = () => {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Address</Label>
-            <Input value={address} onChange={e => setAddress(e.target.value)} />
+            <Label className="text-xs font-medium">{t("store.address")}</Label>
+            <Input value={address} onChange={e => setAddress(e.target.value)} placeholder={t("store.addressPh")} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t("store.mapUrl")}</Label>
+            <Input type="url" value={mapUrl} onChange={e => setMapUrl(e.target.value)} placeholder="https://maps.google.com/..." />
+            {mapUrl && <p className="text-[10px] text-emerald-600 dark:text-emerald-400">✓ {t("store.mapUrlSet")}</p>}
           </div>
 
           <div className="space-y-1.5">

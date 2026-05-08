@@ -17,6 +17,7 @@ export interface Store {
   phone: string | null;
   email: string | null;
   address: string | null;
+  map_url: string | null;
   latitude: number | null;
   longitude: number | null;
   website: string | null;
