@@ -57,15 +57,15 @@ const VerificationPage = () => {
         <Card className="p-4 shadow-card overflow-hidden relative">
           <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
             <div className="flex items-center gap-1 text-[9px] font-bold text-amber-600 dark:text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-              <Clock className="h-2.5 w-2.5" /> {isMyOpponent ? "OPPONENT" : "REFEREE"}
+              <Clock className="h-2.5 w-2.5" /> {isMyOpponent ? t("verify.opponentBadge") : t("verify.refereeBadge")}
             </div>
             <div className="flex gap-1">
               <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold border ${match.opponent_verified ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : "bg-secondary text-muted-foreground border-border"}`}>
-                OPP {match.opponent_verified ? "✓" : ""}
+                {t("verify.opp")} {match.opponent_verified ? "✓" : ""}
               </span>
               {match.referee_user_id && (
                 <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold border ${match.referee_verified ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : "bg-secondary text-muted-foreground border-border"}`}>
-                  REF {match.referee_verified ? "✓" : ""}
+                  {t("verify.ref")} {match.referee_verified ? "✓" : ""}
                 </span>
               )}
             </div>
@@ -82,7 +82,7 @@ const VerificationPage = () => {
                   Referee: <span className="text-foreground font-semibold">{match.referee_profile.display_name}</span>
                 </p>
               )}
-              <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(match.created_at)} · {match.format}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(match.created_at)} · {t(`verify.format.${match.format}`)}</p>
             </div>
           </div>
 
@@ -102,10 +102,10 @@ const VerificationPage = () => {
 
           <div className="flex gap-2">
             <Button onClick={() => handle(match, "confirm")} disabled={working} className="flex-1 rounded-xl gap-2 font-bold">
-              <CheckCircle className="h-4 w-4" /> {t("common.confirm") || "Xác nhận"}
+              <CheckCircle className="h-4 w-4" /> {t("common.confirm")}
             </Button>
             <Button variant="outline" onClick={() => handle(match, "dispute")} disabled={working} className="flex-1 rounded-xl gap-2 font-bold border-destructive/20 text-destructive hover:bg-destructive/10">
-              <XCircle className="h-4 w-4" /> {t("verify.dispute") || "Khiếu nại"}
+              <XCircle className="h-4 w-4" /> {t("verify.dispute")}
             </Button>
           </div>
         </Card>
@@ -145,7 +145,7 @@ const VerificationPage = () => {
               <div className="h-12 w-12 bg-secondary rounded-full flex items-center justify-center mx-auto text-muted-foreground">
                 <ShieldCheck className="h-6 w-6" />
               </div>
-              <p className="text-sm text-muted-foreground font-medium">{t("verify.empty") || "Không có trận đấu nào cần xác thực."}</p>
+              <p className="text-sm text-muted-foreground font-medium">{t("verify.empty")}</p>
             </div>
           ) : (
             matches.map((m, i) => renderMatch(m, i))

@@ -182,7 +182,7 @@ const StatisticsPage = () => {
         {(!data || data.total === 0) && (
           <Card className="p-6 text-center shadow-card">
             <Trophy className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-            <p className="text-xs text-muted-foreground">{t("statistics.empty") || "Chưa có dữ liệu — log một vài trận để xem thống kê"}</p>
+            <p className="text-xs text-muted-foreground">{t("statistics.empty")}</p>
           </Card>
         )}
       </div>

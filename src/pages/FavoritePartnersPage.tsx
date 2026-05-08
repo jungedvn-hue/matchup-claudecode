@@ -23,14 +23,14 @@ interface PartnerView {
   isFavorite: boolean;
 }
 
-const formatRelative = (iso: string) => {
+const formatRelative = (iso: string, t: (k: string, v?: Record<string, unknown>) => string) => {
   const diff = Date.now() - new Date(iso).getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (days === 0) return "hôm nay";
-  if (days === 1) return "hôm qua";
-  if (days < 7) return `${days} ngày trước`;
-  if (days < 30) return `${Math.floor(days / 7)} tuần trước`;
-  return `${Math.floor(days / 30)} tháng trước`;
+  if (days === 0) return t("partners.relativeToday");
+  if (days === 1) return t("partners.relativeYesterday");
+  if (days < 7) return t("partners.relativeDays", { n: days });
+  if (days < 30) return t("partners.relativeWeeks", { n: Math.floor(days / 7) });
+  return t("partners.relativeMonths", { n: Math.floor(days / 30) });
 };
 
 const FavoritePartnersPage = () => {
@@ -88,7 +88,7 @@ const FavoritePartnersPage = () => {
     } else {
       await sb.from("favorite_partners").upsert({ user_id: user.id, partner_user_id: partnerId, is_favorite: true }, { onConflict: "user_id,partner_user_id" });
     }
-    toast.success(isFav ? "Đã bỏ yêu thích" : "Đã thêm vào yêu thích");
+    toast.success(isFav ? t("partners.toast.removed") : t("partners.toast.added"));
   };
 
   return (
@@ -106,7 +106,7 @@ const FavoritePartnersPage = () => {
         {partners.length === 0 ? (
           <Card className="p-6 text-center shadow-card">
             <Users className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-            <p className="text-xs text-muted-foreground">{t("partners.empty") || "Chưa có đối thủ nào — chơi vài trận để có danh sách"}</p>
+            <p className="text-xs text-muted-foreground">{t("partners.empty")}</p>
           </Card>
         ) : partners.map((p, i) => (
           <motion.div key={p.user_id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
@@ -126,7 +126,7 @@ const FavoritePartnersPage = () => {
                   <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-1"><Target className="h-3 w-3" />{p.matches}</span>
                     <span className="flex items-center gap-1"><Trophy className="h-3 w-3" />{p.winRate}%</span>
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatRelative(p.lastPlayedISO)}</span>
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatRelative(p.lastPlayedISO, t)}</span>
                   </div>
                 </div>
               </div>

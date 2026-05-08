@@ -12,19 +12,7 @@ import { getTierFromLevel, getXPForLevel } from "@/lib/gamification";
 import { toast } from "sonner";
 import XPProgressBar from "@/components/XPProgressBar";
 
-const sourceLabel: Record<string, string> = {
-  match_played: "Đã chơi trận",
-  match_won: "Thắng trận",
-  verify_result: "Xác nhận kết quả",
-  daily_quest: "Quest hằng ngày",
-  achievement: "Thành tựu",
-  streak_bonus: "Bonus streak",
-  league_reward: "League",
-  onboarding: "Onboarding",
-  admin_adjust: "Điều chỉnh",
-};
-
-const GamificationHubPage = () => {
+const ArenaPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { session } = useAuth();
@@ -45,6 +33,7 @@ const GamificationHubPage = () => {
   const totalXP = profile?.total_xp ?? 0;
   const level = profile?.current_level ?? 1;
   const tier = getTierFromLevel(level);
+  const tierKey = tier.toLowerCase();
   const gems = profile?.gems ?? 0;
   const currentStreak = streak?.current_streak ?? 0;
   const freezes = streak?.freeze_count ?? 0;
@@ -54,7 +43,8 @@ const GamificationHubPage = () => {
   const handleClaim = async (id: string) => {
     const res = await claim(id);
     if ("error" in res) { toast.error(res.error); return; }
-    toast.success(`+${res.xp} XP${res.gems > 0 ? `, +${res.gems} 💎` : ""}`);
+    const gemsSuffix = res.gems > 0 ? t("arena.toast.claimedGems", { gems: res.gems }) : "";
+    toast.success(t("arena.toast.claimed", { xp: res.xp, gems: gemsSuffix }));
     refetchQuests();
   };
 
@@ -70,13 +60,12 @@ const GamificationHubPage = () => {
           </button>
           <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            {t("gamification.title") || "Tiến trình"}
+            {t("arena.title")}
           </h1>
         </div>
       </div>
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
-        {/* Hero — XP + Tier + Gems + Streak */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="p-4 shadow-card overflow-hidden bg-gradient-to-br from-primary/5 via-card to-card space-y-3">
             <div className="flex items-center justify-between">
@@ -86,7 +75,7 @@ const GamificationHubPage = () => {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Level {level}</p>
-                  <p className="text-base font-display font-bold text-foreground">{tier}</p>
+                  <p className="text-base font-display font-bold text-foreground">{t(`arena.tier.${tierKey}`)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -103,18 +92,17 @@ const GamificationHubPage = () => {
             </div>
             <XPProgressBar currentXP={totalXP} level={level} />
             <p className="text-[10px] text-muted-foreground tabular-nums">
-              {totalXP - xpForCurr} / {xpForNext - xpForCurr} XP → Level {level + 1}
+              {t("arena.toNextLevel", { remaining: totalXP - xpForCurr, needed: xpForNext - xpForCurr, nextLevel: level + 1 })}
             </p>
           </Card>
         </motion.div>
 
-        {/* Daily Quests */}
         <section className="space-y-2">
           <div className="flex items-center gap-2 ml-1">
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               <Target className="h-3.5 w-3.5" />
             </div>
-            <h2 className="text-sm font-display font-bold text-foreground">{t("gamification.dailyQuests") || "Nhiệm vụ hôm nay"}</h2>
+            <h2 className="text-sm font-display font-bold text-foreground">{t("arena.dailyQuests")}</h2>
           </div>
           {quests.length === 0 ? (
             <Card className="p-4 text-center"><p className="text-xs text-muted-foreground">…</p></Card>
@@ -131,7 +119,7 @@ const GamificationHubPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-foreground truncate">{pq.quest.name_vi}</p>
-                          {pq.quest.is_bonus && <Badge variant="outline" className="text-[9px] py-0 px-1.5">BONUS</Badge>}
+                          {pq.quest.is_bonus && <Badge variant="outline" className="text-[9px] py-0 px-1.5">{t("arena.bonus")}</Badge>}
                         </div>
                         <p className="text-[11px] text-muted-foreground">{pq.quest.description_vi}</p>
                         <div className="mt-2 h-1.5 bg-secondary rounded-full overflow-hidden">
@@ -144,7 +132,7 @@ const GamificationHubPage = () => {
                       </div>
                       {pq.completed && !claimed ? (
                         <Button size="sm" onClick={() => handleClaim(pq.id)} className="h-8 px-3 text-xs">
-                          {t("gamification.claim") || "Nhận"}
+                          {t("arena.claim")}
                         </Button>
                       ) : claimed ? (
                         <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
@@ -159,13 +147,12 @@ const GamificationHubPage = () => {
           )}
         </section>
 
-        {/* Achievements */}
         <section className="space-y-2">
           <div className="flex items-center gap-2 ml-1">
             <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               <Trophy className="h-3.5 w-3.5" />
             </div>
-            <h2 className="text-sm font-display font-bold text-foreground">{t("gamification.achievements") || "Thành tựu"}</h2>
+            <h2 className="text-sm font-display font-bold text-foreground">{t("arena.achievements")}</h2>
             <span className="ml-auto text-[10px] text-muted-foreground tabular-nums">
               {achievements.filter(a => a.unlocked_at).length} / {achievements.length}
             </span>
@@ -174,7 +161,7 @@ const GamificationHubPage = () => {
             <div className="grid grid-cols-4 gap-2">
               {achievements.map(a => {
                 const unlocked = !!a.unlocked_at;
-                const tier = a.current_tier;
+                const aTier = a.current_tier;
                 return (
                   <div key={a.id} className={`flex flex-col items-center gap-1 p-2 rounded-lg ${unlocked ? "bg-primary/5" : "bg-secondary/30 opacity-60"}`}>
                     <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${unlocked ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
@@ -182,7 +169,7 @@ const GamificationHubPage = () => {
                     </div>
                     <p className="text-[10px] font-medium text-center leading-tight line-clamp-2">{a.name_vi}</p>
                     {a.max_tier > 1 && (
-                      <span className="text-[9px] text-muted-foreground tabular-nums">{tier}/{a.max_tier}</span>
+                      <span className="text-[9px] text-muted-foreground tabular-nums">{aTier}/{a.max_tier}</span>
                     )}
                   </div>
                 );
@@ -191,20 +178,19 @@ const GamificationHubPage = () => {
           </Card>
         </section>
 
-        {/* XP History */}
         {xpHistory.length > 0 && (
           <section className="space-y-2">
             <div className="flex items-center gap-2 ml-1">
               <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
               </div>
-              <h2 className="text-sm font-display font-bold text-foreground">{t("gamification.recentActivity") || "Hoạt động gần đây"}</h2>
+              <h2 className="text-sm font-display font-bold text-foreground">{t("arena.recentActivity")}</h2>
             </div>
             <Card className="shadow-card overflow-hidden">
               {xpHistory.map((tx, i) => (
                 <div key={tx.id} className={`flex items-center justify-between px-3.5 py-2.5 ${i < xpHistory.length - 1 ? "border-b border-border" : ""}`}>
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-foreground">{sourceLabel[tx.source] ?? tx.source}</p>
+                    <p className="text-xs font-medium text-foreground">{t(`arena.source.${tx.source}`)}</p>
                     <p className="text-[10px] text-muted-foreground">{new Date(tx.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                   </div>
                   <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">+{tx.amount}</span>
@@ -218,4 +204,4 @@ const GamificationHubPage = () => {
   );
 };
 
-export default GamificationHubPage;
+export default ArenaPage;

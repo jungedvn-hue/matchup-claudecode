@@ -64,7 +64,7 @@ const LogMatchDialog = ({ open, onOpenChange, onCreated }: LogMatchDialogProps) 
     if (step === 1) {
       if (!opponent) { toast.error(t("matches.log.toast.pickOpponent")); return; }
       if (format === "doubles" && (!partner || !opponentPartner)) {
-        toast.error(t("matches.log.toast.pickPartners") || "Vui lòng chọn đầy đủ partner cho doubles");
+        toast.error(t("matches.log.toast.pickPartners"));
         return;
       }
       setStep(2);
@@ -93,7 +93,7 @@ const LogMatchDialog = ({ open, onOpenChange, onCreated }: LogMatchDialogProps) 
       .map(s => ({ submitter: parseInt(s.s, 10), opponent: parseInt(s.o, 10) }))
       .filter(s => !isNaN(s.submitter) && !isNaN(s.opponent));
     if (parsedSets.length === 0) {
-      toast.error(t("matches.log.toast.pickScores") || "Vui lòng nhập điểm số");
+      toast.error(t("matches.log.toast.pickScores"));
       return;
     }
     const result = await createMatch({
@@ -115,7 +115,7 @@ const LogMatchDialog = ({ open, onOpenChange, onCreated }: LogMatchDialogProps) 
 
   const renderSlot = (label: string, value: PlayerSearchResult | null, slot: PickerSlot, optional = false) => (
     <div className="space-y-1.5">
-      <Label className="text-xs">{label}{optional ? <span className="text-muted-foreground"> ({t("common.optional") || "tùy chọn"})</span> : null}</Label>
+      <Label className="text-xs">{label}{optional ? <span className="text-muted-foreground"> ({t("common.optional")})</span> : null}</Label>
       <button
         type="button"
         onClick={() => { setPicker(slot); setSearchTerm(""); }}
@@ -132,7 +132,7 @@ const LogMatchDialog = ({ open, onOpenChange, onCreated }: LogMatchDialogProps) 
         ) : (
           <>
             <User className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{t("matches.log.selectPlayer") || "Chọn người chơi…"}</span>
+            <span className="text-sm text-muted-foreground">{t("matches.log.selectPlayer")}</span>
           </>
         )}
       </button>
@@ -154,13 +154,13 @@ const LogMatchDialog = ({ open, onOpenChange, onCreated }: LogMatchDialogProps) 
           {picker ? (
             <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3 py-2">
               <div className="flex items-center gap-2">
-                <button onClick={() => setPicker(null)} className="text-xs text-muted-foreground hover:text-foreground">← {t("common.back") || "Quay lại"}</button>
+                <button onClick={() => setPicker(null)} className="text-xs text-muted-foreground hover:text-foreground">← {t("common.back")}</button>
               </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   autoFocus
-                  placeholder={t("matches.log.searchPh") || "Tìm theo tên..."}
+                  placeholder={t("matches.log.searchPh")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -169,7 +169,7 @@ const LogMatchDialog = ({ open, onOpenChange, onCreated }: LogMatchDialogProps) 
               <div className="max-h-[280px] overflow-y-auto space-y-1">
                 {searching && <p className="text-xs text-muted-foreground py-2 text-center">…</p>}
                 {!searching && searchTerm.length >= 2 && results.length === 0 && (
-                  <p className="text-xs text-muted-foreground py-4 text-center">{t("matches.log.noResults") || "Không tìm thấy"}</p>
+                  <p className="text-xs text-muted-foreground py-4 text-center">{t("matches.log.noResults")}</p>
                 )}
                 {results.map(p => (
                   <button
@@ -212,8 +212,8 @@ const LogMatchDialog = ({ open, onOpenChange, onCreated }: LogMatchDialogProps) 
               {renderSlot(t("matches.log.opponent"), opponent, "opponent")}
               {format === "doubles" && (
                 <>
-                  {renderSlot(t("matches.log.partner") || "Đồng đội của bạn", partner, "partner")}
-                  {renderSlot(t("matches.log.opponentPartner") || "Đồng đội đối thủ", opponentPartner, "opponent_partner")}
+                  {renderSlot(t("matches.log.partner"), partner, "partner")}
+                  {renderSlot(t("matches.log.opponentPartner"), opponentPartner, "opponent_partner")}
                 </>
               )}
               {renderSlot(t("matches.log.referee"), referee, "referee", true)}

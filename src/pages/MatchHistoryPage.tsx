@@ -97,7 +97,7 @@ const MatchHistoryPage = () => {
           ) : filtered.length === 0 ? (
             <Card className="p-6 text-center shadow-card">
               <Trophy className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-              <p className="text-xs text-muted-foreground">{t("history.empty") || "Chưa có trận nào"}</p>
+              <p className="text-xs text-muted-foreground">{t("history.empty")}</p>
             </Card>
           ) : filtered.map((match, i) => (
             <motion.div key={match.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
@@ -119,7 +119,7 @@ const MatchHistoryPage = () => {
                       <span>{match.date}</span>
                       <span>·</span>
                       <span className="capitalize">{match.format}</span>
-                      {!match.verified && <><span>·</span><span className="text-amber-600 dark:text-amber-500">chờ xác nhận</span></>}
+                      {!match.verified && <><span>·</span><span className="text-amber-600 dark:text-amber-500">{t("history.pendingShort")}</span></>}
                     </div>
                   </div>
                 </div>
