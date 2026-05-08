@@ -14,7 +14,8 @@ import XPProgressBar from "@/components/XPProgressBar";
 
 const ArenaPage = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const isVi = language === "vi";
   const { session } = useAuth();
   const { profile } = usePlayerProfile();
   const { streak } = useStreak();
@@ -118,10 +119,10 @@ const ArenaPage = () => {
                     <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-foreground truncate">{pq.quest.name_vi}</p>
+                          <p className="text-sm font-semibold text-foreground truncate">{isVi ? pq.quest.name_vi : pq.quest.name_en}</p>
                           {pq.quest.is_bonus && <Badge variant="outline" className="text-[9px] py-0 px-1.5">{t("arena.bonus")}</Badge>}
                         </div>
-                        <p className="text-[11px] text-muted-foreground">{pq.quest.description_vi}</p>
+                        <p className="text-[11px] text-muted-foreground">{isVi ? pq.quest.description_vi : pq.quest.description_en}</p>
                         <div className="mt-2 h-1.5 bg-secondary rounded-full overflow-hidden">
                           <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
                         </div>
@@ -167,7 +168,7 @@ const ArenaPage = () => {
                     <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${unlocked ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
                       {unlocked ? <Trophy className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5" />}
                     </div>
-                    <p className="text-[10px] font-medium text-center leading-tight line-clamp-2">{a.name_vi}</p>
+                    <p className="text-[10px] font-medium text-center leading-tight line-clamp-2">{isVi ? a.name_vi : a.name_en}</p>
                     {a.max_tier > 1 && (
                       <span className="text-[9px] text-muted-foreground tabular-nums">{aTier}/{a.max_tier}</span>
                     )}
