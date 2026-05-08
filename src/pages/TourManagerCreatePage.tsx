@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy, Target, Settings, BarChart3, ChevronDown } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy, Target, Settings, BarChart3, ChevronDown, Radio } from "lucide-react";
+import { LivestreamEditor } from "@/components/tournament/LivestreamSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -56,6 +57,7 @@ const TourManagerCreatePage = () => {
   const [numSets, setNumSets] = useState(1);
   const [courts, setCourts] = useState(4);
   const [matchDuration, setMatchDuration] = useState(20);
+  const [livestreamUrls, setLivestreamUrls] = useState<import("@/lib/tournament/types").LivestreamLink[]>([]);
   const [playersPerPool, setPlayersPerPool] = useState(4);
   const [rankingPriority, setRankingPriority] = useState<RankingCriterion[]>([
     "wins", "head_to_head", "point_diff", "points_scored"
@@ -172,6 +174,7 @@ const TourManagerCreatePage = () => {
       status: "draft",
       createdAt: new Date().toISOString(),
       host_id: user?.id,
+      livestreamUrls,
     };
 
     try {
@@ -342,6 +345,11 @@ const TourManagerCreatePage = () => {
                   ))}
                 </div>
               </Field>
+            </SectionCard>
+
+            {/* Card 3.5 — Livestream */}
+            <SectionCard icon={Radio} title={t("tm.livestream.title")} tone="from-red-500/5">
+              <LivestreamEditor value={livestreamUrls} onChange={setLivestreamUrls} />
             </SectionCard>
 
             {/* Card 4 — Ranking priority (collapsed advanced) */}

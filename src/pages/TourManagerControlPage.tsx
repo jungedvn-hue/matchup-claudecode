@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { LivestreamDisplay } from "@/components/tournament/LivestreamSection";
 import { useTournaments } from "@/context/TournamentContext";
 import { useTournamentRealtime } from "@/hooks/useTournamentRealtime";
 import { useAuth } from "@/context/AuthContext";
@@ -646,6 +647,13 @@ const TourManagerControlPage = () => {
             tone={progress.inProgress > 0 ? "blue" : "muted"}
           />
         </div>
+
+        {/* Livestream section */}
+        {tournament.livestreamUrls && tournament.livestreamUrls.length > 0 && (
+          <div className="mt-3">
+            <LivestreamDisplay links={tournament.livestreamUrls} />
+          </div>
+        )}
 
         {/* Category selector */}
         {tournament.categories.length > 1 && (
@@ -1956,6 +1964,18 @@ function MatchCard({
               </Select>
             )}
           </div>
+        )}
+
+        {/* Reopen button — shown when match is completed and host/referee can undo */}
+        {match.status === "completed" && onUndo && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full mt-3 h-9 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-500 hover:bg-amber-500/10"
+            onClick={() => onUndo(match.id)}
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> {t("tm.reopen")}
+          </Button>
         )}
 
         {/* Complete button */}

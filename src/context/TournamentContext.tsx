@@ -9,6 +9,8 @@ interface TournamentContextValue {
   addTournament: (t: Tournament) => Promise<void>;
   updateTournament: (t: Tournament) => Promise<void>;
   updateMatchScore: (matchId: string, scoreA: number, scoreB: number, status: string, winnerId?: string, setScores?: { a: number; b: number }[]) => Promise<void>;
+  reopenMatch: (matchId: string) => Promise<void>;
+  undoLastMatchAction: (matchId: string) => Promise<{ ok: true } | { error: string }>;
   deleteTournament: (id: string) => Promise<void>;
   getTournament: (id: string) => Tournament | undefined;
   refreshTournaments: () => Promise<void>;
@@ -74,6 +76,7 @@ interface DBTournament {
   win_by_two: boolean;
   num_sets?: number;
   max_points?: number | null;
+  livestream_urls?: unknown;
   status: string;
   ranking_priority: any[];
   host_id: string;
@@ -130,6 +133,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
         rankingPriority: t.ranking_priority || ["wins", "head_to_head", "point_diff", "points_scored"],
         numSets: t.num_sets ?? 1,
         maxPoints: t.max_points ?? undefined,
+        livestreamUrls: Array.isArray(t.livestream_urls) ? (t.livestream_urls as Tournament["livestreamUrls"]) : [],
         categories: (t.categories || []).map((c) => {
           // Build a lookup of live match data (scores, status, winner) keyed by match id
           const liveMatches = (c.matches || []).map((m) => ({
@@ -268,7 +272,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           ranking_priority: t.rankingPriority,
           host_id: user?.id,
           referees: t.referees || [],
-          courts: t.courts || []
+          courts: t.courts || [],
+          livestream_urls: t.livestreamUrls || []
         }])
         .select()
         .single();
@@ -328,7 +333,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           status: t.status,
           location: t.location,
           referees: t.referees || [],
-          courts: t.courts || []
+          courts: t.courts || [],
+          livestream_urls: t.livestreamUrls || []
         })
         .eq('id', t.id);
 
@@ -389,11 +395,32 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
 
   const updateMatchScore = async (matchId: string, scoreA: number, scoreB: number, status: string, winnerId?: string, setScores?: { a: number; b: number }[]) => {
     try {
+      // Read current state to push into action_history before mutating
+      const { data: prev } = await supabase
+        .from('tour_matches')
+        .select('score_a, score_b, set_scores, status, winner_id, action_history')
+        .eq('id', matchId)
+        .single();
+      const prevAny = prev as unknown as { score_a: number; score_b: number; set_scores: unknown; status: string; winner_id: string | null; action_history: unknown[] } | null;
+      const history = Array.isArray(prevAny?.action_history) ? prevAny!.action_history : [];
+      const entry = {
+        at: new Date().toISOString(),
+        by_user_id: user?.id ?? null,
+        prev_score_a: prevAny?.score_a ?? null,
+        prev_score_b: prevAny?.score_b ?? null,
+        prev_set_scores: prevAny?.set_scores ?? null,
+        prev_status: prevAny?.status ?? null,
+        prev_winner_id: prevAny?.winner_id ?? null,
+      };
+      // Cap history length at 20 to avoid unbounded growth
+      const nextHistory = [...history, entry].slice(-20);
+
       const payload: Record<string, unknown> = {
         score_a: scoreA,
         score_b: scoreB,
         status: status,
         winner_id: winnerId,
+        action_history: nextHistory,
       };
       if (setScores !== undefined) payload.set_scores = setScores;
       const { error } = await supabase
@@ -404,6 +431,70 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       if (error) throw error;
     } catch (err) {
       toast.error("Failed to sync score");
+    }
+  };
+
+  const reopenMatch = async (matchId: string) => {
+    try {
+      // Push current snapshot into history then revert to in_progress
+      const { data: prev } = await supabase
+        .from('tour_matches')
+        .select('score_a, score_b, set_scores, status, winner_id, action_history')
+        .eq('id', matchId)
+        .single();
+      const prevAny = prev as unknown as { score_a: number; score_b: number; set_scores: unknown; status: string; winner_id: string | null; action_history: unknown[] } | null;
+      const history = Array.isArray(prevAny?.action_history) ? prevAny!.action_history : [];
+      const entry = {
+        at: new Date().toISOString(),
+        by_user_id: user?.id ?? null,
+        prev_score_a: prevAny?.score_a ?? null,
+        prev_score_b: prevAny?.score_b ?? null,
+        prev_set_scores: prevAny?.set_scores ?? null,
+        prev_status: prevAny?.status ?? null,
+        prev_winner_id: prevAny?.winner_id ?? null,
+        reason: "reopen",
+      };
+      const { error } = await supabase
+        .from('tour_matches')
+        .update({
+          status: "in_progress",
+          winner_id: null,
+          action_history: [...history, entry].slice(-20),
+        } as never)
+        .eq('id', matchId);
+      if (error) throw error;
+    } catch {
+      toast.error("Failed to reopen match");
+    }
+  };
+
+  const undoLastMatchAction = async (matchId: string): Promise<{ ok: true } | { error: string }> => {
+    try {
+      const { data: prev } = await supabase
+        .from('tour_matches')
+        .select('action_history')
+        .eq('id', matchId)
+        .single();
+      const prevAny = prev as unknown as { action_history: Array<{ prev_score_a: number | null; prev_score_b: number | null; prev_set_scores: unknown; prev_status: string | null; prev_winner_id: string | null }> } | null;
+      const history = Array.isArray(prevAny?.action_history) ? prevAny!.action_history : [];
+      if (history.length === 0) return { error: "No action to undo" };
+      const last = history[history.length - 1];
+      const remaining = history.slice(0, -1);
+      const { error } = await supabase
+        .from('tour_matches')
+        .update({
+          score_a: last.prev_score_a ?? 0,
+          score_b: last.prev_score_b ?? 0,
+          set_scores: last.prev_set_scores ?? [],
+          status: last.prev_status ?? "in_progress",
+          winner_id: last.prev_winner_id ?? null,
+          action_history: remaining,
+        } as never)
+        .eq('id', matchId);
+      if (error) return { error: error.message };
+      return { ok: true };
+    } catch (err) {
+      return { error: (err as Error).message };
     }
   };
 
@@ -426,6 +517,8 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       addTournament,
       updateTournament,
       updateMatchScore,
+      reopenMatch,
+      undoLastMatchAction,
       deleteTournament,
       getTournament,
       refreshTournaments: fetchTournaments,

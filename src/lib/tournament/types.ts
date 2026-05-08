@@ -122,4 +122,13 @@ export interface Tournament {
   status: "draft" | "active" | "completed";
   createdAt: string;
   host_id?: string;
+  livestreamUrls?: LivestreamLink[];
+}
+
+export type LivestreamPlatform = "youtube" | "facebook" | "tiktok" | "twitch" | "custom";
+
+export interface LivestreamLink {
+  platform: LivestreamPlatform;
+  url: string;
+  label?: string;
 }

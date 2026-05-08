@@ -1152,5 +1152,29 @@
   "matches.log.toast.pickPartners": "Please select both partners for doubles",
   "matches.log.toast.pickScores": "Please enter at least one set score",
 
-  "common.optional": "optional"
+  "common.optional": "optional",
+
+  "tm.reopen": "Reopen match",
+  "tm.reopenConfirmTitle": "Reopen this match?",
+  "tm.reopenConfirmDesc": "The match will return to in-progress so the score can be edited. Reopen actions are recorded.",
+  "tm.reopened": "Match reopened",
+  "tm.undo": "Undo last action",
+  "tm.undoSuccess": "Reverted last change",
+  "tm.undoEmpty": "Nothing to undo",
+  "tm.undoConfirmTitle": "Undo last action?",
+  "tm.undoConfirmDesc": "The latest score change will be reverted. This is recorded.",
+
+  "tm.livestream.title": "Live streams",
+  "tm.livestream.add": "Add stream",
+  "tm.livestream.empty": "No streams yet",
+  "tm.livestream.platform": "Platform",
+  "tm.livestream.url": "Stream URL",
+  "tm.livestream.label": "Label (optional)",
+  "tm.livestream.watchOn": "Watch on {{platform}}",
+  "tm.livestream.platform.youtube": "YouTube",
+  "tm.livestream.platform.facebook": "Facebook",
+  "tm.livestream.platform.tiktok": "TikTok",
+  "tm.livestream.platform.twitch": "Twitch",
+  "tm.livestream.platform.custom": "Other",
+  "tm.livestream.invalidUrl": "Please enter a valid URL"
 }

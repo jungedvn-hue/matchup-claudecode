@@ -1152,5 +1152,29 @@
   "matches.log.toast.pickPartners": "Vui lòng chọn đầy đủ partner cho doubles",
   "matches.log.toast.pickScores": "Vui lòng nhập điểm số",
 
-  "common.optional": "tùy chọn"
+  "common.optional": "tùy chọn",
+
+  "tm.reopen": "Mở lại trận",
+  "tm.reopenConfirmTitle": "Mở lại trận này?",
+  "tm.reopenConfirmDesc": "Trận sẽ trở lại trạng thái đang chơi để chỉnh sửa điểm. Mọi thao tác đều được ghi lại.",
+  "tm.reopened": "Đã mở lại trận",
+  "tm.undo": "Hoàn tác",
+  "tm.undoSuccess": "Đã hoàn tác thao tác gần nhất",
+  "tm.undoEmpty": "Không có gì để hoàn tác",
+  "tm.undoConfirmTitle": "Hoàn tác thao tác gần nhất?",
+  "tm.undoConfirmDesc": "Thay đổi điểm gần nhất sẽ bị huỷ. Thao tác này được ghi lại.",
+
+  "tm.livestream.title": "Livestream",
+  "tm.livestream.add": "Thêm stream",
+  "tm.livestream.empty": "Chưa có stream nào",
+  "tm.livestream.platform": "Nền tảng",
+  "tm.livestream.url": "Đường dẫn stream",
+  "tm.livestream.label": "Nhãn (tùy chọn)",
+  "tm.livestream.watchOn": "Xem trên {{platform}}",
+  "tm.livestream.platform.youtube": "YouTube",
+  "tm.livestream.platform.facebook": "Facebook",
+  "tm.livestream.platform.tiktok": "TikTok",
+  "tm.livestream.platform.twitch": "Twitch",
+  "tm.livestream.platform.custom": "Khác",
+  "tm.livestream.invalidUrl": "Vui lòng nhập URL hợp lệ"
 }
