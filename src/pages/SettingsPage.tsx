@@ -354,16 +354,16 @@ const SettingsPage = () => {
         {/* ── Legal & App info ───────────────────────────────────────── */}
         <Section icon={FileText} title={t("settings.legal.title")}>
           <Card className="shadow-card overflow-hidden">
-            <a href="https://matchup.piktv.asia/terms" target="_blank" rel="noopener noreferrer"
-               className="flex items-center justify-between p-3.5 border-b border-border hover:bg-secondary/40 transition-colors">
+            <button onClick={() => navigate("/terms")}
+                    className="w-full flex items-center justify-between p-3.5 border-b border-border hover:bg-secondary/40 transition-colors">
               <span className="text-sm font-medium text-foreground">{t("settings.legal.terms")}</span>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </a>
-            <a href="https://matchup.piktv.asia/privacy" target="_blank" rel="noopener noreferrer"
-               className="flex items-center justify-between p-3.5 border-b border-border hover:bg-secondary/40 transition-colors">
+            </button>
+            <button onClick={() => navigate("/privacy")}
+                    className="w-full flex items-center justify-between p-3.5 border-b border-border hover:bg-secondary/40 transition-colors">
               <span className="text-sm font-medium text-foreground">{t("settings.legal.privacy")}</span>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </a>
+            </button>
             <div className="flex items-center justify-between p-3.5">
               <span className="text-sm font-medium text-foreground">{t("settings.legal.version")}</span>
               <span className="text-xs text-muted-foreground tabular-nums">v1.0</span>

@@ -36,6 +36,7 @@ import MyMatchesPage from "./pages/MyMatchesPage";
 import VerificationPage from "./pages/VerificationPage";
 import ArenaPage from "./pages/ArenaPage";
 import CheckinScannerPage from "./pages/CheckinScannerPage";
+import LegalPage from "./pages/legal/LegalPage";
 import ServiceDetailPage from "./pages/ServiceDetailPage";
 import StoreDashboardPage from "./pages/StoreDashboardPage";
 import StoreProductsPage from "./pages/StoreProductsPage";
@@ -91,6 +92,8 @@ const AppShell = () => {
         <Route path="/favorite-partners" element={<FavoritePartnersPage />} />
         <Route path="/match-history" element={<MatchHistoryPage />} />
         <Route path="/arena" element={<ProtectedRoute><ArenaPage /></ProtectedRoute>} />
+        <Route path="/terms" element={<LegalPage type="terms" />} />
+        <Route path="/privacy" element={<LegalPage type="privacy" />} />
         <Route path="/help" element={<Navigate to="/settings#faq-start" replace />} />
         <Route path="/help/:section" element={<Navigate to="/settings" replace />} />
         <Route path="/checkin/:eventId" element={<ProtectedRoute><CheckinScannerPage /></ProtectedRoute>} />
