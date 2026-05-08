@@ -1180,5 +1180,7 @@
   "tm.livestream.invalidUrl": "Vui lòng nhập URL hợp lệ",
   "tm.livestream.matchUrl": "Link stream trận đấu",
   "tm.livestream.matchPlaceholder": "https://youtube.com/live/...",
-  "tm.livestream.watchMatch": "Xem trực tiếp"
+  "tm.livestream.watchMatch": "Xem trực tiếp",
+  "tm.livestream.saved": "Đã lưu link stream",
+  "tm.livestream.removed": "Đã xóa link stream"
 }

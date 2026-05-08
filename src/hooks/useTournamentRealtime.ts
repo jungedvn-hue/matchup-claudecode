@@ -40,7 +40,7 @@ export const useTournamentRealtime = (tournamentIds: string[]) => {
         supabase
           .from("tour_matches")
           .select(
-            "id,category_id,pool_id,bracket_round_id,match_no,entry_a_id,entry_b_id,entry_a_name,entry_b_name,score_a,score_b,winner_id,status,court_id,referee_id"
+            "id,category_id,pool_id,bracket_round_id,match_no,entry_a_id,entry_b_id,entry_a_name,entry_b_name,score_a,score_b,winner_id,status,court_id,referee_id,livestream_url"
           )
           .in("tournament_id", ids)
           .gt("updated_at", since),
@@ -71,6 +71,7 @@ export const useTournamentRealtime = (tournamentIds: string[]) => {
           status: raw.status,
           courtId: raw.court_id,
           refereeId: raw.referee_id,
+          livestreamUrl: raw.livestream_url ?? undefined,
         });
       });
 

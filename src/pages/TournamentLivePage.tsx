@@ -404,11 +404,19 @@ const MatchCard = ({ match, entryMap, refereeMap, courtMap }: {
               </span>
             )}
           </div>
-          {match.status === "completed" ? (
-            <Badge variant="secondary" className="text-[8px] h-4 px-1">Done</Badge>
-          ) : match.status === "in_progress" ? (
-            <Badge variant="default" className="text-[8px] h-4 px-1 bg-red-500 animate-pulse">Live</Badge>
-          ) : null}
+          <div className="flex items-center gap-1">
+            {match.livestreamUrl && (
+              <a href={match.livestreamUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-0.5 text-[8px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded-full hover:bg-red-500/20">
+                <ExternalLink className="h-2.5 w-2.5" /> LIVE
+              </a>
+            )}
+            {match.status === "completed" ? (
+              <Badge variant="secondary" className="text-[8px] h-4 px-1">Done</Badge>
+            ) : match.status === "in_progress" && !match.livestreamUrl ? (
+              <Badge variant="default" className="text-[8px] h-4 px-1 bg-red-500 animate-pulse">Live</Badge>
+            ) : null}
+          </div>
         </div>
         
         <div className="space-y-1.5">

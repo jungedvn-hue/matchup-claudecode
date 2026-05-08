@@ -1180,5 +1180,7 @@
   "tm.livestream.invalidUrl": "Please enter a valid URL",
   "tm.livestream.matchUrl": "Match stream URL",
   "tm.livestream.matchPlaceholder": "https://youtube.com/live/...",
-  "tm.livestream.watchMatch": "Watch live"
+  "tm.livestream.watchMatch": "Watch live",
+  "tm.livestream.saved": "Stream link saved",
+  "tm.livestream.removed": "Stream link removed"
 }

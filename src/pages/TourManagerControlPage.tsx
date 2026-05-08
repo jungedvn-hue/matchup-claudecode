@@ -1976,10 +1976,18 @@ function MatchCard({
               onChange={(e) => setLocalStream(e.target.value)}
               placeholder={t("tm.livestream.matchPlaceholder")}
               className="h-7 text-[10px] flex-1"
-              onKeyDown={(e) => { if (e.key === "Enter") saveLivestream(match.id, localStream); }}
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  await saveLivestream(match.id, localStream);
+                  toast.success(localStream ? t("tm.livestream.saved") : t("tm.livestream.removed"));
+                }
+              }}
             />
             {localStream !== (match.livestreamUrl ?? "") && (
-              <Button size="sm" className="h-7 px-2 text-[10px]" onClick={() => saveLivestream(match.id, localStream)}>
+              <Button size="sm" className="h-7 px-2 text-[10px]" onClick={async () => {
+                await saveLivestream(match.id, localStream);
+                toast.success(localStream ? t("tm.livestream.saved") : t("tm.livestream.removed"));
+              }}>
                 {t("common.save")}
               </Button>
             )}
