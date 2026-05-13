@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,7 +14,9 @@ import CreateEventDialog from "@/components/CreateEventDialog";
 import ShareGroupDialog from "@/components/ShareGroupDialog";
 import CreateGroupDialog from "@/components/CreateGroupDialog";
 import AssignAssistantDialog from "@/components/AssignAssistantDialog";
+import AnnouncementDialog from "@/components/AnnouncementDialog";
 import { useGroupAssistants, useAssistantActions } from "@/hooks/useAssistants";
+import { useAnnouncements, useAnnouncementActions, type Announcement } from "@/hooks/useAnnouncements";
 import { toast } from "sonner";
 
 const GroupDetailPage = () => {
@@ -34,6 +36,10 @@ const GroupDetailPage = () => {
   const [shareEvent, setShareEvent] = useState<{ id: string; title: string } | null>(null);
   const { assistants, refetch: refetchAssistants } = useGroupAssistants(groupId);
   const { revoke: revokeAssistant } = useAssistantActions();
+  const { items: announcements, refetch: refetchAnnouncements } = useAnnouncements(groupId);
+  const { remove: removeAnnouncement, togglePin: toggleAnnPin } = useAnnouncementActions();
+  const [annDialogOpen, setAnnDialogOpen] = useState(false);
+  const [editingAnn, setEditingAnn] = useState<Announcement | undefined>(undefined);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -139,6 +145,14 @@ const GroupDetailPage = () => {
         onAssigned={refetchAssistants}
       />
 
+      <AnnouncementDialog
+        open={annDialogOpen}
+        onOpenChange={v => { setAnnDialogOpen(v); if (!v) setEditingAnn(undefined); }}
+        groupId={group.id}
+        editing={editingAnn}
+        onSaved={refetchAnnouncements}
+      />
+
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
         {/* Hero */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -189,6 +203,81 @@ const GroupDetailPage = () => {
             )}
           </Card>
         </motion.div>
+
+        {/* Announcements */}
+        {(isHost || announcements.length > 0) && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                <Megaphone className="h-4 w-4 text-primary" />
+                {t("announcements.title")} {announcements.length > 0 && `(${announcements.length})`}
+              </h2>
+              {isHost && (
+                <button onClick={() => { setEditingAnn(undefined); setAnnDialogOpen(true); }}
+                  className="flex items-center gap-1 h-7 px-2.5 rounded-lg bg-primary/10 text-primary text-[11px] font-semibold hover:bg-primary/20">
+                  <Plus className="h-3 w-3" /> {t("announcements.new")}
+                </button>
+              )}
+            </div>
+            {announcements.length === 0 ? (
+              <Card className="p-4 shadow-card text-center">
+                <p className="text-xs text-muted-foreground">{t("announcements.emptyHost")}</p>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {announcements.map(a => (
+                  <Card key={a.id} className={`p-3.5 shadow-card ${a.pinned ? "bg-gradient-to-br from-amber-500/8 via-card to-card border-amber-500/20" : ""}`}>
+                    <div className="flex items-start gap-2.5">
+                      <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${a.pinned ? "bg-amber-500/15 text-amber-600 dark:text-amber-400" : "bg-primary/10 text-primary"}`}>
+                        {a.pinned ? <Pin className="h-3.5 w-3.5" /> : <Megaphone className="h-3.5 w-3.5" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        {a.title && <p className="text-sm font-bold text-foreground mb-0.5">{a.title}</p>}
+                        <p className="text-[13px] text-foreground/90 whitespace-pre-line leading-relaxed">{a.body}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1.5 tabular-nums">
+                          {a.author_name ?? t("common.unknown")} · {new Date(a.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                      {isHost && (
+                        <div className="flex flex-col gap-1 shrink-0">
+                          <button
+                            onClick={async () => {
+                              const { error } = await toggleAnnPin(a.id, !a.pinned);
+                              if (error) toast.error(error); else refetchAnnouncements();
+                            }}
+                            className={`h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground ${a.pinned ? "text-amber-600 dark:text-amber-400" : ""}`}
+                            aria-label="pin"
+                          >
+                            <Pin className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={() => { setEditingAnn(a); setAnnDialogOpen(true); }}
+                            className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground"
+                            aria-label="edit"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!confirm(t("announcements.confirmDelete"))) return;
+                              const { error } = await removeAnnouncement(a.id);
+                              if (error) toast.error(error);
+                              else { toast.success(t("announcements.deleted")); refetchAnnouncements(); }
+                            }}
+                            className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive"
+                            aria-label="delete"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Events */}
         {(isMember || events.length > 0) && (

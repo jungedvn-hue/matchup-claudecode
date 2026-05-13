@@ -1385,5 +1385,20 @@
   "assistant.perm.check_in": "Check-in (QR Scan)",
   "assistant.perm.approve_tickets": "Approve tickets",
   "assistant.perm.manage_players": "Manage players",
-  "assistant.perm.view_stats": "View stats"
+  "assistant.perm.view_stats": "View stats",
+  "announcements.title": "Announcements",
+  "announcements.new": "New",
+  "announcements.edit": "Edit announcement",
+  "announcements.post": "Post",
+  "announcements.posted": "Announcement posted",
+  "announcements.updated": "Announcement updated",
+  "announcements.deleted": "Announcement deleted",
+  "announcements.confirmDelete": "Delete this announcement?",
+  "announcements.titleOptional": "Title (optional)",
+  "announcements.titlePh": "e.g. Court change this Sunday",
+  "announcements.body": "Message",
+  "announcements.bodyPh": "Share news, schedule changes, or important notes…",
+  "announcements.pin": "Pin to top",
+  "announcements.pinDesc": "Always shows above other announcements",
+  "announcements.emptyHost": "No announcements yet. Post one to keep members in the loop."
 }

@@ -1385,5 +1385,20 @@
   "assistant.perm.check_in": "Check-in (Quét QR)",
   "assistant.perm.approve_tickets": "Duyệt vé",
   "assistant.perm.manage_players": "Quản lý người chơi",
-  "assistant.perm.view_stats": "Xem thống kê"
+  "assistant.perm.view_stats": "Xem thống kê",
+  "announcements.title": "Thông báo",
+  "announcements.new": "Tạo mới",
+  "announcements.edit": "Chỉnh sửa thông báo",
+  "announcements.post": "Đăng",
+  "announcements.posted": "Đã đăng thông báo",
+  "announcements.updated": "Đã cập nhật thông báo",
+  "announcements.deleted": "Đã xoá thông báo",
+  "announcements.confirmDelete": "Xoá thông báo này?",
+  "announcements.titleOptional": "Tiêu đề (tuỳ chọn)",
+  "announcements.titlePh": "VD: Đổi sân Chủ nhật này",
+  "announcements.body": "Nội dung",
+  "announcements.bodyPh": "Chia sẻ tin tức, thay đổi lịch, ghi chú quan trọng…",
+  "announcements.pin": "Ghim lên đầu",
+  "announcements.pinDesc": "Luôn hiển thị phía trên các thông báo khác",
+  "announcements.emptyHost": "Chưa có thông báo nào. Đăng một bài để thành viên cập nhật tin."
 }
