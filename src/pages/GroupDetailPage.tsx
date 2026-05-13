@@ -299,25 +299,32 @@ const GroupDetailPage = () => {
             {t("groups.members")} ({activeMembers.length})
           </h2>
           <Card className="shadow-card overflow-hidden">
-            {activeMembers.map((m, i) => (
-              <div key={m.id} className={`flex items-center gap-3 px-3.5 py-2.5 ${i < activeMembers.length - 1 ? "border-b border-border" : ""}`}>
-                <Avatar className="h-8 w-8 shrink-0">
-                  {m.avatar_url && <AvatarImage src={m.avatar_url} />}
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary">{(m.display_name || "?")[0].toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{m.display_name || t("common.unknown")}</p>
-                </div>
-                {m.role === "host" && (
-                  <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                )}
-                {isHost && m.user_id !== user?.id && (
-                  <button onClick={() => handleRemove(m.user_id)} className="text-[10px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded transition-colors">
-                    {t("groups.remove")}
+            {activeMembers.map((m, i) => {
+              const isMe = m.user_id === user?.id;
+              return (
+                <div key={m.id} className={`flex items-center gap-3 px-3.5 py-2.5 ${i < activeMembers.length - 1 ? "border-b border-border" : ""}`}>
+                  <button
+                    disabled={isMe}
+                    onClick={() => !isMe && navigate(`/user/${m.user_id}`)}
+                    className="flex items-center gap-3 flex-1 min-w-0 text-left disabled:cursor-default"
+                  >
+                    <Avatar className="h-8 w-8 shrink-0">
+                      {m.avatar_url && <AvatarImage src={m.avatar_url} />}
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">{(m.display_name || "?")[0].toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <p className="flex-1 text-sm font-medium text-foreground truncate">{m.display_name || t("common.unknown")}</p>
                   </button>
-                )}
-              </div>
-            ))}
+                  {m.role === "host" && (
+                    <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                  )}
+                  {isHost && !isMe && (
+                    <button onClick={() => handleRemove(m.user_id)} className="text-[10px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded transition-colors">
+                      {t("groups.remove")}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </Card>
         </section>
       </div>
