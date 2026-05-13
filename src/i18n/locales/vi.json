@@ -106,6 +106,8 @@
   "groups.approvalJoin": "Cần phê duyệt",
   "groups.approvalJoinDesc": "Bạn duyệt từng thành viên",
   "groups.searchPh": "Tìm theo tên hoặc địa điểm…",
+  "groups.editGroup": "Chỉnh sửa nhóm",
+  "groups.updated": "Đã cập nhật nhóm!",
   "home.myGroupsSection": "Nhóm của tôi",
   "home.discoverGroups": "Khám phá nhóm",
   "dashboard.liveTournaments": "Giải đang diễn ra",

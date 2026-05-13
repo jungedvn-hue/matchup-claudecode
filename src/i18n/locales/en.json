@@ -106,6 +106,8 @@
   "groups.approvalJoin": "Requires approval",
   "groups.approvalJoinDesc": "You approve each member",
   "groups.searchPh": "Search by name or location…",
+  "groups.editGroup": "Edit group",
+  "groups.updated": "Group updated!",
   "home.myGroupsSection": "My Groups",
   "home.discoverGroups": "Discover Groups",
   "dashboard.liveTournaments": "Live tournaments",

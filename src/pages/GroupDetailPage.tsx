@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2 } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,6 +12,7 @@ import { useGroup, useGroupMembership } from "@/hooks/useGroups";
 import { useGroupEvents, useRSVP, type RSVPStatus } from "@/hooks/useGroupEvents";
 import CreateEventDialog from "@/components/CreateEventDialog";
 import ShareGroupDialog from "@/components/ShareGroupDialog";
+import CreateGroupDialog from "@/components/CreateGroupDialog";
 import { toast } from "sonner";
 
 const GroupDetailPage = () => {
@@ -25,6 +26,7 @@ const GroupDetailPage = () => {
   const { rsvp, cancelRSVP } = useRSVP();
   const [acting, setActing] = useState(false);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [editGroupOpen, setEditGroupOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareEvent, setShareEvent] = useState<{ id: string; title: string } | null>(null);
 
@@ -100,6 +102,11 @@ const GroupDetailPage = () => {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <h1 className="text-base font-display font-bold text-foreground truncate flex-1">{group.name}</h1>
+          {isHost && (
+            <button onClick={() => setEditGroupOpen(true)} aria-label={t("groups.editGroup")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
           <button onClick={() => { setShareEvent(null); setShareOpen(true); }} aria-label={t("share.title")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
             <Share2 className="h-4 w-4" />
           </button>
@@ -111,6 +118,13 @@ const GroupDetailPage = () => {
         onOpenChange={setShareOpen}
         group={{ id: group.id, name: group.name, cover_emoji: group.cover_emoji }}
         event={shareEvent ?? undefined}
+      />
+
+      <CreateGroupDialog
+        open={editGroupOpen}
+        onOpenChange={setEditGroupOpen}
+        editGroup={group}
+        onUpdated={refetch}
       />
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">

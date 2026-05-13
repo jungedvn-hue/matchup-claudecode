@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ShareGroupDialog from "@/components/ShareGroupDialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useCreateGroup, type SkillLevel } from "@/hooks/useGroups";
+import { useCreateGroup, useUpdateGroup, type SkillLevel, type Group } from "@/hooks/useGroups";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -19,13 +19,17 @@ interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onCreated?: () => void;
+  editGroup?: Group;
+  onUpdated?: () => void;
 }
 
-const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
+const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated }: Props) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { createGroup } = useCreateGroup();
+  const { updateGroup } = useUpdateGroup();
   const { refetchRoles } = useAuth();
+  const isEditing = !!editGroup;
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -36,20 +40,42 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
   const [saving, setSaving] = useState(false);
   const [createdGroup, setCreatedGroup] = useState<{ id: string; name: string; cover_emoji: string } | null>(null);
 
+  useEffect(() => {
+    if (editGroup && open) {
+      setName(editGroup.name);
+      setDescription(editGroup.description ?? "");
+      setLocation(editGroup.location ?? "");
+      setEmoji(editGroup.cover_emoji);
+      setSkill(editGroup.skill_level);
+      setIsOpen(editGroup.is_open);
+    }
+  }, [editGroup, open]);
+
   const reset = () => { setName(""); setDescription(""); setLocation(""); setEmoji("🥎"); setSkill("all"); setIsOpen(true); };
 
-  const handleCreate = async () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
     setSaving(true);
+
+    if (isEditing && editGroup) {
+      const { error } = await updateGroup(editGroup.id, { name: name.trim(), description: description || undefined, location: location || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen });
+      setSaving(false);
+      if (error) { toast.error(error); return; }
+      toast.success(t("groups.updated"));
+      onUpdated?.();
+      onOpenChange(false);
+      return;
+    }
+
     const { data, error } = await createGroup({ name: name.trim(), description: description || undefined, location: location || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen });
     setSaving(false);
     if (error) { toast.error(error); return; }
     toast.success(t("groups.created"));
-    await refetchRoles(); // Pick up auto-granted 'host' role for Tour Manager access
+    await refetchRoles();
     onCreated?.();
     if (data) {
       setCreatedGroup({ id: data.id, name: data.name, cover_emoji: data.cover_emoji });
-      onOpenChange(false); // close create dialog; share dialog opens via state below
+      onOpenChange(false);
     } else {
       reset();
       onOpenChange(false);
@@ -70,10 +96,10 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
       onOpenChange={v => { if (!v) handleShareClose(); }}
       group={createdGroup ?? { id: "", name: "", cover_emoji: "🥎" }}
     />
-    <Dialog open={open} onOpenChange={v => { if (!v) reset(); onOpenChange(v); }}>
+    <Dialog open={open} onOpenChange={v => { if (!v && !isEditing) reset(); onOpenChange(v); }}>
       <DialogContent className="max-w-sm rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="font-display">{t("groups.newGroup")}</DialogTitle>
+          <DialogTitle className="font-display">{isEditing ? t("groups.editGroup") : t("groups.newGroup")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 pt-1">
@@ -134,12 +160,12 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
           </div>
 
           <div className="flex gap-2 pt-1">
-            <Button variant="outline" className="flex-1 rounded-xl" onClick={() => { reset(); onOpenChange(false); }} disabled={saving}>
+            <Button variant="outline" className="flex-1 rounded-xl" onClick={() => { if (!isEditing) reset(); onOpenChange(false); }} disabled={saving}>
               {t("common.cancel")}
             </Button>
-            <Button className="flex-1 rounded-xl font-bold" onClick={handleCreate} disabled={saving || !name.trim()}>
+            <Button className="flex-1 rounded-xl font-bold" onClick={handleSave} disabled={saving || !name.trim()}>
               {saving && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-              {t("groups.create")}
+              {isEditing ? t("common.save") : t("groups.create")}
             </Button>
           </div>
         </div>

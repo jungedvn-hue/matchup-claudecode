@@ -185,6 +185,37 @@ export const useCreateGroup = () => {
   return { createGroup };
 };
 
+// ── Update group ──────────────────────────────────────────────────────────────
+
+export const useUpdateGroup = () => {
+  const { user } = useAuth();
+
+  const updateGroup = async (
+    groupId: string,
+    input: {
+      name: string;
+      description?: string;
+      location?: string;
+      cover_emoji?: string;
+      skill_level?: SkillLevel;
+      is_open?: boolean;
+    }
+  ): Promise<{ error: string | null }> => {
+    if (!user) return { error: "Not authenticated" };
+    const { error } = await sb.from("groups").update({
+      name: input.name,
+      description: input.description || null,
+      location: input.location || null,
+      cover_emoji: input.cover_emoji || "🥎",
+      skill_level: input.skill_level || "all",
+      is_open: input.is_open ?? true,
+    }).eq("id", groupId).eq("host_user_id", user.id);
+    return { error: error?.message ?? null };
+  };
+
+  return { updateGroup };
+};
+
 // ── Join / leave ──────────────────────────────────────────────────────────────
 
 export const useGroupMembership = (groupId: string | undefined) => {
