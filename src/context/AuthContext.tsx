@@ -88,6 +88,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const onAuthed = async (uid: string) => {
       try {
+        // Every authenticated user is a player by default (idempotent upsert)
+        await (supabase as any).from("user_roles").upsert(
+          { user_id: uid, role: "player", revoked_at: null },
+          { onConflict: "user_id,role" }
+        );
+      } catch {
+        // Silent: don't block auth on role insert errors
+      }
+      try {
         await updateDailyStreak(uid);
         await generateDailyQuests(uid);
         await updateQuestProgress(uid, { type: "daily_login" });
@@ -101,8 +110,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       if (session?.user) {
-        migrateLegacyRoles(session.user.id).finally(() => fetchRoles(session.user.id));
-        onAuthed(session.user.id);
+        migrateLegacyRoles(session.user.id)
+          .then(() => onAuthed(session.user.id))
+          .finally(() => fetchRoles(session.user.id));
       }
     });
 
@@ -111,8 +121,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
       if (session?.user) {
-        migrateLegacyRoles(session.user.id).finally(() => fetchRoles(session.user.id));
-        onAuthed(session.user.id);
+        migrateLegacyRoles(session.user.id)
+          .then(() => onAuthed(session.user.id))
+          .finally(() => fetchRoles(session.user.id));
       } else {
         setRoles([]);
       }

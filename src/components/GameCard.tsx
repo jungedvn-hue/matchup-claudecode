@@ -22,7 +22,7 @@ const GameCard = ({ groupName, hostName, location, skill, availableSlots, totalS
       <div className="h-24 bg-gradient-to-br from-primary/20 to-court-light relative">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-2xl">🏓</span>
+            <span className="text-2xl">🥎</span>
           </div>
         </div>
         <div className="absolute top-2 right-2">

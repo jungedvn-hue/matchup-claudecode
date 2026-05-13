@@ -147,7 +147,7 @@ const DiscoverPage = () => {
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
               <Card className="p-3.5 shadow-card hover:shadow-elevated transition-all cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0">🏓</div>
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0">🥎</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-display font-semibold text-card-foreground">{group.name}</h3>

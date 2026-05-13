@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users, Calendar, Clock, ChevronRight, Plus, Award,
-  Loader2, MapPin, Trophy, UserPlus, Check, Sparkles,
+  Loader2, MapPin, Trophy, UserPlus, Check, Sparkles, ArrowLeft,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -85,7 +85,7 @@ const HostDashboard = () => {
         setPending(pendingRows.map(p => ({
           id: p.id, group_id: p.group_id, user_id: p.user_id, joined_at: p.joined_at,
           group_name: gMap.get(p.group_id)?.name ?? "",
-          group_emoji: gMap.get(p.group_id)?.cover_emoji ?? "🏓",
+          group_emoji: gMap.get(p.group_id)?.cover_emoji ?? "🥎",
           display_name: pMap[p.user_id]?.display_name,
           avatar_url: pMap[p.user_id]?.avatar_url,
         })));
@@ -98,7 +98,7 @@ const HostDashboard = () => {
       setUpcoming(eventRows.map(e => ({
         id: e.id, group_id: e.group_id,
         group_name: gMap.get(e.group_id)?.name ?? "",
-        group_emoji: gMap.get(e.group_id)?.cover_emoji ?? "🏓",
+        group_emoji: gMap.get(e.group_id)?.cover_emoji ?? "🥎",
         title: e.title, event_date: e.event_date,
         attendee_count: e.attendee_count, max_attendees: e.max_attendees,
         location: e.location,
@@ -144,14 +144,19 @@ const HostDashboard = () => {
     <div className="pb-20 min-h-screen">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            {t("dashboard.title")}
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {t("dashboard.managing")} {hostedGroups.length} {t("dashboard.groups")} · {totalMembers} {t("dashboard.players")}
-          </p>
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary shrink-0" />
+              {t("dashboard.title")}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+              {t("dashboard.managing")} {hostedGroups.length} {t("dashboard.groups")} · {totalMembers} {t("dashboard.players")}
+            </p>
+          </div>
         </div>
       </div>
 

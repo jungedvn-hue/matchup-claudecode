@@ -160,7 +160,7 @@ const ServiceDetailPage = () => {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-xl">🏓</div>
+                        <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-xl">🥎</div>
                         <div>
                           <p className="text-xs font-semibold text-card-foreground">{dr.model}</p>
                           <p className="text-[9px] text-muted-foreground">{dr.brand} · {dr.weight} · Size {dr.gripSize}</p>

@@ -147,7 +147,7 @@ export function exportStandingsPDF(
       </style>
     </head>
     <body>
-      <h1>🏓 ${tournament.name}</h1>
+      <h1>🥎 ${tournament.name}</h1>
       <h2>${tournament.date} • ${tournament.location} • ${category.name}</h2>
       ${poolsHTML}
       <p style="font-size:10px;color:#999;margin-top:24px;text-align:center">

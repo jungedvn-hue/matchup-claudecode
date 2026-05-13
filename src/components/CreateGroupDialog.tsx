@@ -12,7 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-const EMOJIS = ["🏓", "🎾", "🏸", "⚡", "🔥", "🏆", "🌟", "💪", "🎯", "🏅"];
+const EMOJIS = ["🥎", "🎾", "🏸", "⚡", "🔥", "🏆", "🌟", "💪", "🎯", "🏅"];
 const SKILLS: SkillLevel[] = ["all", "beginner", "intermediate", "advanced", "pro"];
 
 interface Props {
@@ -30,13 +30,13 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
-  const [emoji, setEmoji] = useState("🏓");
+  const [emoji, setEmoji] = useState("🥎");
   const [skill, setSkill] = useState<SkillLevel>("all");
   const [isOpen, setIsOpen] = useState(true);
   const [saving, setSaving] = useState(false);
   const [createdGroup, setCreatedGroup] = useState<{ id: string; name: string; cover_emoji: string } | null>(null);
 
-  const reset = () => { setName(""); setDescription(""); setLocation(""); setEmoji("🏓"); setSkill("all"); setIsOpen(true); };
+  const reset = () => { setName(""); setDescription(""); setLocation(""); setEmoji("🥎"); setSkill("all"); setIsOpen(true); };
 
   const handleCreate = async () => {
     if (!name.trim()) return;
@@ -68,7 +68,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated }: Props) => {
     <ShareGroupDialog
       open={!!createdGroup}
       onOpenChange={v => { if (!v) handleShareClose(); }}
-      group={createdGroup ?? { id: "", name: "", cover_emoji: "🏓" }}
+      group={createdGroup ?? { id: "", name: "", cover_emoji: "🥎" }}
     />
     <Dialog open={open} onOpenChange={v => { if (!v) reset(); onOpenChange(v); }}>
       <DialogContent className="max-w-sm rounded-2xl">

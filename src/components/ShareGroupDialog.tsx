@@ -63,7 +63,7 @@ const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
 
         <div className="space-y-4 pt-1">
           <div className="flex flex-col items-center gap-1.5">
-            <div className="text-3xl">{group.cover_emoji ?? "🏓"}</div>
+            <div className="text-3xl">{group.cover_emoji ?? "🥎"}</div>
             <p className="text-base font-display font-bold text-foreground text-center">{headline}</p>
             <p className="text-[11px] text-muted-foreground text-center">{subtitle}</p>
           </div>

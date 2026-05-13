@@ -190,7 +190,7 @@ const HomePage = () => {
                     <Card className="p-3 shadow-card bg-gradient-to-br from-primary/5 via-card to-card hover:border-primary/30 transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-xl shrink-0">
-                          {ev.group_emoji ?? "🏓"}
+                          {ev.group_emoji ?? "🥎"}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">

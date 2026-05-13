@@ -158,7 +158,7 @@ export const useCreateGroup = () => {
       name: input.name,
       description: input.description || null,
       location: input.location || null,
-      cover_emoji: input.cover_emoji || "🏓",
+      cover_emoji: input.cover_emoji || "🥎",
       skill_level: input.skill_level || "all",
       is_open: input.is_open ?? true,
       max_members: input.max_members || null,

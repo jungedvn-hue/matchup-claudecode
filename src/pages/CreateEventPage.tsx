@@ -15,7 +15,7 @@ import { groups } from "@/data/groups";
 import { toast } from "@/hooks/use-toast";
 
 const eventTypes = [
-  { id: "open_play", labelKey: "event.create.type.openPlay", emoji: "🏓", descKey: "event.create.type.openPlayDesc" },
+  { id: "open_play", labelKey: "event.create.type.openPlay", emoji: "🥎", descKey: "event.create.type.openPlayDesc" },
   { id: "round_robin", labelKey: "event.create.type.roundRobin", emoji: "🔄", descKey: "event.create.type.roundRobinDesc" },
   { id: "clinic", labelKey: "event.create.type.clinic", emoji: "📚", descKey: "event.create.type.clinicDesc" },
   { id: "mixer", labelKey: "event.create.type.mixer", emoji: "🎉", descKey: "event.create.type.mixerDesc" },

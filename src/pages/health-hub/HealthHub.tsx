@@ -1,4 +1,5 @@
-import { Activity, TrendingUp, Utensils, Watch } from "lucide-react";
+import { Activity, TrendingUp, Utensils, Watch, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/i18n/LanguageContext";
 import DashboardTab from "./components/DashboardTab";
@@ -8,12 +9,20 @@ import DevicesTab from "./components/DevicesTab";
 
 const HealthHub = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   return (
     <div className="pb-24 min-h-screen">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <h1 className="text-lg font-display font-bold text-foreground">{t("health.title")}</h1>
-        <p className="text-xs text-muted-foreground">{t("health.subtitle")}</p>
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-lg font-display font-bold text-foreground">{t("health.title")}</h1>
+            <p className="text-xs text-muted-foreground truncate">{t("health.subtitle")}</p>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="dashboard" className="px-4 pt-4">

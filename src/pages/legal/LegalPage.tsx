@@ -46,7 +46,7 @@ const LegalPage = ({ type }: Props) => {
           </Card>
         ))}
 
-        <p className="text-[10px] text-muted-foreground text-center pt-2 pb-4">© 2026 MatchUp · matchup.piktv.asia</p>
+        <p className="text-[10px] text-muted-foreground text-center pt-2 pb-4">© 2026 MatchUp · app.matchup.asia</p>
       </div>
     </div>
   );

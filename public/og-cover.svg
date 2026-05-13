@@ -55,6 +55,6 @@
   <!-- bottom URL -->
   <g transform="translate(80, 560)">
     <rect x="-6" y="-30" width="280" height="42" rx="21" fill="#ffffff" fill-opacity="0.10"/>
-    <text x="20" y="-2" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#ffffff">matchup.piktv.asia</text>
+    <text x="20" y="-2" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#ffffff">app.matchup.asia</text>
   </g>
 </svg>

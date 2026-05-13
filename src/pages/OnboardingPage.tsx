@@ -22,7 +22,7 @@ const slideVariants = {
 };
 
 const roles = [
-  { id: "player" as RoleId, emoji: "🏓", title: "Player", description: "Find games, join groups, track progress" },
+  { id: "player" as RoleId, emoji: "🥎", title: "Player", description: "Find games, join groups, track progress" },
   { id: "host" as RoleId, emoji: "📋", title: "Social Host", description: "Organize events, manage groups & tournaments" },
   { id: "court_owner" as RoleId, emoji: "🏟️", title: "Court Owner", description: "Manage courts and grow your venue" },
   { id: "store_owner" as RoleId, emoji: "🛒", title: "Store Owner", description: "Sell gear, accessories & equipment" },
@@ -579,7 +579,7 @@ const OnboardingPage = () => {
 
       case "store_categories":
         const categories = [
-          { emoji: "🏓", label: "Paddles" },
+          { emoji: "🥎", label: "Paddles" },
           { emoji: "🎾", label: "Balls" },
           { emoji: "👟", label: "Shoes" },
           { emoji: "👕", label: "Apparel" },
@@ -684,7 +684,7 @@ const OnboardingPage = () => {
             disabled={!canProceed()}
             className="w-full h-12 rounded-2xl text-sm font-semibold gap-2 transition-all active:scale-[0.97]"
           >
-            {isLastStep ? "Let's Play! 🏓" : "Continue"}
+            {isLastStep ? "Let's Play! 🥎" : "Continue"}
             {!isLastStep && <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
