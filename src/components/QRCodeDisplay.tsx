@@ -3,9 +3,10 @@ import { useQRCode } from "@/hooks/use-qr-code";
 interface QRCodeDisplayProps {
   data: string;
   size?: number;
+  showText?: boolean;
 }
 
-const QRCodeDisplay = ({ data, size = 140 }: QRCodeDisplayProps) => {
+const QRCodeDisplay = ({ data, size = 140, showText = true }: QRCodeDisplayProps) => {
   const { cells, grid, cellSize } = useQRCode(data, size);
 
   return (
@@ -29,7 +30,9 @@ const QRCodeDisplay = ({ data, size = 140 }: QRCodeDisplayProps) => {
           )}
         </svg>
       </div>
-      <p className="text-[9px] text-muted-foreground font-mono tracking-wider">{data}</p>
+      {showText && (
+        <p className="text-[9px] text-muted-foreground font-mono tracking-wider break-all text-center max-w-full px-2">{data}</p>
+      )}
     </div>
   );
 };

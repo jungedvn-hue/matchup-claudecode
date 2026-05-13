@@ -69,7 +69,7 @@ const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
           </div>
 
           <div className="flex justify-center">
-            <QRCodeDisplay data={url} size={180} />
+            <QRCodeDisplay data={url} size={180} showText={false} />
           </div>
           <p className="text-[10px] text-muted-foreground text-center">{t("share.scanHint")}</p>
 
