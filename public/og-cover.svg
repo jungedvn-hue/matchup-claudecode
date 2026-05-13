@@ -47,7 +47,7 @@
   <!-- Brand text -->
   <g transform="translate(80, 230)">
     <text x="0" y="0" font-family="Helvetica, Arial, sans-serif" font-size="120" font-weight="900" fill="#ffffff" letter-spacing="-3">MatchUp</text>
-    <text x="6" y="60" font-family="Helvetica, Arial, sans-serif" font-size="32" font-weight="600" fill="#a7f3d0" letter-spacing="0.5">Where you belong</text>
+    <text x="6" y="60" font-family="Helvetica, Arial, sans-serif" font-size="32" font-weight="600" fill="#a7f3d0" letter-spacing="0.5">Where Passion Belongs</text>
     <text x="6" y="160" font-family="Helvetica, Arial, sans-serif" font-size="28" font-weight="500" fill="#e2e8f0" opacity="0.92">Cộng đồng pickleball Việt Nam</text>
     <text x="6" y="200" font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="400" fill="#cbd5e1" opacity="0.85">Tìm nhóm · Giải đấu · Điểm số real-time</text>
   </g>
