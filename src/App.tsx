@@ -24,6 +24,8 @@ import SettingsPage from "./pages/SettingsPage";
 import MyTicketsPage from "./pages/MyTicketsPage";
 import AssistantCheckInPage from "./pages/AssistantCheckInPage";
 import FavoritePartnersPage from "./pages/FavoritePartnersPage";
+import FriendsPage from "./pages/FriendsPage";
+import UserProfilePage from "./pages/UserProfilePage";
 import MatchHistoryPage from "./pages/MatchHistoryPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import EditProfilePage from "./pages/EditProfilePage";
@@ -90,6 +92,8 @@ const AppShell = () => {
         <Route path="/my-tickets" element={<MyTicketsPage />} />
         <Route path="/assistant-checkin" element={<AssistantCheckInPage />} />
         <Route path="/favorite-partners" element={<FavoritePartnersPage />} />
+        <Route path="/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
+        <Route path="/user/:userId" element={<UserProfilePage />} />
         <Route path="/match-history" element={<MatchHistoryPage />} />
         <Route path="/arena" element={<ProtectedRoute><ArenaPage /></ProtectedRoute>} />
         <Route path="/terms" element={<LegalPage type="terms" />} />

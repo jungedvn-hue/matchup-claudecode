@@ -19,6 +19,7 @@ import { useRoles, hasRole } from "@/hooks/use-roles";
 import { toast } from "sonner";
 import { usePlayerProfile, usePlayerStats, useMatchRecords, type MatchRecord } from "@/hooks/useMatches";
 import { useStreak } from "@/hooks/useGamification";
+import { usePendingFriendCount } from "@/hooks/useFriends";
 
 type SkillLevel = "beginner" | "intermediate" | "advanced" | "pro";
 
@@ -32,6 +33,7 @@ const ProfilePage = () => {
   const { stats } = usePlayerStats();
   const { matches, refetch: refetchMatches } = useMatchRecords({ limit: 4 });
   const { streak } = useStreak();
+  const { count: pendingFriends } = usePendingFriendCount();
 
   const handleLogout = async () => {
     try {
@@ -206,6 +208,7 @@ const ProfilePage = () => {
             { label: t("arena.title"), path: "/arena", icon: <Sparkles className="h-4 w-4" /> },
             { label: t("nav.health"), path: "/health", icon: <Activity className="h-4 w-4" /> },
             { label: t("profile.myTickets"), path: "/my-tickets", icon: <Ticket className="h-4 w-4" /> },
+            { label: t("friends.title"), path: "/friends", icon: <Users className="h-4 w-4" />, badge: pendingFriends },
             { label: t("profile.favoritePartners"), path: "/favorite-partners", icon: <Heart className="h-4 w-4" /> },
             { label: t("profile.matchHistory"), path: "/match-history", icon: <History className="h-4 w-4" /> },
             { label: t("verify.title"), path: "/verify", icon: <ShieldCheck className="h-4 w-4" /> },
@@ -218,7 +221,12 @@ const ProfilePage = () => {
                 <span className="text-muted-foreground">{item.icon}</span>
                 <span className="text-sm font-medium text-foreground">{item.label}</span>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-2">
+                {item.badge > 0 && (
+                  <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center tabular-nums">{item.badge}</span>
+                )}
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </div>
             </button>
           ))}
         </section>
