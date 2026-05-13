@@ -90,7 +90,7 @@ const AppShell = () => {
         <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/my-tickets" element={<MyTicketsPage />} />
-        <Route path="/assistant-checkin" element={<AssistantCheckInPage />} />
+        <Route path="/assistant-checkin/:groupId" element={<ProtectedRoute><AssistantCheckInPage /></ProtectedRoute>} />
         <Route path="/favorite-partners" element={<FavoritePartnersPage />} />
         <Route path="/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
         <Route path="/user/:userId" element={<UserProfilePage />} />

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,8 @@ import { useGroupEvents, useRSVP, type RSVPStatus } from "@/hooks/useGroupEvents
 import CreateEventDialog from "@/components/CreateEventDialog";
 import ShareGroupDialog from "@/components/ShareGroupDialog";
 import CreateGroupDialog from "@/components/CreateGroupDialog";
+import AssignAssistantDialog from "@/components/AssignAssistantDialog";
+import { useGroupAssistants, useAssistantActions } from "@/hooks/useAssistants";
 import { toast } from "sonner";
 
 const GroupDetailPage = () => {
@@ -27,8 +29,11 @@ const GroupDetailPage = () => {
   const [acting, setActing] = useState(false);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [editGroupOpen, setEditGroupOpen] = useState(false);
+  const [assignAssistantOpen, setAssignAssistantOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareEvent, setShareEvent] = useState<{ id: string; title: string } | null>(null);
+  const { assistants, refetch: refetchAssistants } = useGroupAssistants(groupId);
+  const { revoke: revokeAssistant } = useAssistantActions();
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -125,6 +130,13 @@ const GroupDetailPage = () => {
         onOpenChange={setEditGroupOpen}
         editGroup={group}
         onUpdated={refetch}
+      />
+
+      <AssignAssistantDialog
+        open={assignAssistantOpen}
+        onOpenChange={setAssignAssistantOpen}
+        groupId={group.id}
+        onAssigned={refetchAssistants}
       />
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
@@ -327,6 +339,69 @@ const GroupDetailPage = () => {
             })}
           </Card>
         </section>
+
+        {/* Assistants — host-only management + visible to all members */}
+        {(isHost || assistants.length > 0) && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                <Shield className="h-4 w-4 text-primary" />
+                {t("assistant.assistants")} ({assistants.length})
+              </h2>
+              {isHost && (
+                <button onClick={() => setAssignAssistantOpen(true)} className="text-xs text-primary font-medium flex items-center gap-1">
+                  <UserPlus className="h-3.5 w-3.5" /> {t("assistant.assign.add")}
+                </button>
+              )}
+            </div>
+            {assistants.length === 0 ? (
+              <Card className="p-4 shadow-card text-center">
+                <p className="text-xs text-muted-foreground">{t("assistant.emptyHost")}</p>
+              </Card>
+            ) : (
+              <Card className="shadow-card overflow-hidden">
+                {assistants.map((a, i) => (
+                  <div key={a.id} className={`flex items-center gap-3 px-3.5 py-2.5 ${i < assistants.length - 1 ? "border-b border-border" : ""}`}>
+                    <Avatar className="h-8 w-8 shrink-0">
+                      {a.avatar_url && <AvatarImage src={a.avatar_url} />}
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">{(a.display_name || "?")[0].toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{a.display_name || t("common.unknown")}</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {a.assigned_courts.slice(0, 3).map(c => (
+                          <span key={c} className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{c}</span>
+                        ))}
+                        {a.permissions.length > 0 && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">{a.permissions.length} {t("assistant.perms")}</span>
+                        )}
+                      </div>
+                    </div>
+                    {(a.user_id === user?.id || a.permissions.includes("check_in")) && (
+                      <button onClick={() => navigate(`/assistant-checkin/${group.id}`)}
+                        className="h-7 px-2.5 rounded-lg bg-primary/10 text-primary text-[10px] font-semibold flex items-center gap-1 hover:bg-primary/15">
+                        <ScanLine className="h-3 w-3" /> {t("assistant.open")}
+                      </button>
+                    )}
+                    {isHost && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm(t("assistant.confirmRevoke"))) return;
+                          const { error } = await revokeAssistant(a.id);
+                          if (error) toast.error(error);
+                          else { toast.success(t("assistant.revoked")); refetchAssistants(); }
+                        }}
+                        className="text-[10px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </Card>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );

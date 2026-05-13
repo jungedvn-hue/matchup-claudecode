@@ -1,216 +1,147 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  ArrowLeft, ScanLine, CheckCircle2, Check, MapPin, Clock, Users, Calendar
-} from "lucide-react";
+import { ArrowLeft, ScanLine, MapPin, Calendar, Clock, Users, Shield, Lock, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { groupEvents } from "@/data/events";
-import { groups } from "@/data/groups";
-import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/i18n/LanguageContext";
-
-// Demo: players to check in at assigned courts
-const courtPlayers: Record<string, { id: string; name: string; avatar: string; ticketCode: string }[]> = {
-  "Sân 1": [
-    { id: "cp-1", name: "David P.", avatar: "🧔", ticketCode: "TICKET-tk-3" },
-    { id: "cp-2", name: "Lisa M.", avatar: "👩‍🦰", ticketCode: "TICKET-tk-4" },
-  ],
-  "Sân 2": [
-    { id: "cp-3", name: "Maria G.", avatar: "👩", ticketCode: "TICKET-tk-6" },
-    { id: "cp-4", name: "Minh N.", avatar: "🧑", ticketCode: "TICKET-tk-1" },
-  ],
-  "Sân 3": [
-    { id: "cp-5", name: "Tom H.", avatar: "🧑", ticketCode: "TICKET-tk-5" },
-  ],
-  "Sân 4": [],
-};
+import { useAuth } from "@/context/AuthContext";
+import { useGroup } from "@/hooks/useGroups";
+import { useGroupEvents } from "@/hooks/useGroupEvents";
+import { useMyAssistantPermissions, type AssistantPermission } from "@/hooks/useAssistants";
 
 const AssistantCheckInPage = () => {
+  const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [searchParams] = useSearchParams();
-  const groupId = searchParams.get("group") || "sunset-smashers";
-  const courts = searchParams.get("courts")?.split(",") || ["Sân 1"];
+  const { user } = useAuth();
+  const { group, loading: loadingGroup } = useGroup(groupId);
+  const { events } = useGroupEvents(groupId);
+  const { row: assistantRow, can, loading: loadingPerms } = useMyAssistantPermissions(groupId);
 
-  const group = groups.find((g) => g.id === groupId);
-  const groupEventsList = groupEvents.filter((e) => e.groupId === groupId);
-  const [checkedInIds, setCheckedInIds] = useState<Set<string>>(new Set());
-  const [scanning, setScanning] = useState(false);
-  const [activeCourt, setActiveCourt] = useState(courts[0]);
+  const isHost = group && user && group.host_user_id === user.id;
+  const hasCheckIn = isHost || can("check_in");
 
-  const players = courtPlayers[activeCourt] || [];
-  const totalPlayers = courts.flatMap((c) => courtPlayers[c] || []);
-  const totalCheckedIn = totalPlayers.filter((p) => checkedInIds.has(p.id)).length;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(t);
+  }, []);
 
-  const handleScan = () => {
-    setScanning(true);
-    setTimeout(() => {
-      setScanning(false);
-      const unchecked = players.find((p) => !checkedInIds.has(p.id));
-      if (unchecked) {
-        setCheckedInIds((prev) => new Set(prev).add(unchecked.id));
-        toast({ title: t("assistant.toast.checkInSuccess"), description: `${unchecked.name} — ${activeCourt}` });
-      } else {
-        toast({ title: t("assistant.toast.allCheckedIn"), description: t("assistant.toast.allCheckedInDesc", { court: activeCourt }) });
-      }
-    }, 1500);
-  };
+  // Today's events: from -2h to +10h window
+  const todayEvents = events.filter(e => {
+    const t = new Date(e.event_date).getTime();
+    return t > now - 2 * 3600_000 && t < now + 10 * 3600_000;
+  });
 
-  const handleManualCheckIn = (playerId: string, playerName: string) => {
-    setCheckedInIds((prev) => new Set(prev).add(playerId));
-    toast({ title: t("assistant.toast.checkInSuccess"), description: `${playerName} — ${activeCourt}` });
-  };
+  if (loadingGroup || loadingPerms) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary opacity-40" />
+    </div>
+  );
+
+  if (!group) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-muted-foreground">
+      <p className="text-sm">{t("groups.notFound")}</p>
+      <button onClick={() => navigate(-1)} className="text-xs text-primary font-medium">{t("common.goBack")}</button>
+    </div>
+  );
+
+  if (!hasCheckIn) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-muted-foreground px-6">
+      <Lock className="h-10 w-10 opacity-30" />
+      <p className="text-sm text-center">{t("assistant.noPermission")}</p>
+      <button onClick={() => navigate(-1)} className="text-xs text-primary font-medium">{t("common.goBack")}</button>
+    </div>
+  );
+
+  const assignedCourts = assistantRow?.assigned_courts ?? [];
+  const myPerms: AssistantPermission[] = (assistantRow?.permissions ?? []) as AssistantPermission[];
 
   return (
     <div className="pb-20 min-h-screen">
-      {/* Header */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
-            <ArrowLeft className="h-4 w-4 text-foreground" />
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
+            <ArrowLeft className="h-4 w-4" />
           </button>
-          <div className="flex-1">
-            <h1 className="text-base font-display font-bold text-foreground">{t("assistant.title")}</h1>
-            <p className="text-[10px] text-muted-foreground">{group?.name} · {group?.courtName}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm font-bold text-primary">{totalCheckedIn}/{totalPlayers.length}</p>
-            <p className="text-[9px] text-muted-foreground">{t("assistant.checkedIn")}</p>
+          <div className="min-w-0">
+            <h1 className="text-base font-display font-bold text-foreground truncate flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary shrink-0" />
+              {t("assistant.workspaceTitle")}
+            </h1>
+            <p className="text-[11px] text-muted-foreground truncate">{group.cover_emoji} {group.name}</p>
           </div>
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-4">
-        {/* Group info */}
-        <Card className="p-3 bg-primary/5 border-primary/20">
-          <div className="flex items-center gap-2 text-xs text-foreground">
-            <span className="text-lg">{group?.emoji}</span>
-            <span className="font-medium">{group?.name}</span>
-            <Badge variant="outline" className="text-[9px] ml-auto">{t("assistant.fixedAssistant")}</Badge>
-          </div>
-          <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
-            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{group?.location}</span>
-            <span className="flex items-center gap-1"><Users className="h-3 w-3" />{group?.members} {t("assistant.membersSuffix")}</span>
-          </div>
-        </Card>
-
-        {/* Today's events */}
-        {groupEventsList.length > 0 && (
-          <div>
-            <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5 text-primary" /> {t("assistant.eventToday")}
-            </p>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {groupEventsList.slice(0, 3).map((evt) => (
-                <div key={evt.id} className="shrink-0 px-3 py-2 rounded-xl bg-secondary/50 border border-border">
-                  <p className="text-[10px] font-medium text-card-foreground">{evt.title}</p>
-                  <p className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                    <Clock className="h-2.5 w-2.5" /> {evt.time} · {evt.bookedSpots}/{evt.maxSpots}
-                  </p>
+      <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
+        {/* Assignment summary */}
+        {!isHost && assistantRow && (
+          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="p-3.5 shadow-card bg-gradient-to-br from-primary/5 via-card to-card">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">{t("assistant.yourAssignment")}</p>
+              <div className="space-y-2">
+                {assignedCourts.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                    <div className="flex flex-wrap gap-1">
+                      {assignedCourts.map(c => (
+                        <span key={c} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{c}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-start gap-2">
+                  <Shield className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                  <div className="flex flex-wrap gap-1">
+                    {myPerms.map(p => (
+                      <span key={p} className="px-2 py-0.5 rounded-full bg-secondary text-foreground text-[10px] font-medium">{t(`assistant.perm.${p}`)}</span>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            </Card>
+          </motion.div>
         )}
 
-        {/* Court tabs */}
-        <div>
-          <p className="text-xs font-semibold text-foreground mb-2">{t("assistant.assignedCourts")}</p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {courts.map((court) => {
-              const cp = courtPlayers[court] || [];
-              const checkedCount = cp.filter((p) => checkedInIds.has(p.id)).length;
-              return (
-                <button
-                  key={court}
-                  onClick={() => setActiveCourt(court)}
-                  className={`shrink-0 px-3 py-2 rounded-xl text-xs font-medium border transition-all ${
-                    activeCourt === court
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-card text-muted-foreground border-border"
-                  }`}
-                >
-                  {court}
-                  <span className="ml-1.5 text-[10px] opacity-70">{checkedCount}/{cp.length}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* QR Scanner */}
-        <div className="relative aspect-[4/3] max-h-52 mx-auto bg-muted rounded-xl overflow-hidden flex items-center justify-center">
-          <div className="absolute inset-4 border-2 border-dashed border-primary/40 rounded-lg" />
-          {scanning && (
-            <motion.div
-              className="absolute left-4 right-4 h-0.5 bg-primary rounded-full"
-              animate={{ top: ["15%", "85%", "15%"] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            />
-          )}
-          <div className="text-center z-10">
-            <ScanLine className={`h-10 w-10 mx-auto mb-2 ${scanning ? "text-primary animate-pulse" : "text-muted-foreground"}`} />
-            <p className="text-xs text-muted-foreground">
-              {scanning ? t("assistant.scanning") : t("assistant.scanHint")}
-            </p>
-          </div>
-        </div>
-
-        <Button className="w-full rounded-xl gap-2" onClick={handleScan} disabled={scanning}>
-          <ScanLine className="h-4 w-4" />
-          {scanning ? t("assistant.scanning") : t("assistant.scanQR")}
-        </Button>
-
-        {/* Player list for active court */}
-        <div>
-          <p className="text-xs font-semibold text-foreground mb-2">
-            {t("assistant.list", { court: activeCourt, checked: players.filter((p) => checkedInIds.has(p.id)).length, total: players.length })}
-          </p>
-          {players.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-4">{t("assistant.noPlayers")}</p>
+        {/* Today's events */}
+        <section>
+          <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2 mb-2">
+            <Calendar className="h-4 w-4 text-primary" />
+            {t("assistant.todayEvents")} ({todayEvents.length})
+          </h2>
+          {todayEvents.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground shadow-card">
+              <Calendar className="h-9 w-9 mx-auto opacity-20 mb-2" />
+              <p className="text-xs">{t("assistant.noEventsToday")}</p>
+            </Card>
           ) : (
             <div className="space-y-2">
-              {players.map((player) => {
-                const done = checkedInIds.has(player.id);
-                return (
-                  <motion.div
-                    key={player.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/50"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-sm">
-                        {player.avatar}
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-card-foreground">{player.name}</p>
-                        <p className="text-[9px] text-muted-foreground font-mono">{player.ticketCode}</p>
-                      </div>
+              {todayEvents.map(e => (
+                <Card key={e.id} className="p-3 shadow-card">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-foreground truncate">{e.title}</p>
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Clock className="h-3 w-3" /> {new Date(e.event_date).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                        {e.location && <><span>·</span><span className="truncate">{e.location}</span></>}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Users className="h-3 w-3" /> {e.attendee_count}{e.max_attendees ? `/${e.max_attendees}` : ""} {t("events.going")}
+                      </p>
                     </div>
-                    {done ? (
-                      <Badge variant="outline" className="text-[10px] gap-1 bg-primary/10 text-primary border-primary/20">
-                        <CheckCircle2 className="h-3 w-3" /> {t("assistant.checkedInBadge")}
-                      </Badge>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-[10px] rounded-lg gap-1"
-                        onClick={() => handleManualCheckIn(player.id, player.name)}
-                      >
-                        <Check className="h-3 w-3" /> Check-in
-                      </Button>
-                    )}
-                  </motion.div>
-                );
-              })}
+                    <button
+                      onClick={() => navigate(`/checkin/${e.id}`)}
+                      className="h-9 px-3 rounded-xl bg-primary text-primary-foreground text-[11px] font-bold flex items-center gap-1.5 hover:bg-primary/90"
+                    >
+                      <ScanLine className="h-3.5 w-3.5" /> {t("assistant.scan")}
+                    </button>
+                  </div>
+                </Card>
+              ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );
