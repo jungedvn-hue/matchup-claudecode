@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120" role="img" aria-label="MatchUp logo">
+  <defs>
+    <linearGradient id="paddleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25A55A"/>
+      <stop offset="100%" stop-color="#15803D"/>
+    </linearGradient>
+    <linearGradient id="ballGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E6EE3D"/>
+      <stop offset="100%" stop-color="#C4CC14"/>
+    </linearGradient>
+  </defs>
+
+  <!-- === ICON MARK (96×96 viewbox, centered at 60,60) === -->
+  <!-- Paddle body: rounded rectangle, slightly tilted -->
+  <g transform="translate(12, 12)">
+    <!-- Swoosh arc (dynamic motion line) -->
+    <path d="M 18 72 Q 48 8 78 28" stroke="#E6EE3D" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.9"/>
+
+    <!-- Paddle body -->
+    <rect x="14" y="22" width="52" height="62" rx="26" ry="26" fill="url(#paddleGrad)"/>
+
+    <!-- Paddle handle -->
+    <rect x="29" y="72" width="22" height="20" rx="5" fill="#15803D"/>
+    <rect x="27" y="78" width="26" height="10" rx="3" fill="#0f6830"/>
+
+    <!-- Paddle face holes pattern (pickleball-style) -->
+    <circle cx="30" cy="38" r="3.5" fill="white" opacity="0.9"/>
+    <circle cx="50" cy="38" r="3.5" fill="white" opacity="0.9"/>
+    <circle cx="40" cy="48" r="3.5" fill="white" opacity="0.9"/>
+    <circle cx="28" cy="56" r="3.5" fill="white" opacity="0.9"/>
+    <circle cx="52" cy="56" r="3.5" fill="white" opacity="0.9"/>
+    <circle cx="40" cy="30" r="3.5" fill="white" opacity="0.9"/>
+
+    <!-- Pickleball (yellow, top-right of paddle) -->
+    <circle cx="75" cy="22" r="14" fill="url(#ballGrad)"/>
+    <!-- Ball holes -->
+    <circle cx="70" cy="18" r="2.2" fill="#0f6830" opacity="0.7"/>
+    <circle cx="80" cy="18" r="2.2" fill="#0f6830" opacity="0.7"/>
+    <circle cx="75" cy="26" r="2.2" fill="#0f6830" opacity="0.7"/>
+    <circle cx="68" cy="26" r="2.2" fill="#0f6830" opacity="0.7"/>
+    <circle cx="82" cy="26" r="2.2" fill="#0f6830" opacity="0.7"/>
+    <circle cx="75" cy="14" r="2.2" fill="#0f6830" opacity="0.7"/>
+  </g>
+
+  <!-- === WORDMARK === -->
+  <text x="128" y="72" font-family="'Space Grotesk', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="-2" fill="#101816">Match</text>
+  <text x="326" y="72" font-family="'Space Grotesk', 'Helvetica Neue', Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="-2" fill="#25A55A">Up</text>
+
+  <!-- Tagline -->
+  <text x="129" y="94" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="500" letter-spacing="0.5" fill="#6B7572">Where Passion Belongs</text>
+</svg>

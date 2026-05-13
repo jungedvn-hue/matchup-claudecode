@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="MatchUp favicon">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#25A55A"/>
+      <stop offset="100%" stop-color="#15803D"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+  <!-- Simplified paddle: white oval -->
+  <rect x="5" y="8" width="16" height="20" rx="8" fill="white"/>
+  <!-- Paddle handle -->
+  <rect x="10" y="24" width="6" height="5" rx="2" fill="rgba(255,255,255,0.7)"/>
+  <!-- Pickleball: yellow circle top-right -->
+  <circle cx="24" cy="9" r="6" fill="#E6EE3D"/>
+  <!-- Ball holes simplified -->
+  <circle cx="22" cy="8" r="1" fill="#15803D" opacity="0.8"/>
+  <circle cx="26" cy="8" r="1" fill="#15803D" opacity="0.8"/>
+  <circle cx="24" cy="11" r="1" fill="#15803D" opacity="0.8"/>
+</svg>
