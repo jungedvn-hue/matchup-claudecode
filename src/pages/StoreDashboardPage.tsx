@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Package, Calendar, Star, MessageSquare, Plus, Pencil,
-  ChevronRight, Store, Loader2,
+  ChevronRight, Store, Loader2, Coins, TrendingUp, ShoppingBag,
 } from "lucide-react";
+import { formatCoin } from "@/hooks/useCoin";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +51,9 @@ const StoreDashboardPage = () => {
   }
 
   const activeBookings = bookings.filter(b => b.status === "pending" || b.status === "confirmed").length;
+  const sales = bookings.filter(b => b.paid_at != null);
+  const totalEarnedCoins = sales.reduce((s, b) => s + (b.total_coins ?? 0), 0);
+  const recentSales = sales.slice(0, 3);
 
   const stats = [
     { icon: Package, labelKey: "store.stats.products", value: products.length, tone: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
@@ -85,6 +89,31 @@ const StoreDashboardPage = () => {
                   <p className="text-xs text-muted-foreground italic">{t("store.dashboard.subtitle")}</p>
                 )}
               </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Earnings highlight (coin sales) */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <Card className="p-4 shadow-card bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-card border-amber-500/20">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
+              {t("store.earnings.title")}
+            </div>
+            <div className="mt-2 flex items-end justify-between gap-3">
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-3xl font-display font-bold text-foreground tabular-nums">{formatCoin(totalEarnedCoins)}</p>
+                  <p className="text-xs font-semibold text-muted-foreground">{t("wallet.coins")}</p>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  {sales.length} {t("store.earnings.salesCount")}
+                </p>
+              </div>
+              <button onClick={() => navigate("/wallet")}
+                className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 hover:underline">
+                {t("store.earnings.viewWallet")} <ChevronRight className="h-3 w-3" />
+              </button>
             </div>
           </Card>
         </motion.div>
@@ -135,6 +164,39 @@ const StoreDashboardPage = () => {
                       </p>
                     </div>
                     <BookingStatusBadge status={b.status} t={t} />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* Recent sales (paid via coin) */}
+        <Section
+          title={t("store.recentSales")}
+          onSeeAll={() => navigate("/my-store/bookings")}
+          showSeeAll={sales.length > 3}
+        >
+          {recentSales.length === 0 ? (
+            <EmptyState icon={ShoppingBag} text={t("store.empty.sales")} />
+          ) : (
+            <div className="space-y-2">
+              {recentSales.map(b => (
+                <Card key={b.id} className="p-3.5 shadow-card flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <ShoppingBag className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{b.player_name}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {new Date(b.paid_at!).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {b.quantity > 1 && ` · x${b.quantity}`}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-display font-bold text-emerald-600 dark:text-emerald-400 tabular-nums flex items-center gap-1 justify-end">
+                      <Coins className="h-3 w-3 text-amber-500" /> +{formatCoin(b.total_coins ?? 0)}
+                    </p>
                   </div>
                 </Card>
               ))}

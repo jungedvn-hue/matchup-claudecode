@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import ImageUpload from "@/components/ImageUpload";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -51,6 +52,7 @@ const StoreProductsPage = () => {
       availability: input.availability as Product["availability"],
       is_published: input.isPublished,
       is_featured: input.isFeatured,
+      images: input.images,
     };
     const { error } = id
       ? await update(id, payload)
@@ -177,6 +179,7 @@ interface ProductFormState {
   availability: string;
   isPublished: boolean;
   isFeatured: boolean;
+  images: string[];
 }
 
 const blankForm = (): ProductFormState => ({
@@ -188,6 +191,7 @@ const blankForm = (): ProductFormState => ({
   availability: "in_stock",
   isPublished: true,
   isFeatured: false,
+  images: [],
 });
 
 const fromProduct = (p: Product): ProductFormState => ({
@@ -199,6 +203,7 @@ const fromProduct = (p: Product): ProductFormState => ({
   availability: p.availability,
   isPublished: p.is_published,
   isFeatured: p.is_featured,
+  images: p.images ?? [],
 });
 
 const ProductDialog = ({
@@ -245,6 +250,13 @@ const ProductDialog = ({
           <Field label={t("store.product.description")}>
             <Textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder={t("store.product.descPh")} className="resize-none" />
           </Field>
+          <ImageUpload
+            mode="multi"
+            value={form.images}
+            onChange={(urls) => setForm({ ...form, images: urls })}
+            max={6}
+            label={t("store.product.images")}
+          />
           <div className="grid grid-cols-2 gap-2">
             <Field label={t("store.product.price")}>
               <Input type="number" min={0} value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />

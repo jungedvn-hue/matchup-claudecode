@@ -60,6 +60,10 @@ export interface Booking {
   status: "pending" | "confirmed" | "completed" | "cancelled" | "rejected";
   scheduled_date: string | null;
   scheduled_time: string | null;
+  quantity: number;
+  total_coins: number | null;
+  paid_at: string | null;
+  coin_tx_id: string | null;
   created_at: string;
   updated_at: string;
 }
