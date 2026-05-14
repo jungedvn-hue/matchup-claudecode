@@ -7,3 +7,11 @@ verify_jwt = false
 # User-initiated checkout — requires authenticated user JWT
 [functions.payment-create]
 verify_jwt = true
+
+# Health OAuth callback — provider redirects without Supabase JWT
+[functions.health-oauth]
+verify_jwt = false
+
+# Health sync — user-initiated, requires JWT
+[functions.health-sync]
+verify_jwt = true

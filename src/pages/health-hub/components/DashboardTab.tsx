@@ -10,6 +10,7 @@ import LogHealthDialog from "./LogHealthDialog";
 import GoalsDialog from "./GoalsDialog";
 import RingProgress from "./RingProgress";
 import RecoveryScoreCard from "./RecoveryScoreCard";
+import InsightsCard from "./InsightsCard";
 
 const STRESS_LABEL_KEY: Record<string, string> = {
   low: "health.stress.low",
@@ -66,6 +67,7 @@ const DashboardTab = () => {
 
   return (
     <div className="space-y-4">
+      <InsightsCard />
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[11px] text-muted-foreground">{t("health.dashboard.todayHeader")}</p>
