@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users, Calendar, Clock, ChevronRight, Plus, Award,
-  Loader2, MapPin, Trophy, UserPlus, Check, Sparkles, ArrowLeft,
+  Loader2, MapPin, Trophy, UserPlus, Check, Sparkles, ArrowLeft, TrendingUp, BarChart2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useMyGroups, useGroupMembership } from "@/hooks/useGroups";
+import { useHostStats } from "@/hooks/useHostStats";
 import { useTournaments } from "@/context/TournamentContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -107,6 +108,9 @@ const HostDashboard = () => {
     })();
   }, [hostedGroups]);
 
+  const hostedGroupIds = useMemo(() => hostedGroups.map(g => g.id), [hostedGroups]);
+  const hostStats = useHostStats(hostedGroupIds);
+
   // Stats (real data)
   const totalMembers = hostedGroups.reduce((s, g) => s + g.member_count, 0);
   const eventsThisWeek = upcoming.filter(e => {
@@ -176,6 +180,41 @@ const HostDashboard = () => {
                   s.tone === "primary" ? "bg-primary/10 text-primary" :
                   s.tone === "blue" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" :
                   s.tone === "amber" ? "bg-amber-500/10 text-amber-600 dark:text-amber-500" :
+                  "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                }`}>
+                  <s.icon className="h-3.5 w-3.5" />
+                </div>
+                <p className="text-base font-display font-bold text-card-foreground tabular-nums leading-none">{s.value}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">{s.label}</p>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Historical stats row */}
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            {
+              tone: "violet", icon: BarChart2,
+              value: hostStats.loading ? "—" : hostStats.totalEvents.toString(),
+              label: t("dashboard.totalEventsHosted"),
+            },
+            {
+              tone: "sky", icon: Users,
+              value: hostStats.loading || hostStats.totalEvents === 0 ? "—" : `${hostStats.avgAttendance}`,
+              label: t("dashboard.avgAttendance"),
+            },
+            {
+              tone: "emerald", icon: TrendingUp,
+              value: hostStats.loading || hostStats.totalRevenue === 0 ? "—" : `${hostStats.totalRevenue.toLocaleString()}đ`,
+              label: t("dashboard.revenue"),
+            },
+          ].map((s, i) => (
+            <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + i * 0.05 }}>
+              <Card className="p-2.5 shadow-card text-center bg-card">
+                <div className={`h-7 w-7 mx-auto mb-1.5 rounded-lg flex items-center justify-center ${
+                  s.tone === "violet" ? "bg-violet-500/10 text-violet-600 dark:text-violet-400" :
+                  s.tone === "sky" ? "bg-sky-500/10 text-sky-600 dark:text-sky-400" :
                   "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                 }`}>
                   <s.icon className="h-3.5 w-3.5" />
