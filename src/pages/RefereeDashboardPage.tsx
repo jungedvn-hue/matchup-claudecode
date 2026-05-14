@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Gavel, MapPin, Calendar, Trophy, Clock, CheckCircle2, PlayCircle, ChevronRight, ShieldCheck, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Gavel, MapPin, Calendar, Trophy, Clock, CheckCircle2, PlayCircle, ChevronRight, ShieldCheck, ShieldAlert, Mail, X } from "lucide-react";
+import { useRefereeInvites } from "@/hooks/useReferee";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,8 @@ const RefereeDashboardPage = () => {
 
   const [showJoinRef, setShowJoinRef] = useState(false);
   const [accessCode, setAccessCode] = useState("");
+  const { invites: pendingInvites, accept: acceptInvite, decline: declineInvite } = useRefereeInvites("invitee");
+  const activeInvites = pendingInvites.filter(i => i.status === "pending");
   const [applyOpen, setApplyOpen] = useState(false);
   const [refStatus, setRefStatus] = useState<"none" | "pending" | "rejected">("none");
 
@@ -152,10 +155,14 @@ const RefereeDashboardPage = () => {
         <Badge variant="outline" className="text-[10px] h-5">{t("ref.upcoming")}</Badge>
       );
 
+    const goCourtside = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      navigate(`/courtside/${m.tournamentId}/${m.id}`);
+    };
     return (
-      <button
+      <div
         onClick={() => navigate(`/tour-manager/${m.tournamentId}`)}
-        className="w-full text-left bg-card border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors space-y-2"
+        className="w-full text-left bg-card border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors space-y-2 cursor-pointer"
       >
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
@@ -179,7 +186,13 @@ const RefereeDashboardPage = () => {
         {m.courtId && (
           <p className="text-[10px] text-muted-foreground">📍 {m.courtId}</p>
         )}
-      </button>
+        {(m.status === "in_progress" || m.status === "not_started") && (
+          <button onClick={goCourtside}
+            className="w-full mt-1 h-9 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center gap-1.5">
+            ⚡ {t("ref.openCourtside")}
+          </button>
+        )}
+      </div>
     );
   };
 
@@ -217,6 +230,41 @@ const RefereeDashboardPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Pending invites */}
+      {activeInvites.length > 0 && (
+        <div className="px-4 pt-3 space-y-2">
+          {activeInvites.map(inv => (
+            <div key={inv.id} className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-3 flex items-start gap-2.5">
+              <div className="h-9 w-9 rounded-xl bg-blue-500/20 flex items-center justify-center shrink-0">
+                <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-display font-bold text-foreground">{t("ref.invite.title")}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{t("ref.invite.code")}: <span className="font-mono font-bold text-foreground">{inv.access_code}</span></p>
+                {inv.message && <p className="text-[11px] text-foreground/80 mt-1 italic">"{inv.message}"</p>}
+                <div className="flex gap-1.5 mt-2">
+                  <button onClick={async () => {
+                    const { error } = await acceptInvite(inv.access_code);
+                    if (error) { toast.error(error.message ?? String(error)); return; }
+                    toast.success(t("ref.invite.accepted"));
+                  }}
+                    className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> {t("ref.invite.accept")}
+                  </button>
+                  <button onClick={async () => {
+                    await declineInvite(inv.id);
+                    toast.success(t("ref.invite.declined"));
+                  }}
+                    className="h-8 px-3 rounded-lg border border-border text-[11px] font-semibold">
+                    <X className="h-3 w-3 inline" /> {t("ref.invite.decline")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Verified Referee status banner */}
       <div className="px-4 pt-3">
