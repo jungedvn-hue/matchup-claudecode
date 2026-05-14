@@ -57,6 +57,7 @@ import AdminApplicationsPage from "./pages/AdminApplicationsPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminTournamentsPage from "./pages/AdminTournamentsPage";
 import AdminStatsPage from "./pages/AdminStatsPage";
+import AdminCoinsPage from "./pages/AdminCoinsPage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
 import WalletPage from "./pages/WalletPage";
@@ -122,6 +123,7 @@ const AppShell = () => {
         <Route path="/admin/users" element={<RequireMaster><AdminUsersPage /></RequireMaster>} />
         <Route path="/admin/tournaments" element={<RequireMaster><AdminTournamentsPage /></RequireMaster>} />
         <Route path="/admin/stats" element={<RequireMaster><AdminStatsPage /></RequireMaster>} />
+        <Route path="/admin/coins" element={<RequireMaster><AdminCoinsPage /></RequireMaster>} />
 
         <Route path="/verify" element={<VerificationPage />} />
         <Route path="/marketplace/service/:serviceId" element={<ServiceDetailPage />} />
