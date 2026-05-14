@@ -240,9 +240,15 @@ export const useGroupMembership = (groupId: string | undefined) => {
 
   const approve = async (userId: string): Promise<{ error?: string }> => {
     if (!groupId) return { error: "No group" };
-    const { error } = await sb.from("group_members")
-      .update({ status: "active" }).eq("group_id", groupId).eq("user_id", userId);
-    return error ? { error: error.message } : {};
+    const { data, error } = await sb.from("group_members")
+      .update({ status: "active" })
+      .eq("group_id", groupId).eq("user_id", userId)
+      .select();
+    if (error) return { error: error.message };
+    if (!data || data.length === 0) {
+      return { error: "Could not approve — you may not have permission, or the request no longer exists." };
+    }
+    return {};
   };
 
   const removeMember = async (userId: string): Promise<{ error?: string }> => {

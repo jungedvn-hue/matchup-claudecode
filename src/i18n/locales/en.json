@@ -89,6 +89,7 @@
   "groups.pendingRequests": "Pending requests",
   "groups.approve": "Approve",
   "groups.approved": "Member approved",
+  "groups.approveFailed": "Could not approve — request may have been cancelled or you lack permission.",
   "groups.remove": "Remove",
   "groups.removed": "Member removed",
   "groups.members": "Members",

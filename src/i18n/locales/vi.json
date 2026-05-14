@@ -89,6 +89,7 @@
   "groups.pendingRequests": "Yêu cầu chờ duyệt",
   "groups.approve": "Duyệt",
   "groups.approved": "Đã duyệt thành viên",
+  "groups.approveFailed": "Không duyệt được — yêu cầu có thể đã bị huỷ hoặc bạn không có quyền.",
   "groups.remove": "Xóa",
   "groups.removed": "Đã xóa thành viên",
   "groups.members": "Thành viên",

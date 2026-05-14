@@ -54,7 +54,7 @@ const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm rounded-2xl">
+      <DialogContent className="max-w-sm w-[calc(100vw-2rem)] rounded-2xl overflow-hidden">
         <DialogHeader>
           <DialogTitle className="font-display text-center flex items-center justify-center gap-2">
             <Share2 className="h-4 w-4 text-primary" /> {t("share.title")}

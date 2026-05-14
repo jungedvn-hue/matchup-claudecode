@@ -119,9 +119,24 @@ const HostDashboard = () => {
   }).length;
 
   const handleApprove = async (groupId: string, userId: string, name: string) => {
-    const { error } = await sb.from("group_members")
-      .update({ status: "active" }).eq("group_id", groupId).eq("user_id", userId);
-    if (error) { toast.error(error.message); return; }
+    // Try RPC first (SECURITY DEFINER, bypasses RLS edge cases). Fallback to direct update.
+    const { data: rpcData, error: rpcErr } = await sb.rpc("fn_approve_group_member", {
+      p_group_id: groupId, p_user_id: userId,
+    });
+    let updated = !rpcErr && rpcData === true;
+    if (rpcErr) {
+      // Fallback: direct update with .select() to verify rows changed
+      const { data, error } = await sb.from("group_members")
+        .update({ status: "active" })
+        .eq("group_id", groupId).eq("user_id", userId)
+        .select();
+      if (error) { toast.error(error.message); return; }
+      updated = !!data && data.length > 0;
+    }
+    if (!updated) {
+      toast.error(t("groups.approveFailed"));
+      return;
+    }
     toast.success(`${t("groups.approved")} — ${name}`);
     setPending(prev => prev.filter(p => !(p.group_id === groupId && p.user_id === userId)));
     refetchGroups();
