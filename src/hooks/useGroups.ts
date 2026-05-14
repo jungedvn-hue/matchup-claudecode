@@ -71,14 +71,34 @@ export const useMyGroups = () => {
   const fetch = useCallback(async () => {
     if (!user) { setGroups([]); setLoading(false); return; }
     setLoading(true);
-    const { data: memberships } = await sb.from("group_members")
-      .select("group_id")
-      .eq("user_id", user.id)
-      .eq("status", "active");
-    if (!memberships?.length) { setGroups([]); setLoading(false); return; }
-    const ids = memberships.map((m: any) => m.group_id);
+
+    // 1) Active member in group_members table
+    // 2) Host of the group (groups.host_user_id) — even if their member row is missing
+    //    (defensive: prevents the "host can't see their own group" bug if member row
+    //    was never created or got deleted)
+    const [memRes, hostRes] = await Promise.all([
+      sb.from("group_members").select("group_id").eq("user_id", user.id).eq("status", "active"),
+      sb.from("groups").select("id").eq("host_user_id", user.id),
+    ]);
+
+    const memberIds: string[] = (memRes.data ?? []).map((m: any) => m.group_id);
+    const hostIds: string[] = (hostRes.data ?? []).map((g: any) => g.id);
+    const ids = Array.from(new Set([...memberIds, ...hostIds]));
+
+    if (ids.length === 0) { setGroups([]); setLoading(false); return; }
+
     const { data } = await sb.from("groups").select("*").in("id", ids).order("created_at", { ascending: false });
     setGroups((data as Group[]) ?? []);
+
+    // Self-heal: if user is host but missing member row, insert it (best-effort)
+    const missing = hostIds.filter(id => !memberIds.includes(id));
+    if (missing.length > 0) {
+      await sb.from("group_members").upsert(
+        missing.map(group_id => ({ group_id, user_id: user.id, role: "host", status: "active" })),
+        { onConflict: "group_id,user_id" }
+      );
+    }
+
     setLoading(false);
   }, [user]);
 
