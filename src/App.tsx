@@ -59,6 +59,8 @@ import AdminTournamentsPage from "./pages/AdminTournamentsPage";
 import AdminStatsPage from "./pages/AdminStatsPage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
+import InAppBrowserBanner from "@/components/InAppBrowserBanner";
+import AddToHomeScreenPrompt from "@/components/AddToHomeScreenPrompt";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +70,7 @@ const AppShell = () => {
 
   return (
     <div className="max-w-md mx-auto bg-background min-h-screen relative">
+      <InAppBrowserBanner />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
@@ -123,6 +126,7 @@ const AppShell = () => {
       </Routes>
       {!isOnboarding && <AIAssistant />}
       {!isOnboarding && <BottomNav />}
+      <AddToHomeScreenPrompt />
     </div>
   );
 };
