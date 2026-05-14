@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Settings, ChevronRight, Trophy, Target, TrendingUp,
   Users, Star, BarChart3, MapPin, Edit, Flame, LogOut, Sparkles,
-  Ticket, Heart, History, ShieldCheck, Activity, LayoutDashboard,
+  Ticket, Heart, History, ShieldCheck, Activity, LayoutDashboard, Coins,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -207,6 +207,7 @@ const ProfilePage = () => {
           {[
             { label: t("arena.title"), path: "/arena", icon: <Sparkles className="h-4 w-4" /> },
             { label: t("nav.health"), path: "/health", icon: <Activity className="h-4 w-4" /> },
+            { label: t("wallet.title"), path: "/wallet", icon: <Coins className="h-4 w-4 text-amber-500" /> },
             { label: t("profile.myTickets"), path: "/my-tickets", icon: <Ticket className="h-4 w-4" /> },
             { label: t("friends.title"), path: "/friends", icon: <Users className="h-4 w-4" />, badge: pendingFriends },
             { label: t("profile.favoritePartners"), path: "/favorite-partners", icon: <Heart className="h-4 w-4" /> },

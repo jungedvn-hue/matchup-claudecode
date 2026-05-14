@@ -1,1 +1,9 @@
 project_id = "fehyeonotpdkxfdtjaen"
+
+# Webhook from PayOS — no Supabase JWT, do not verify
+[functions.payment-webhook]
+verify_jwt = false
+
+# User-initiated checkout — requires authenticated user JWT
+[functions.payment-create]
+verify_jwt = true

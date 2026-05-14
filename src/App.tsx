@@ -59,6 +59,8 @@ import AdminTournamentsPage from "./pages/AdminTournamentsPage";
 import AdminStatsPage from "./pages/AdminStatsPage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
+import WalletPage from "./pages/WalletPage";
+import TopupPage from "./pages/TopupPage";
 import InAppBrowserBanner from "@/components/InAppBrowserBanner";
 import AddToHomeScreenPrompt from "@/components/AddToHomeScreenPrompt";
 
@@ -96,6 +98,8 @@ const AppShell = () => {
         <Route path="/assistant-checkin/:groupId" element={<ProtectedRoute><AssistantCheckInPage /></ProtectedRoute>} />
         <Route path="/favorite-partners" element={<FavoritePartnersPage />} />
         <Route path="/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
+        <Route path="/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
+        <Route path="/wallet/topup" element={<ProtectedRoute><TopupPage /></ProtectedRoute>} />
         <Route path="/user/:userId" element={<UserProfilePage />} />
         <Route path="/match-history" element={<MatchHistoryPage />} />
         <Route path="/arena" element={<ProtectedRoute><ArenaPage /></ProtectedRoute>} />

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, Trophy, Users, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Trophy, Users, Loader2, Gift } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SkillBadge from "@/components/SkillBadge";
 import FriendButton from "@/components/social/FriendButton";
+import GiftPickerDialog from "@/components/GiftPickerDialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,7 @@ const UserProfilePage = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [giftOpen, setGiftOpen] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -98,8 +100,16 @@ const UserProfilePage = () => {
               </div>
             </div>
 
-            <div className="mt-4">
-              <FriendButton userId={profile.user_id} className="w-full" />
+            <div className="mt-4 flex gap-2">
+              <FriendButton userId={profile.user_id} className="flex-1" />
+              {user && user.id !== profile.user_id && (
+                <button
+                  onClick={() => setGiftOpen(true)}
+                  className="h-10 px-3 rounded-xl bg-pink-500/10 hover:bg-pink-500/15 border border-pink-500/30 text-pink-600 dark:text-pink-400 font-bold text-sm flex items-center gap-1.5 active:scale-95 transition-all"
+                >
+                  <Gift className="h-4 w-4" /> {t("gift.send")}
+                </button>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -117,6 +127,15 @@ const UserProfilePage = () => {
           </Card>
         </div>
       </div>
+
+      <GiftPickerDialog
+        open={giftOpen}
+        onOpenChange={setGiftOpen}
+        receiverId={profile.user_id}
+        receiverName={profile.display_name ?? t("common.unknown")}
+        contextType="profile"
+        contextId={profile.user_id}
+      />
     </div>
   );
 };
