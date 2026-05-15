@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useStores, STORE_CATEGORIES, type Store } from "@/hooks/useStores";
+import PageHeader from "@/components/PageHeader";
 
 const CATEGORY_ICONS: Record<string, typeof ShoppingBag> = {
   paddles: Volleyball,
@@ -41,42 +42,19 @@ const MarketplacePage = () => {
 
   return (
     <div className="pb-20 min-h-screen">
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
-        <div className="flex items-center justify-between max-w-2xl mx-auto">
-          <h1 className="text-lg font-display font-bold text-foreground">{t("marketplace.title")}</h1>
-          <span className="text-xs text-muted-foreground">{stores.length} {t("marketplace.servicesNearby")}</span>
-        </div>
-
-        <div className="relative max-w-2xl mx-auto">
+      <PageHeader title={t("marketplace.title")} right={<span className="text-xs text-muted-foreground">{stores.length} {t("marketplace.servicesNearby")}</span>} className="space-y-3">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder={t("marketplace.searchPlaceholder")}
-            className="w-full h-9 pl-9 pr-3 rounded-xl bg-secondary text-sm text-secondary-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary"
-          />
+          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t("marketplace.searchPlaceholder")}
+            className="w-full h-9 pl-9 pr-3 rounded-xl bg-secondary text-sm text-secondary-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary" />
         </div>
-
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 max-w-2xl mx-auto">
-          <CatChip
-            id="all"
-            label={t("common.all")}
-            icon={ShoppingBag}
-            active={activeCategory === "all"}
-            onClick={() => setActiveCategory("all")}
-          />
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+          <CatChip id="all" label={t("common.all")} icon={ShoppingBag} active={activeCategory === "all"} onClick={() => setActiveCategory("all")} />
           {STORE_CATEGORIES.map(c => (
-            <CatChip
-              key={c}
-              id={c}
-              label={t(`store.cat.${c}`)}
-              icon={CATEGORY_ICONS[c] ?? ShoppingBag}
-              active={activeCategory === c}
-              onClick={() => setActiveCategory(c)}
-            />
+            <CatChip key={c} id={c} label={t(`store.cat.${c}`)} icon={CATEGORY_ICONS[c] ?? ShoppingBag} active={activeCategory === c} onClick={() => setActiveCategory(c)} />
           ))}
         </div>
-      </div>
+      </PageHeader>
 
       <div className="px-4 pt-4 space-y-5 max-w-2xl mx-auto">
         {loading ? (

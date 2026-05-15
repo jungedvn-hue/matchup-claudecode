@@ -47,7 +47,6 @@ import StoreProfilePage from "./pages/StoreProfilePage";
 import StoreEditPage from "./pages/StoreEditPage";
 import HealthHub from "./pages/health-hub/HealthHub";
 import NotificationsPage from "./pages/NotificationsPage";
-import NotificationBell from "@/components/NotificationBell";
 import NotFound from "./pages/NotFound";
 
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -137,11 +136,6 @@ const AppShell = () => {
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!isOnboarding && location.pathname !== "/notifications" && location.pathname !== "/" && (
-        <div className="fixed top-3 right-3 z-50">
-          <NotificationBell />
-        </div>
-      )}
       {!isOnboarding && <AIAssistant />}
       {!isOnboarding && <BottomNav />}
       <AddToHomeScreenPrompt />

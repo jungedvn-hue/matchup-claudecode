@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Users, MapPin, Search, Loader2, Lock } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -34,20 +35,17 @@ const GroupsPage = () => {
     <div className="pb-20 min-h-screen">
       <CreateGroupDialog open={createOpen} onOpenChange={setCreateOpen} onCreated={handleCreated} />
 
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
-        <div className="flex items-center justify-between max-w-2xl mx-auto">
-          <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" /> {t("groups.title")}
-          </h1>
-          {session && (
-            <button onClick={() => setCreateOpen(true)}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors">
-              <Plus className="h-3.5 w-3.5" /> {t("groups.newGroup")}
-            </button>
-          )}
-        </div>
-
-        <div className="max-w-2xl mx-auto flex gap-1 bg-secondary/60 rounded-xl p-0.5">
+      <PageHeader
+        title={t("groups.title")}
+        right={session ? (
+          <button onClick={() => setCreateOpen(true)}
+            className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors">
+            <Plus className="h-3.5 w-3.5" /> {t("groups.newGroup")}
+          </button>
+        ) : undefined}
+        className="space-y-3"
+      >
+        <div className="flex gap-1 bg-secondary/60 rounded-xl p-0.5">
           {([["discover", t("groups.discover")], ["mine", t("groups.myGroups")]] as const).map(([key, label]) => (
             <button key={key} onClick={() => setTab(key)}
               className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${tab === key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
@@ -55,15 +53,14 @@ const GroupsPage = () => {
             </button>
           ))}
         </div>
-
         {tab === "discover" && (
           <>
-            <div className="max-w-2xl mx-auto relative">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <input placeholder={t("groups.searchPh")} value={search} onChange={e => setSearch(e.target.value)}
                 className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary/60 text-sm placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
-            <div className="max-w-2xl mx-auto flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
+            <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
               {CITY_CHIPS.map(c => {
                 const active = search === c;
                 return (
@@ -74,7 +71,7 @@ const GroupsPage = () => {
                 );
               })}
             </div>
-            <div className="max-w-2xl mx-auto flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
+            <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
               {SKILL_FILTERS.map(s => (
                 <button key={s} onClick={() => setSkill(s)}
                   className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all shrink-0 ${skill === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
@@ -84,7 +81,7 @@ const GroupsPage = () => {
             </div>
           </>
         )}
-      </div>
+      </PageHeader>
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-2.5">
         {loading ? (

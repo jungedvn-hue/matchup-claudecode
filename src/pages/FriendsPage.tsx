@@ -10,6 +10,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useFriends, useFriendActions, useFriendRelation, type FriendEntry } from "@/hooks/useFriends";
 import { useUserSearch, type UserSearchResult } from "@/hooks/useUserSearch";
 import { toast } from "sonner";
+import PageHeader from "@/components/PageHeader";
 
 type Tab = "friends" | "incoming" | "outgoing" | "search";
 
@@ -194,17 +195,7 @@ const FriendsPage = () => {
 
   return (
     <div className="pb-20 min-h-screen">
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3 max-w-2xl mx-auto">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            {t("friends.title")}
-          </h1>
-        </div>
-      </div>
+      <PageHeader title={t("friends.title")} back />
 
       <div className="px-4 pt-3 max-w-2xl mx-auto">
         {/* Tabs */}

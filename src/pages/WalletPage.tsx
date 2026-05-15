@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Coins, TrendingUp, TrendingDown, Gift, Award, Shopping
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCoinBalance, useCoinTransactions, formatCoin, type CoinTxType } from "@/hooks/useCoin";
+import PageHeader from "@/components/PageHeader";
 
 const txIconFor = (type: CoinTxType) => {
   switch (type) {
@@ -35,17 +36,7 @@ const WalletPage = () => {
 
   return (
     <div className="pb-20 min-h-screen">
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3 max-w-2xl mx-auto">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
-            <Coins className="h-5 w-5 text-amber-500" />
-            {t("wallet.title")}
-          </h1>
-        </div>
-      </div>
+      <PageHeader title={t("wallet.title")} back />
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
         {/* Balance hero card */}

@@ -13,6 +13,7 @@ import { useHostStats } from "@/hooks/useHostStats";
 import { useTournaments } from "@/context/TournamentContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import PageHeader from "@/components/PageHeader";
 
 const sb = supabase as unknown as { from: (t: string) => any };
 
@@ -161,23 +162,7 @@ const HostDashboard = () => {
 
   return (
     <div className="pb-20 min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="min-w-0">
-            <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary shrink-0" />
-              {t("dashboard.title")}
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
-              {t("dashboard.managing")} {hostedGroups.length} {t("dashboard.groups")} · {totalMembers} {t("dashboard.players")}
-            </p>
-          </div>
-        </div>
-      </div>
+      <PageHeader title={t("dashboard.title")} back />
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
 

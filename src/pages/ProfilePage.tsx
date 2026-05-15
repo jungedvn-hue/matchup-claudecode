@@ -19,6 +19,7 @@ import { useRoles, hasRole } from "@/hooks/use-roles";
 import { toast } from "sonner";
 import { usePlayerProfile, usePlayerStats, useMatchRecords, type MatchRecord } from "@/hooks/useMatches";
 import { useStreak } from "@/hooks/useGamification";
+import PageHeader from "@/components/PageHeader";
 import { usePendingFriendCount } from "@/hooks/useFriends";
 
 type SkillLevel = "beginner" | "intermediate" | "advanced" | "pro";
@@ -88,19 +89,16 @@ const ProfilePage = () => {
   return (
     <div className="pb-20 min-h-screen">
       <LogMatchDialog open={logDialogOpen} onOpenChange={setLogDialogOpen} onCreated={refetchMatches} />
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-display font-bold text-foreground">{t("profile.title")}</h1>
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate("/settings")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
-              <Settings className="h-4 w-4" />
-            </button>
-            <button onClick={handleLogout} className="h-9 w-9 rounded-xl bg-destructive/10 flex items-center justify-center text-destructive hover:bg-destructive/20 transition-colors">
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
+      <PageHeader title={t("profile.title")} right={
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate("/settings")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
+            <Settings className="h-4 w-4" />
+          </button>
+          <button onClick={handleLogout} className="h-9 w-9 rounded-xl bg-destructive/10 flex items-center justify-center text-destructive hover:bg-destructive/20 transition-colors">
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
-      </div>
+      } />
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
         {/* Hero card — Health Hub gradient */}
