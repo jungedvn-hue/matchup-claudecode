@@ -8,7 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SkillBadge from "@/components/SkillBadge";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { useGroup, useGroupMembership } from "@/hooks/useGroups";
+import { useGroup, useGroupMembership, useDeleteGroup } from "@/hooks/useGroups";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
 import { useGroupEvents, useRSVP, type RSVPStatus } from "@/hooks/useGroupEvents";
 import CreateEventDialog from "@/components/CreateEventDialog";
 import ShareGroupDialog from "@/components/ShareGroupDialog";
@@ -50,6 +55,10 @@ const GroupDetailPage = () => {
   const [savingItem, setSavingItem] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const menuImageRef = useRef<HTMLInputElement>(null);
+  const { deleteGroup } = useDeleteGroup();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -622,7 +631,78 @@ const GroupDetailPage = () => {
             )}
           </section>
         )}
+        {/* Danger zone — host only */}
+        {isHost && group.host_user_id === user?.id && (
+          <section className="pt-2">
+            <h2 className="text-xs font-display font-bold text-destructive uppercase tracking-wider mb-2">
+              {t("groups.dangerZone")}
+            </h2>
+            <Card className="p-4 border-destructive/30 bg-destructive/5 shadow-card">
+              <div className="flex items-start gap-3">
+                <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{t("groups.deleteGroup")}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t("groups.deleteGroupDesc")}</p>
+                </div>
+              </div>
+              <Button
+                variant="destructive"
+                className="w-full rounded-xl h-10 mt-3"
+                onClick={() => { setDeleteConfirmText(""); setDeleteOpen(true); }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" /> {t("groups.deleteGroup")}
+              </Button>
+            </Card>
+          </section>
+        )}
       </div>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteOpen} onOpenChange={(v) => !deleting && setDeleteOpen(v)}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("groups.deleteGroup")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("groups.deleteConfirmDesc", { name: group.name })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              {t("groups.deleteTypeName")} <span className="font-semibold text-foreground">{group.name}</span>
+            </p>
+            <Input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder={group.name}
+              className="rounded-xl"
+              disabled={deleting}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl" disabled={deleting}>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              disabled={deleting || deleteConfirmText.trim() !== group.name.trim()}
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!groupId) return;
+                setDeleting(true);
+                const { error } = await deleteGroup(groupId);
+                setDeleting(false);
+                if (error) { toast.error(error); return; }
+                toast.success(t("groups.deleted"));
+                setDeleteOpen(false);
+                navigate("/groups");
+              }}
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {t("groups.deleteGroup")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Drink Gift Sheet — pick recipient from members then open */}
       {drinkGiftOpen && giftTarget && groupId && (

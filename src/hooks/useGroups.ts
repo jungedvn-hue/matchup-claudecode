@@ -280,3 +280,18 @@ export const useGroupMembership = (groupId: string | undefined) => {
 
   return { join, leave, approve, removeMember };
 };
+
+// ── Delete group (host only) ──────────────────────────────────────────────────
+
+export const useDeleteGroup = () => {
+  const { user } = useAuth();
+
+  const deleteGroup = async (groupId: string): Promise<{ error?: string }> => {
+    if (!user) return { error: "Not authenticated" };
+    const { error } = await sb.from("groups")
+      .delete().eq("id", groupId).eq("host_user_id", user.id);
+    return error ? { error: error.message } : {};
+  };
+
+  return { deleteGroup };
+};
