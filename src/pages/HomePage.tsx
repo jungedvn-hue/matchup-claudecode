@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
-  Bell, ShieldCheck, ChevronRight, Trophy, Flame, Gem,
+  ShieldCheck, ChevronRight, Trophy, Flame, Gem,
   Sparkles, MapPin, Star, Plus, Award, LayoutDashboard,
   ShoppingBag, ExternalLink, Users, Calendar, Clock,
 } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -78,10 +79,7 @@ const HomePage = () => {
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <img src="/logo.png" alt="MatchUp" className="h-7" />
-          <button className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors relative">
-            <Bell className="h-4 w-4" />
-            <div className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500" />
-          </button>
+          <NotificationBell />
         </div>
       </div>
 

@@ -1635,5 +1635,9 @@
   "drinks.saveItem": "Save",
   "drinks.deleteItem": "Delete",
   "drinks.confirmDelete": "Delete this item?",
-  "drinks.menuEmpty": "No items yet. Add your first drink."
+  "drinks.menuEmpty": "No items yet. Add your first drink.",
+
+  "notif.title": "Notifications",
+  "notif.empty": "You're all caught up!",
+  "notif.markAllRead": "Mark all read"
 }

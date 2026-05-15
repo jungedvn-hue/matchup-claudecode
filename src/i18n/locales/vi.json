@@ -1635,5 +1635,9 @@
   "drinks.saveItem": "Lưu",
   "drinks.deleteItem": "Xoá",
   "drinks.confirmDelete": "Xoá món này?",
-  "drinks.menuEmpty": "Chưa có món nào. Thêm thức uống đầu tiên."
+  "drinks.menuEmpty": "Chưa có món nào. Thêm thức uống đầu tiên.",
+
+  "notif.title": "Thông báo",
+  "notif.empty": "Không có thông báo mới",
+  "notif.markAllRead": "Đánh dấu tất cả đã đọc"
 }

@@ -46,6 +46,7 @@ import StoreBookingsPage from "./pages/StoreBookingsPage";
 import StoreProfilePage from "./pages/StoreProfilePage";
 import StoreEditPage from "./pages/StoreEditPage";
 import HealthHub from "./pages/health-hub/HealthHub";
+import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -132,6 +133,7 @@ const AppShell = () => {
         <Route path="/verify" element={<VerificationPage />} />
         <Route path="/marketplace/service/:serviceId" element={<ServiceDetailPage />} />
         <Route path="/health" element={<HealthHub />} />
+        <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {!isOnboarding && <AIAssistant />}
