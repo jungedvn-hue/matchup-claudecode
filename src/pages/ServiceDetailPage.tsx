@@ -12,6 +12,8 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useCoinBalance, formatCoin, formatVnd, COIN_TO_VND } from "@/hooks/useCoin";
 import type { Product, Store } from "@/hooks/useStores";
+import { logAffiliateClick, AFFILIATE_SOURCES } from "@/hooks/useStores";
+import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 const sb = supabase as unknown as { from: (t: string) => any; rpc: (fn: string, args?: any) => any };
@@ -194,6 +196,42 @@ const ServiceDetailPage = () => {
             <p className="text-sm text-foreground/85 leading-relaxed whitespace-pre-line">{product.description}</p>
           </Card>
         )}
+
+        {product.affiliate_url && product.affiliate_source && (() => {
+          const src = AFFILIATE_SOURCES.find(s => s.id === product.affiliate_source);
+          const handleClick = () => {
+            logAffiliateClick({
+              productId: product.id, storeId: store.id, userId: user?.id ?? null,
+              source: product.affiliate_source!, url: product.affiliate_url!,
+            });
+          };
+          return (
+            <a
+              href={product.affiliate_url}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              onClick={handleClick}
+              className="block"
+            >
+              <Card className="p-4 shadow-card border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:shadow-elevated transition-shadow">
+                <div className="flex items-center gap-3">
+                  {product.affiliate_image_url ? (
+                    <img src={product.affiliate_image_url} alt="" className="h-12 w-12 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <ExternalLink className="h-5 w-5 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{t("store.product.affiliate")}</p>
+                    <p className="text-sm font-bold text-foreground">{t("service.buyOn")} {src?.label}</p>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-primary shrink-0" />
+                </div>
+              </Card>
+            </a>
+          );
+        })()}
 
         {!isService && hasPrice && (
           <Card className="p-3 shadow-card flex items-center justify-between">

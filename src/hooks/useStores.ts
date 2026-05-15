@@ -45,9 +45,35 @@ export interface Product {
   is_published: boolean;
   is_featured: boolean;
   metadata: Record<string, unknown> | null;
+  affiliate_url: string | null;
+  affiliate_source: AffiliateSource | null;
+  affiliate_image_url: string | null;
   created_at: string;
   updated_at: string;
 }
+
+export type AffiliateSource = "shopee" | "tiktok" | "lazada" | "tiki" | "other";
+
+export const AFFILIATE_SOURCES: { id: AffiliateSource; label: string }[] = [
+  { id: "shopee", label: "Shopee" },
+  { id: "tiktok", label: "TikTok Shop" },
+  { id: "lazada", label: "Lazada" },
+  { id: "tiki",   label: "Tiki" },
+  { id: "other",  label: "Other" },
+];
+
+export const logAffiliateClick = async (input: {
+  productId: string; storeId: string; userId: string | null; source: string; url: string;
+}) => {
+  const sb = (await import("@/integrations/supabase/client")).supabase as any;
+  await sb.from("affiliate_clicks").insert({
+    product_id: input.productId,
+    store_id:   input.storeId,
+    user_id:    input.userId,
+    source:     input.source,
+    url:        input.url,
+  });
+};
 
 export interface Booking {
   id: string;

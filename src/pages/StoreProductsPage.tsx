@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { useMyStore, useStoreProducts, STORE_CATEGORIES, type Product } from "@/hooks/useStores";
+import { useMyStore, useStoreProducts, STORE_CATEGORIES, AFFILIATE_SOURCES, type Product, type AffiliateSource } from "@/hooks/useStores";
 
 const StoreProductsPage = () => {
   const navigate = useNavigate();
@@ -53,6 +53,9 @@ const StoreProductsPage = () => {
       is_published: input.isPublished,
       is_featured: input.isFeatured,
       images: input.images,
+      affiliate_url:    input.affiliateUrl?.trim() || null,
+      affiliate_source: input.affiliateUrl?.trim() ? input.affiliateSource : null,
+      affiliate_image_url: input.affiliateImageUrl?.trim() || null,
     };
     const { error } = id
       ? await update(id, payload)
@@ -180,6 +183,9 @@ interface ProductFormState {
   isPublished: boolean;
   isFeatured: boolean;
   images: string[];
+  affiliateUrl: string;
+  affiliateSource: AffiliateSource;
+  affiliateImageUrl: string;
 }
 
 const blankForm = (): ProductFormState => ({
@@ -192,6 +198,9 @@ const blankForm = (): ProductFormState => ({
   isPublished: true,
   isFeatured: false,
   images: [],
+  affiliateUrl: "",
+  affiliateSource: "shopee",
+  affiliateImageUrl: "",
 });
 
 const fromProduct = (p: Product): ProductFormState => ({
@@ -204,6 +213,9 @@ const fromProduct = (p: Product): ProductFormState => ({
   isPublished: p.is_published,
   isFeatured: p.is_featured,
   images: p.images ?? [],
+  affiliateUrl: p.affiliate_url ?? "",
+  affiliateSource: p.affiliate_source ?? "shopee",
+  affiliateImageUrl: p.affiliate_image_url ?? "",
 });
 
 const ProductDialog = ({
@@ -284,6 +296,39 @@ const ProductDialog = ({
           <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/50">
             <Label className="text-sm font-medium">{t("store.product.featured")}</Label>
             <Switch checked={form.isFeatured} onCheckedChange={(v) => setForm({ ...form, isFeatured: v })} />
+          </div>
+
+          {/* Affiliate */}
+          <div className="space-y-2 p-3 rounded-xl bg-primary/5 border border-primary/15">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-primary">{t("store.product.affiliate")}</Label>
+            <Field label={t("store.product.affiliateUrl")}>
+              <Input
+                value={form.affiliateUrl}
+                onChange={(e) => setForm({ ...form, affiliateUrl: e.target.value })}
+                placeholder="https://shopee.vn/..."
+                type="url"
+              />
+            </Field>
+            {form.affiliateUrl.trim() && (
+              <>
+                <Field label={t("store.product.affiliateSource")}>
+                  <Select value={form.affiliateSource} onValueChange={(v) => setForm({ ...form, affiliateSource: v as AffiliateSource })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {AFFILIATE_SOURCES.map(s => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label={t("store.product.affiliateImage")}>
+                  <Input
+                    value={form.affiliateImageUrl}
+                    onChange={(e) => setForm({ ...form, affiliateImageUrl: e.target.value })}
+                    placeholder="https://..."
+                    type="url"
+                  />
+                </Field>
+              </>
+            )}
           </div>
         </div>
         <DialogFooter className="gap-2">
