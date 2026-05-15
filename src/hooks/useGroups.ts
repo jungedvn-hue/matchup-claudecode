@@ -14,6 +14,8 @@ export interface Group {
   name: string;
   description: string | null;
   location: string | null;
+  city: string | null;
+  map_url: string | null;
   cover_emoji: string;
   skill_level: SkillLevel;
   is_open: boolean;
@@ -21,6 +23,13 @@ export interface Group {
   member_count: number;
   created_at: string;
 }
+
+export const VN_CITIES = [
+  "Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Hải Phòng", "Cần Thơ",
+  "Nha Trang", "Đà Lạt", "Vũng Tàu", "Huế", "Quy Nhơn",
+  "Bình Dương", "Đồng Nai", "Khác",
+] as const;
+export type City = typeof VN_CITIES[number];
 
 export interface GroupMember {
   id: string;
@@ -40,7 +49,7 @@ export interface MyMembership {
 
 // ── Discover / list ───────────────────────────────────────────────────────────
 
-export const useGroups = (filter?: { skill?: SkillLevel; search?: string }) => {
+export const useGroups = (filter?: { skill?: SkillLevel; search?: string; city?: string }) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +57,7 @@ export const useGroups = (filter?: { skill?: SkillLevel; search?: string }) => {
     setLoading(true);
     let q = sb.from("groups").select("*").order("member_count", { ascending: false });
     if (filter?.skill && filter.skill !== "all") q = q.eq("skill_level", filter.skill);
+    if (filter?.city) q = q.eq("city", filter.city);
     if (filter?.search) {
       const s = filter.search.replace(/[%,]/g, "");
       q = q.or(`name.ilike.%${s}%,location.ilike.%${s}%`);
@@ -55,7 +65,7 @@ export const useGroups = (filter?: { skill?: SkillLevel; search?: string }) => {
     const { data } = await q;
     setGroups((data as Group[]) ?? []);
     setLoading(false);
-  }, [filter?.skill, filter?.search]);
+  }, [filter?.skill, filter?.search, filter?.city]);
 
   useEffect(() => { fetch(); }, [fetch]);
   return { groups, loading, refetch: fetch };
@@ -167,6 +177,8 @@ export const useCreateGroup = () => {
     name: string;
     description?: string;
     location?: string;
+    city?: string;
+    map_url?: string;
     cover_emoji?: string;
     skill_level?: SkillLevel;
     is_open?: boolean;
@@ -178,6 +190,8 @@ export const useCreateGroup = () => {
       name: input.name,
       description: input.description || null,
       location: input.location || null,
+      city: input.city || null,
+      map_url: input.map_url || null,
       cover_emoji: input.cover_emoji || "🥎",
       skill_level: input.skill_level || "all",
       is_open: input.is_open ?? true,
@@ -216,6 +230,8 @@ export const useUpdateGroup = () => {
       name: string;
       description?: string;
       location?: string;
+      city?: string;
+      map_url?: string;
       cover_emoji?: string;
       skill_level?: SkillLevel;
       is_open?: boolean;
@@ -226,6 +242,8 @@ export const useUpdateGroup = () => {
       name: input.name,
       description: input.description || null,
       location: input.location || null,
+      city: input.city || null,
+      map_url: input.map_url || null,
       cover_emoji: input.cover_emoji || "🥎",
       skill_level: input.skill_level || "all",
       is_open: input.is_open ?? true,

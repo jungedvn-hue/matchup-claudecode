@@ -5,13 +5,12 @@ import PageHeader from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useNavigate } from "react-router-dom";
-import { useGroups, useMyGroups, type SkillLevel } from "@/hooks/useGroups";
+import { useGroups, useMyGroups, VN_CITIES, type SkillLevel } from "@/hooks/useGroups";
 import { useAuth } from "@/context/AuthContext";
 import SkillBadge from "@/components/SkillBadge";
 import CreateGroupDialog from "@/components/CreateGroupDialog";
 
 const SKILL_FILTERS: SkillLevel[] = ["all", "beginner", "intermediate", "advanced", "pro"];
-const CITY_CHIPS = ["TP.HCM", "Hà Nội", "Đà Nẵng", "Cần Thơ", "Hải Phòng", "Nha Trang", "Vũng Tàu"];
 
 const GroupsPage = () => {
   const { t } = useLanguage();
@@ -21,9 +20,10 @@ const GroupsPage = () => {
   const [tab, setTab] = useState<"discover" | "mine">("discover");
   const [skill, setSkill] = useState<SkillLevel>("all");
   const [search, setSearch] = useState("");
+  const [city, setCity] = useState<string>("");
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { groups: discovered, loading: loadingDiscover, refetch: refetchDiscover } = useGroups({ skill, search });
+  const { groups: discovered, loading: loadingDiscover, refetch: refetchDiscover } = useGroups({ skill, search, city: city || undefined });
   const { groups: myGroups, loading: loadingMine, refetch: refetchMine } = useMyGroups();
 
   const list = tab === "discover" ? discovered : myGroups;
@@ -61,10 +61,14 @@ const GroupsPage = () => {
                 className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary/60 text-sm placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
-              {CITY_CHIPS.map(c => {
-                const active = search === c;
+              <button onClick={() => setCity("")}
+                className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all shrink-0 ${city === "" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
+                {t("common.all")}
+              </button>
+              {VN_CITIES.map(c => {
+                const active = city === c;
                 return (
-                  <button key={c} onClick={() => setSearch(active ? "" : c)}
+                  <button key={c} onClick={() => setCity(active ? "" : c)}
                     className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all shrink-0 flex items-center gap-1 ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
                     <MapPin className="h-3 w-3" /> {c}
                   </button>

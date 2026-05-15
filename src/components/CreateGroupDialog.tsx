@@ -7,7 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useCreateGroup, useUpdateGroup, type SkillLevel, type Group } from "@/hooks/useGroups";
+import { useCreateGroup, useUpdateGroup, VN_CITIES, type SkillLevel, type Group } from "@/hooks/useGroups";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +38,8 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [city, setCity] = useState<string>("");
+  const [mapUrl, setMapUrl] = useState("");
   const [emoji, setEmoji] = useState("🥎");
   const [skill, setSkill] = useState<SkillLevel>("all");
   const [isOpen, setIsOpen] = useState(true);
@@ -45,20 +51,22 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
       setName(editGroup.name);
       setDescription(editGroup.description ?? "");
       setLocation(editGroup.location ?? "");
+      setCity(editGroup.city ?? "");
+      setMapUrl(editGroup.map_url ?? "");
       setEmoji(editGroup.cover_emoji);
       setSkill(editGroup.skill_level);
       setIsOpen(editGroup.is_open);
     }
   }, [editGroup, open]);
 
-  const reset = () => { setName(""); setDescription(""); setLocation(""); setEmoji("🥎"); setSkill("all"); setIsOpen(true); };
+  const reset = () => { setName(""); setDescription(""); setLocation(""); setCity(""); setMapUrl(""); setEmoji("🥎"); setSkill("all"); setIsOpen(true); };
 
   const handleSave = async () => {
     if (!name.trim()) return;
     setSaving(true);
 
     if (isEditing && editGroup) {
-      const { error } = await updateGroup(editGroup.id, { name: name.trim(), description: description || undefined, location: location || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen });
+      const { error } = await updateGroup(editGroup.id, { name: name.trim(), description: description || undefined, location: location || undefined, city: city || undefined, map_url: mapUrl || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen });
       setSaving(false);
       if (error) { toast.error(error); return; }
       toast.success(t("groups.updated"));
@@ -67,7 +75,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
       return;
     }
 
-    const { data, error } = await createGroup({ name: name.trim(), description: description || undefined, location: location || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen });
+    const { data, error } = await createGroup({ name: name.trim(), description: description || undefined, location: location || undefined, city: city || undefined, map_url: mapUrl || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen });
     setSaving(false);
     if (error) { toast.error(error); return; }
     toast.success(t("groups.created"));
@@ -128,10 +136,23 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
             <Textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} placeholder={t("groups.descPh")} className="resize-none" />
           </div>
 
+          {/* City — searchable combobox */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t("groups.city")}</Label>
+            <CitySelect value={city} onChange={setCity} placeholder={t("groups.cityPh")} searchPh={t("groups.citySearchPh")} emptyText={t("groups.cityNoResult")} />
+          </div>
+
           {/* Location */}
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t("store.address")}</Label>
             <Input value={location} onChange={e => setLocation(e.target.value)} placeholder={t("groups.locationPh")} />
+          </div>
+
+          {/* Google Maps link */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t("groups.mapUrl")}</Label>
+            <Input value={mapUrl} onChange={e => setMapUrl(e.target.value)} placeholder="https://maps.google.com/..." type="url" />
+            <p className="text-[10px] text-muted-foreground">{t("groups.mapUrlHint")}</p>
           </div>
 
           {/* Skill */}
@@ -172,6 +193,41 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
       </DialogContent>
     </Dialog>
     </>
+  );
+};
+
+const CitySelect = ({ value, onChange, placeholder, searchPh, emptyText }: {
+  value: string; onChange: (v: string) => void; placeholder: string; searchPh: string; emptyText: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <span className={cn(value ? "text-foreground" : "text-muted-foreground")}>{value || placeholder}</span>
+          <ChevronsUpDown className="h-4 w-4 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={searchPh} />
+          <CommandList>
+            <CommandEmpty>{emptyText}</CommandEmpty>
+            <CommandGroup>
+              {VN_CITIES.map(c => (
+                <CommandItem key={c} value={c} onSelect={() => { onChange(c); setOpen(false); }}>
+                  <Check className={cn("mr-2 h-4 w-4", value === c ? "opacity-100" : "opacity-0")} />
+                  {c}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
 

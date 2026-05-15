@@ -195,9 +195,9 @@ const GroupDetailPage = () => {
                   <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                     <Users className="h-3 w-3" /> {group.member_count} {t("common.members")}
                   </span>
-                  {group.location && (
+                  {(group.city || group.location) && (
                     <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                      <MapPin className="h-3 w-3" /> {group.location}
+                      <MapPin className="h-3 w-3" /> {[group.city, group.location].filter(Boolean).join(" · ")}
                     </span>
                   )}
                 </div>
@@ -206,6 +206,19 @@ const GroupDetailPage = () => {
 
             {group.description && (
               <p className="text-sm text-muted-foreground">{group.description}</p>
+            )}
+
+            {group.map_url && (
+              <a
+                href={group.map_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary/60 hover:bg-secondary transition-colors text-sm font-medium text-foreground"
+              >
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="flex-1">{t("groups.openInMaps")}</span>
+                <span className="text-xs text-muted-foreground">↗</span>
+              </a>
             )}
 
             {/* Host rating row */}
