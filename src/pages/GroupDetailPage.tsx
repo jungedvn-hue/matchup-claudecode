@@ -543,15 +543,12 @@ const GroupDetailPage = () => {
                     ) : editItemForm.image_url ? (
                       <img src={editItemForm.image_url} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-2xl">{editItemForm.emoji || "🧃"}</span>
+                      <span className="text-2xl">🧃</span>
                     )}
                   </button>
                   <div className="flex-1 space-y-2">
                     <input className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemName")} value={editItemForm.name} onChange={e => setEditItemForm(f => ({ ...f, name: e.target.value }))} />
-                    <div className="flex gap-2">
-                      <input className="w-20 rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder="🧃" value={editItemForm.emoji} onChange={e => setEditItemForm(f => ({ ...f, emoji: e.target.value }))} />
-                      <input type="number" className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemPrice")} value={editItemForm.price_vnd || ""} onChange={e => setEditItemForm(f => ({ ...f, price_vnd: parseInt(e.target.value) || 0 }))} />
-                    </div>
+                    <input type="number" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemPrice")} value={editItemForm.price_vnd || ""} onChange={e => setEditItemForm(f => ({ ...f, price_vnd: parseInt(e.target.value) || 0 }))} />
                   </div>
                   <input ref={menuImageRef} type="file" accept="image/*" className="hidden" onChange={async e => {
                     const file = e.target.files?.[0];
@@ -597,7 +594,7 @@ const GroupDetailPage = () => {
                     <div className="h-10 w-10 rounded-lg overflow-hidden bg-secondary shrink-0 flex items-center justify-center">
                       {item.image_url
                         ? <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
-                        : <span className="text-xl">{item.emoji}</span>
+                        : <span className="text-xl">🧃</span>
                       }
                     </div>
                     <div className="flex-1 min-w-0">

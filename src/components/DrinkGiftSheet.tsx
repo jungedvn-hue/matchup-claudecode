@@ -106,7 +106,7 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
                   <div className="h-12 w-12 rounded-lg overflow-hidden bg-background shrink-0 flex items-center justify-center">
                     {item.image_url
                       ? <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
-                      : <span className="text-2xl">{item.emoji}</span>
+                      : <span className="text-2xl">🧃</span>
                     }
                   </div>
                   <div className="flex-1 min-w-0">
@@ -126,7 +126,7 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
               <div className="h-10 w-10 rounded-lg overflow-hidden bg-background shrink-0 flex items-center justify-center">
                 {selectedItem.image_url
                   ? <img src={selectedItem.image_url} alt={selectedItem.name} className="h-full w-full object-cover" />
-                  : <span className="text-2xl">{selectedItem.emoji}</span>
+                  : <span className="text-2xl">🧃</span>
                 }
               </div>
               <div>
