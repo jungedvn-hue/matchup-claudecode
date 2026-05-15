@@ -50,7 +50,7 @@ export const useDrinkMenu = (groupId: string | undefined) => {
     groupId: string,
     item: Partial<MenuItem> & { name: string; price_vnd: number; emoji: string }
   ) => {
-    const { error } = await sb.rpc("fn_upsert_menu_item", {
+    const { data: returnedId, error } = await sb.rpc("fn_upsert_menu_item", {
       p_group_id:   groupId,
       p_item_id:    item.id ?? null,
       p_name:       item.name,
@@ -60,9 +60,10 @@ export const useDrinkMenu = (groupId: string | undefined) => {
       p_available:  item.available ?? true,
       p_sort_order: item.sort_order ?? 0,
     });
-    // Save image_url separately (direct update — RPC doesn't handle it)
-    if (!error && item.id && item.image_url !== undefined) {
-      await sb.from("menu_items").update({ image_url: item.image_url }).eq("id", item.id);
+    // Save image_url — use returned id (covers both create and edit)
+    const savedId = returnedId ?? item.id;
+    if (!error && savedId && item.image_url !== undefined) {
+      await sb.from("menu_items").update({ image_url: item.image_url }).eq("id", savedId);
     }
     if (!error) await fetch();
     return { error: error?.message ?? null };
