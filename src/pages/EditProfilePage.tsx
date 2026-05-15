@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { cropToSquare } from "@/lib/imageProcess";
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
@@ -52,24 +53,28 @@ const EditProfilePage = () => {
         return;
       }
 
-      const fileExt = file.name.split(".").pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      // Center-crop to square 512x512 JPEG before upload. Guarantees the stored
+      // file is always square — no display-side stretching regardless of CSS.
+      const cropped = await cropToSquare(file, 512, 0.88);
+      const filePath = `${user.id}/avatar.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, cropped, { upsert: true, contentType: "image/jpeg" });
 
       if (uploadError) throw uploadError;
 
+      // Cache-bust so the browser re-fetches the new image (key reused on re-upload)
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
         .getPublicUrl(filePath);
 
-      setAvatarUrl(publicUrl);
+      const bustUrl = `${publicUrl}?v=${Date.now()}`;
+      setAvatarUrl(bustUrl);
 
       await supabase
         .from("profiles")
-        .upsert({ user_id: user.id, avatar_url: publicUrl }, { onConflict: "user_id" });
+        .upsert({ user_id: user.id, avatar_url: bustUrl }, { onConflict: "user_id" });
 
     } catch (error: any) {
       toast({ title: t("editProfile.uploadError"), description: error.message, variant: "destructive" });
