@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Pencil as PencilIcon } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Pencil as PencilIcon, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +24,8 @@ import DrinkGiftSheet from "@/components/DrinkGiftSheet";
 import { useGroupAssistants, useAssistantActions } from "@/hooks/useAssistants";
 import { useAnnouncements, useAnnouncementActions, type Announcement } from "@/hooks/useAnnouncements";
 import { useDrinkMenu, type MenuItem } from "@/hooks/useDrinkMenu";
+import { useGroupHostRatings, useHostRatingSummary } from "@/hooks/useHostRatings";
+import HostRatingSheet from "@/components/HostRatingSheet";
 import { toast } from "sonner";
 
 const GroupDetailPage = () => {
@@ -56,6 +58,9 @@ const GroupDetailPage = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const menuImageRef = useRef<HTMLInputElement>(null);
   const { deleteGroup } = useDeleteGroup();
+  const { ratings: hostRatings, myRating: myHostRating, refetch: refetchHostRatings } = useGroupHostRatings(groupId);
+  const { summary: hostSummary, refetch: refetchHostSummary } = useHostRatingSummary(group?.host_user_id);
+  const [hostRatingOpen, setHostRatingOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -202,6 +207,29 @@ const GroupDetailPage = () => {
             {group.description && (
               <p className="text-sm text-muted-foreground">{group.description}</p>
             )}
+
+            {/* Host rating row */}
+            <div className="flex items-center gap-2 pt-1">
+              <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              <span className="text-xs font-medium text-foreground">{t("groups.host")}</span>
+              {hostSummary.rating_count > 0 ? (
+                <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                  <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                  <span className="font-semibold text-foreground">{hostSummary.avg_stars.toFixed(1)}</span>
+                  <span>({hostSummary.rating_count})</span>
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground">{t("hostRating.noneYet")}</span>
+              )}
+              {isMember && !isHost && (
+                <button
+                  onClick={() => setHostRatingOpen(true)}
+                  className="ml-auto text-[11px] font-semibold text-primary hover:underline"
+                >
+                  {myHostRating ? t("hostRating.edit") : t("hostRating.rate")}
+                </button>
+              )}
+            </div>
 
             {/* CTA */}
             {user && !isMember && !isPending && (
@@ -703,6 +731,19 @@ const GroupDetailPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Host Rating Sheet */}
+      {groupId && (
+        <HostRatingSheet
+          open={hostRatingOpen}
+          onOpenChange={setHostRatingOpen}
+          groupId={groupId}
+          hostUserId={group.host_user_id}
+          hostName={members.find(m => m.user_id === group.host_user_id)?.display_name ?? t("groups.host")}
+          existing={myHostRating}
+          onSubmitted={() => { refetchHostRatings(); refetchHostSummary(); }}
+        />
+      )}
 
       {/* Drink Gift Sheet — pick recipient from members then open */}
       {drinkGiftOpen && giftTarget && groupId && (
