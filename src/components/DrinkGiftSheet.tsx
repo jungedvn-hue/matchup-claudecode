@@ -148,7 +148,7 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
                     )}
                   >
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{t(opt.label)}{!opt.custom && ` (+${opt.pct}%)`}</p>
+                      <p className="text-sm font-medium">{t(opt.label)}</p>
                       <p className="text-xs text-muted-foreground">{t(opt.desc)}</p>
                     </div>
                     {!opt.custom && (
@@ -199,7 +199,7 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
               <div className="flex justify-between items-center px-4 py-3 border-b border-border">
                 <span className="text-sm text-muted-foreground">{t("drinks.tip")}</span>
                 <span className="text-sm font-medium text-primary">
-                  {tipPct > 0 ? `+${tipPct}%` : t("drinks.tipCustom")} · +{tipCoins} pts
+                  +{tipCoins} pts
                 </span>
               </div>
               <div className="flex justify-between items-center px-4 py-3 bg-primary/5">
