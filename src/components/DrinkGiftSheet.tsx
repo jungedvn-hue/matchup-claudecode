@@ -111,7 +111,7 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground">{itemName(item)}</p>
-                    <p className="text-xs text-muted-foreground">{item.price_vnd.toLocaleString("vi-VN")}đ · {Math.floor(item.price_vnd / 100)} coins</p>
+                    <p className="text-xs text-muted-foreground">{item.price_vnd.toLocaleString("vi-VN")}đ · {Math.floor(item.price_vnd / 100)} pts</p>
                   </div>
                 </button>
               ))
@@ -131,7 +131,7 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
               </div>
               <div>
                 <p className="font-medium text-sm">{itemName(selectedItem)}</p>
-                <p className="text-xs text-muted-foreground">{itemCoins} coins</p>
+                <p className="text-xs text-muted-foreground">{itemCoins} pts</p>
               </div>
             </div>
 
@@ -153,7 +153,7 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
                     </div>
                     {!opt.custom && (
                       <span className="text-xs font-mono text-primary mt-0.5">
-                        +{Math.round(itemCoins * opt.pct / 100)} coins
+                        +{Math.round(itemCoins * opt.pct / 100)} pts
                       </span>
                     )}
                   </button>
@@ -194,22 +194,22 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
             <div className="rounded-xl border border-border overflow-hidden">
               <div className="flex justify-between items-center px-4 py-3 border-b border-border">
                 <span className="text-sm text-muted-foreground">{t("drinks.item")}</span>
-                <span className="text-sm font-medium">{selectedItem.emoji} {itemName(selectedItem)} · {itemCoins} coins</span>
+                <span className="text-sm font-medium">{selectedItem.emoji} {itemName(selectedItem)} · {itemCoins} pts</span>
               </div>
               <div className="flex justify-between items-center px-4 py-3 border-b border-border">
                 <span className="text-sm text-muted-foreground">{t("drinks.tip")}</span>
                 <span className="text-sm font-medium text-primary">
-                  {tipPct > 0 ? `+${tipPct}%` : t("drinks.tipCustom")} · +{tipCoins} coins
+                  {tipPct > 0 ? `+${tipPct}%` : t("drinks.tipCustom")} · +{tipCoins} pts
                 </span>
               </div>
               <div className="flex justify-between items-center px-4 py-3 bg-primary/5">
                 <span className="text-sm font-semibold">{t("drinks.total")}</span>
-                <span className="text-sm font-bold text-primary">{totalCoins} coins</span>
+                <span className="text-sm font-bold text-primary">{totalCoins} pts</span>
               </div>
             </div>
 
             {balance !== null && balance < totalCoins && (
-              <p className="text-xs text-destructive text-center">{t("drinks.insufficientCoins")} ({balance} coins)</p>
+              <p className="text-xs text-destructive text-center">{t("drinks.insufficientCoins")} ({balance} pts)</p>
             )}
 
             <Button
