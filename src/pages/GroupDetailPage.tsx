@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2 } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Pencil as PencilIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,8 +15,10 @@ import ShareGroupDialog from "@/components/ShareGroupDialog";
 import CreateGroupDialog from "@/components/CreateGroupDialog";
 import AssignAssistantDialog from "@/components/AssignAssistantDialog";
 import AnnouncementDialog from "@/components/AnnouncementDialog";
+import DrinkGiftSheet from "@/components/DrinkGiftSheet";
 import { useGroupAssistants, useAssistantActions } from "@/hooks/useAssistants";
 import { useAnnouncements, useAnnouncementActions, type Announcement } from "@/hooks/useAnnouncements";
+import { useDrinkMenu, type MenuItem } from "@/hooks/useDrinkMenu";
 import { toast } from "sonner";
 
 const GroupDetailPage = () => {
@@ -40,6 +42,12 @@ const GroupDetailPage = () => {
   const { remove: removeAnnouncement, togglePin: toggleAnnPin } = useAnnouncementActions();
   const [annDialogOpen, setAnnDialogOpen] = useState(false);
   const [editingAnn, setEditingAnn] = useState<Announcement | undefined>(undefined);
+  const { menu, items: menuItems, loading: menuLoading, upsertItem, deleteItem, refetch: refetchMenu } = useDrinkMenu(groupId);
+  const [drinkGiftOpen, setDrinkGiftOpen] = useState(false);
+  const [giftTarget, setGiftTarget] = useState<{ id: string; name: string } | null>(null);
+  const [menuEditItem, setMenuEditItem] = useState<MenuItem | Partial<MenuItem> | null>(null);
+  const [editItemForm, setEditItemForm] = useState({ name: "", name_vi: "", emoji: "🧃", price_vnd: 0, available: true, sort_order: 0 });
+  const [savingItem, setSavingItem] = useState(false);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -418,6 +426,14 @@ const GroupDetailPage = () => {
                   {m.role === "host" && (
                     <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                   )}
+                  {isMember && !isMe && menuItems.filter(i => i.available).length > 0 && (
+                    <button
+                      onClick={() => { setGiftTarget({ id: m.user_id, name: m.display_name || t("common.unknown") }); setDrinkGiftOpen(true); }}
+                      className="h-6 px-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[10px] font-semibold hover:bg-orange-500/20 flex items-center gap-1"
+                    >
+                      <Coffee className="h-3 w-3" />
+                    </button>
+                  )}
                   {isHost && !isMe && (
                     <button onClick={() => handleRemove(m.user_id)} className="text-[10px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded transition-colors">
                       {t("groups.remove")}
@@ -491,7 +507,103 @@ const GroupDetailPage = () => {
             )}
           </section>
         )}
+
+        {/* Drinks Menu */}
+        {(isHost || (menuItems.filter(i => i.available).length > 0)) && (
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+                <Coffee className="h-4 w-4 text-orange-500" />
+                {t("drinks.menuTitle")} {menuItems.length > 0 && `(${menuItems.length})`}
+              </h2>
+              {isHost && (
+                <button
+                  onClick={() => { setEditItemForm({ name: "", name_vi: "", emoji: "🧃", price_vnd: 0, available: true, sort_order: menuItems.length }); setMenuEditItem({}); }}
+                  className="text-xs text-primary font-medium flex items-center gap-1"
+                >
+                  <Plus className="h-3.5 w-3.5" /> {t("drinks.addItem")}
+                </button>
+              )}
+            </div>
+
+            {/* Add/Edit form (host only) */}
+            {isHost && menuEditItem !== null && (
+              <Card className="p-3 shadow-card space-y-2 border-primary/20">
+                <div className="grid grid-cols-2 gap-2">
+                  <input className="col-span-2 rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemName")} value={editItemForm.name} onChange={e => setEditItemForm(f => ({ ...f, name: e.target.value }))} />
+                  <input className="col-span-2 rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemNameVi")} value={editItemForm.name_vi} onChange={e => setEditItemForm(f => ({ ...f, name_vi: e.target.value }))} />
+                  <input className="rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemEmoji")} value={editItemForm.emoji} onChange={e => setEditItemForm(f => ({ ...f, emoji: e.target.value }))} />
+                  <input type="number" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemPrice")} value={editItemForm.price_vnd || ""} onChange={e => setEditItemForm(f => ({ ...f, price_vnd: parseInt(e.target.value) || 0 }))} />
+                </div>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <input type="checkbox" checked={editItemForm.available} onChange={e => setEditItemForm(f => ({ ...f, available: e.target.checked }))} />
+                  {t("drinks.itemAvailable")}
+                </label>
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1 rounded-lg h-8" disabled={savingItem || !editItemForm.name || !editItemForm.price_vnd}
+                    onClick={async () => {
+                      if (!groupId) return;
+                      setSavingItem(true);
+                      const { error } = await upsertItem(groupId, { ...editItemForm, id: (menuEditItem as MenuItem).id });
+                      setSavingItem(false);
+                      if (error) toast.error(error);
+                      else { setMenuEditItem(null); }
+                    }}
+                  >
+                    {savingItem ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("drinks.saveItem")}
+                  </Button>
+                  <Button size="sm" variant="ghost" className="rounded-lg h-8" onClick={() => setMenuEditItem(null)}>{t("common.cancel")}</Button>
+                </div>
+              </Card>
+            )}
+
+            {menuItems.length === 0 && !menuLoading ? (
+              <Card className="p-4 shadow-card text-center">
+                <p className="text-xs text-muted-foreground">{isHost ? t("drinks.menuEmpty") : t("drinks.noMenu")}</p>
+              </Card>
+            ) : (
+              <Card className="shadow-card overflow-hidden">
+                {menuItems.map((item, i) => (
+                  <div key={item.id} className={`flex items-center gap-3 px-3.5 py-2.5 ${i < menuItems.length - 1 ? "border-b border-border" : ""} ${!item.available ? "opacity-50" : ""}`}>
+                    <span className="text-xl shrink-0">{item.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">{item.price_vnd.toLocaleString("vi-VN")}đ · {Math.floor(item.price_vnd / 100)} coins</p>
+                    </div>
+                    {isHost && (
+                      <div className="flex gap-1">
+                        <button onClick={() => { setEditItemForm({ name: item.name, name_vi: item.name_vi ?? "", emoji: item.emoji, price_vnd: item.price_vnd, available: item.available, sort_order: item.sort_order }); setMenuEditItem(item); }}
+                          className="h-7 w-7 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:text-foreground">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={async () => {
+                          if (!groupId || !confirm(t("drinks.confirmDelete"))) return;
+                          const { error } = await deleteItem(groupId, item.id);
+                          if (error) toast.error(error);
+                        }} className="h-7 w-7 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:text-destructive">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </Card>
+            )}
+          </section>
+        )}
       </div>
+
+      {/* Drink Gift Sheet — pick recipient from members then open */}
+      {drinkGiftOpen && giftTarget && groupId && (
+        <DrinkGiftSheet
+          open={drinkGiftOpen}
+          onOpenChange={setDrinkGiftOpen}
+          groupId={groupId}
+          toUserId={giftTarget.id}
+          toUserName={giftTarget.name}
+          onSent={() => {}}
+        />
+      )}
     </div>
   );
 };
