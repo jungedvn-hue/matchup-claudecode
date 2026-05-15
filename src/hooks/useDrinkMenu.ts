@@ -9,6 +9,7 @@ export interface MenuItem {
   name: string;
   name_vi: string | null;
   emoji: string;
+  image_url: string | null;
   price_vnd: number;
   available: boolean;
   sort_order: number;
@@ -59,8 +60,26 @@ export const useDrinkMenu = (groupId: string | undefined) => {
       p_available:  item.available ?? true,
       p_sort_order: item.sort_order ?? 0,
     });
+    // Save image_url separately (direct update — RPC doesn't handle it)
+    if (!error && item.id && item.image_url !== undefined) {
+      await sb.from("menu_items").update({ image_url: item.image_url }).eq("id", item.id);
+    }
     if (!error) await fetch();
     return { error: error?.message ?? null };
+  };
+
+  const uploadItemImage = async (groupId: string, file: File): Promise<{ url: string | null; error: string | null }> => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { url: null, error: "Not authenticated" };
+
+    const ext = file.name.split(".").pop() ?? "jpg";
+    const path = `${groupId}/${Date.now()}.${ext}`;
+    const { error } = await (supabase as any).storage.from("menu-items").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return { url: null, error: error.message };
+
+    const { data: { publicUrl } } = (supabase as any).storage.from("menu-items").getPublicUrl(path);
+    return { url: `${publicUrl}?v=${Date.now()}`, error: null };
   };
 
   const deleteItem = async (groupId: string, itemId: string) => {
@@ -72,7 +91,7 @@ export const useDrinkMenu = (groupId: string | undefined) => {
     return { error: error?.message ?? null };
   };
 
-  return { menu, items, loading, refetch: fetch, upsertItem, deleteItem };
+  return { menu, items, loading, refetch: fetch, upsertItem, deleteItem, uploadItemImage };
 };
 
 export const useGiftDrink = () => {

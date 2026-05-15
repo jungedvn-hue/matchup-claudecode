@@ -103,7 +103,12 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
                   onClick={() => handleSelectItem(item)}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary hover:bg-secondary/80 transition-colors text-left"
                 >
-                  <span className="text-2xl">{item.emoji}</span>
+                  <div className="h-12 w-12 rounded-lg overflow-hidden bg-background shrink-0 flex items-center justify-center">
+                    {item.image_url
+                      ? <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
+                      : <span className="text-2xl">{item.emoji}</span>
+                    }
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground">{itemName(item)}</p>
                     <p className="text-xs text-muted-foreground">{item.price_vnd.toLocaleString("vi-VN")}đ · {Math.floor(item.price_vnd / 100)} coins</p>
@@ -118,7 +123,12 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
         {step === "tip" && selectedItem && (
           <div className="space-y-3">
             <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
-              <span className="text-2xl">{selectedItem.emoji}</span>
+              <div className="h-10 w-10 rounded-lg overflow-hidden bg-background shrink-0 flex items-center justify-center">
+                {selectedItem.image_url
+                  ? <img src={selectedItem.image_url} alt={selectedItem.name} className="h-full w-full object-cover" />
+                  : <span className="text-2xl">{selectedItem.emoji}</span>
+                }
+              </div>
               <div>
                 <p className="font-medium text-sm">{itemName(selectedItem)}</p>
                 <p className="text-xs text-muted-foreground">{itemCoins} coins</p>
