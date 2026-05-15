@@ -531,7 +531,6 @@ const GroupDetailPage = () => {
               <Card className="p-3 shadow-card space-y-2 border-primary/20">
                 <div className="grid grid-cols-2 gap-2">
                   <input className="col-span-2 rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemName")} value={editItemForm.name} onChange={e => setEditItemForm(f => ({ ...f, name: e.target.value }))} />
-                  <input className="col-span-2 rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemNameVi")} value={editItemForm.name_vi} onChange={e => setEditItemForm(f => ({ ...f, name_vi: e.target.value }))} />
                   <input className="rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemEmoji")} value={editItemForm.emoji} onChange={e => setEditItemForm(f => ({ ...f, emoji: e.target.value }))} />
                   <input type="number" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemPrice")} value={editItemForm.price_vnd || ""} onChange={e => setEditItemForm(f => ({ ...f, price_vnd: parseInt(e.target.value) || 0 }))} />
                 </div>
