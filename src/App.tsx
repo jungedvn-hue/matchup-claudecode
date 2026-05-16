@@ -59,6 +59,7 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminTournamentsPage from "./pages/AdminTournamentsPage";
 import AdminStatsPage from "./pages/AdminStatsPage";
 import AdminCoinsPage from "./pages/AdminCoinsPage";
+import InvestorBIPage from "./pages/InvestorBIPage";
 import RefereeProfilePage from "./pages/RefereeProfilePage";
 import CourtsideRefereePage from "./pages/CourtsideRefereePage";
 import { Button } from "@/components/ui/button";
@@ -129,6 +130,7 @@ const AppShell = () => {
         <Route path="/admin/tournaments" element={<RequireMaster><AdminTournamentsPage /></RequireMaster>} />
         <Route path="/admin/stats" element={<RequireMaster><AdminStatsPage /></RequireMaster>} />
         <Route path="/admin/coins" element={<RequireMaster><AdminCoinsPage /></RequireMaster>} />
+        <Route path="/investor-bi" element={<RequireMaster><InvestorBIPage /></RequireMaster>} />
 
         <Route path="/verify" element={<VerificationPage />} />
         <Route path="/marketplace/service/:serviceId" element={<ServiceDetailPage />} />

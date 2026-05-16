@@ -306,6 +306,7 @@ const SettingsPage = () => {
                 { path: "/admin/tournaments",  label: t("settings.admin.tournaments"),  desc: t("settings.admin.tournamentsDesc") },
                 { path: "/admin/stats",        label: t("settings.admin.stats"),        desc: t("settings.admin.statsDesc") },
                 { path: "/admin/coins",        label: t("settings.admin.coins"),        desc: t("settings.admin.coinsDesc") },
+                { path: "/investor-bi",        label: t("settings.admin.investorBI"),   desc: t("settings.admin.investorBIDesc") },
               ].map(it => (
                 <Card key={it.path} className="p-3 cursor-pointer border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
                       onClick={() => navigate(it.path)}>

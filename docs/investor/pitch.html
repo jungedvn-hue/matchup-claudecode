@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MatchUp — Investor Pitch</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+:root {
+  --navy: #0B1626;
+  --teal: #0B667A;
+  --mint: #67E0B0;
+  --green: #1F9D63;
+  --green-soft: #65D0A3;
+  --green-pale: #CDE4DB;
+  --orange: #FFA46B;
+  --bg: #F4F7F6;
+  --black: #1E1E1E;
+  --white: #FFFFFF;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--navy);
+  background: var(--bg);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.slide {
+  width: 297mm;
+  height: 210mm;
+  padding: 18mm 22mm;
+  page-break-after: always;
+  page-break-inside: avoid;
+  position: relative;
+  overflow: hidden;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+.slide:last-child { page-break-after: auto; }
+
+h1, h2, h3, .display {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+  line-height: 1.1;
+}
+
+h1 { font-size: 52pt; }
+h2 { font-size: 30pt; margin-bottom: 8mm; }
+h3 { font-size: 16pt; font-weight: 700; }
+
+.stat, .num {
+  font-family: 'Space Grotesk', monospace;
+  font-weight: 700;
+  color: var(--green);
+}
+
+p, li { font-size: 11pt; line-height: 1.55; color: var(--navy); }
+
+.slide-num {
+  position: absolute;
+  bottom: 10mm;
+  right: 22mm;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 9pt;
+  color: var(--teal);
+  opacity: 0.6;
+}
+
+.slide-footer {
+  position: absolute;
+  bottom: 10mm;
+  left: 22mm;
+  font-family: 'Manrope', sans-serif;
+  font-size: 9pt;
+  color: var(--teal);
+  opacity: 0.7;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* COVER */
+.cover {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+  color: var(--white);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, var(--mint) 0%, transparent 70%);
+  opacity: 0.2;
+  top: -200px; right: -200px;
+  border-radius: 50%;
+}
+.cover::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, var(--green) 0%, transparent 70%);
+  opacity: 0.15;
+  bottom: -150px; left: -150px;
+  border-radius: 50%;
+}
+.cover h1 {
+  color: var(--white);
+  font-size: 88pt;
+  letter-spacing: -0.03em;
+  z-index: 2;
+  position: relative;
+}
+.cover .accent { color: var(--mint); }
+.cover .slogan {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 22pt;
+  color: var(--mint);
+  margin-top: 8mm;
+  z-index: 2; position: relative;
+}
+.cover .tagline {
+  font-family: 'Inter', sans-serif;
+  font-size: 14pt;
+  color: var(--green-pale);
+  margin-top: 12mm;
+  max-width: 180mm;
+  z-index: 2; position: relative;
+  line-height: 1.5;
+}
+.cover .footer {
+  position: absolute;
+  bottom: 15mm;
+  font-size: 10pt;
+  color: var(--green-pale);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* SECTION HEADER */
+.section-header {
+  background: var(--navy);
+  color: var(--white);
+  justify-content: center;
+}
+.section-header .label {
+  font-family: 'Space Grotesk', monospace;
+  color: var(--mint);
+  font-size: 14pt;
+  letter-spacing: 0.3em;
+  margin-bottom: 6mm;
+}
+.section-header h1 {
+  color: var(--white);
+  font-size: 64pt;
+  max-width: 220mm;
+}
+.section-header .sub {
+  font-size: 16pt;
+  color: var(--green-pale);
+  margin-top: 8mm;
+  max-width: 220mm;
+  line-height: 1.4;
+}
+
+/* CONTENT SLIDE */
+.eyebrow {
+  font-family: 'Space Grotesk', monospace;
+  color: var(--green);
+  font-size: 11pt;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 4mm;
+}
+
+.lead {
+  font-size: 15pt;
+  font-weight: 500;
+  color: var(--teal);
+  margin-bottom: 8mm;
+  line-height: 1.4;
+  max-width: 230mm;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5mm; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4mm; }
+
+.card {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 6mm;
+  border-left: 4px solid var(--green);
+}
+.card.dark {
+  background: var(--navy);
+  color: var(--white);
+}
+.card.dark h3 { color: var(--mint); }
+.card.dark p, .card.dark li { color: var(--green-pale); }
+.card.accent {
+  background: var(--green);
+  color: var(--white);
+  border-left-color: var(--mint);
+}
+.card.accent h3, .card.accent .num { color: var(--white); }
+.card.accent p { color: var(--green-pale); }
+
+.kpi {
+  text-align: center;
+  padding: 8mm 4mm;
+  background: var(--white);
+  border: 1px solid var(--green-pale);
+  border-radius: 8px;
+}
+.kpi .num {
+  font-size: 32pt;
+  display: block;
+  line-height: 1;
+}
+.kpi .lbl {
+  font-family: 'Inter', sans-serif;
+  font-size: 9pt;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 3mm;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+  margin-top: 4mm;
+}
+th {
+  background: var(--navy);
+  color: var(--white);
+  padding: 3mm 4mm;
+  text-align: left;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 9pt;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+td {
+  padding: 3mm 4mm;
+  border-bottom: 1px solid var(--green-pale);
+}
+tr:nth-child(even) td { background: var(--bg); }
+.check { color: var(--green); font-weight: 700; font-size: 14pt; }
+.cross { color: #c44; font-weight: 700; }
+
+ul.clean { list-style: none; }
+ul.clean li {
+  padding: 2mm 0 2mm 8mm;
+  position: relative;
+  font-size: 11pt;
+}
+ul.clean li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 5mm;
+  width: 5mm; height: 0.5mm;
+  background: var(--green);
+}
+
+.pill {
+  display: inline-block;
+  background: var(--green-pale);
+  color: var(--navy);
+  padding: 2mm 5mm;
+  border-radius: 99px;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 9pt;
+  font-weight: 700;
+  margin-right: 3mm;
+  margin-bottom: 2mm;
+}
+.pill.dark { background: var(--navy); color: var(--mint); }
+.pill.accent { background: var(--orange); color: var(--navy); }
+
+.big-stat {
+  font-family: 'Space Grotesk', monospace;
+  font-weight: 700;
+  font-size: 72pt;
+  color: var(--green);
+  line-height: 1;
+}
+
+.flow-step {
+  background: var(--white);
+  border: 2px solid var(--green-pale);
+  border-radius: 8px;
+  padding: 5mm;
+  text-align: center;
+  position: relative;
+}
+.flow-step .step-num {
+  position: absolute;
+  top: -4mm; left: -4mm;
+  background: var(--green);
+  color: var(--white);
+  width: 8mm; height: 8mm;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', monospace;
+  font-weight: 700;
+  font-size: 11pt;
+}
+
+.divider {
+  height: 1mm;
+  background: linear-gradient(to right, var(--green), transparent);
+  margin: 6mm 0;
+  border: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SLIDE 1: COVER ============ -->
+<div class="slide cover">
+  <h1>Match<span class="accent">Up</span></h1>
+  <div class="slogan">Where passion belongs.</div>
+  <div class="tagline">
+    The all-in-one platform for racket sports communities.<br>
+    Built in Vietnam. Designed for the world.
+  </div>
+  <div class="footer">Investor Pitch · Seed Round · 2026</div>
+</div>
+
+<!-- ============ SLIDE 2: TL;DR ============ -->
+<div class="slide">
+  <div class="eyebrow">The Opportunity in One Page</div>
+  <h2>A generational platform moment for racket sports.</h2>
+  <p class="lead">
+    Pickleball is the world's fastest-growing sport. Vietnam is the world's hottest pickleball market.
+    The 2026 World Cup comes to Da Nang in August. No dominant all-in-one platform exists.
+    <strong>MatchUp is positioned to win this category — and expand to all racket sports globally.</strong>
+  </p>
+
+  <div class="grid-4" style="margin-top: 6mm;">
+    <div class="kpi">
+      <span class="num">$9.1B</span>
+      <span class="lbl">Global Market by 2034</span>
+    </div>
+    <div class="kpi">
+      <span class="num">88%</span>
+      <span class="lbl">Vietnam Awareness — #1 Globally</span>
+    </div>
+    <div class="kpi">
+      <span class="num">+184%</span>
+      <span class="lbl">Vietnam Player Growth (2025)</span>
+    </div>
+    <div class="kpi">
+      <span class="num">82/100</span>
+      <span class="lbl">Product-Market Fit Score</span>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 8mm;">
+    <div class="card">
+      <h3 style="color: var(--green); margin-bottom: 3mm;">What MatchUp Is</h3>
+      <p>An ecosystem platform unifying tournament operations, multi-role community, gamification, health data, AI, and a virtual marketplace — for every racket sport, every region.</p>
+    </div>
+    <div class="card dark">
+      <h3 style="margin-bottom: 3mm;">Why Now</h3>
+      <p>World Cup 2026 in Vietnam. PE capital staging for M&A. No all-in-one competitor. The market leader position is unclaimed — and the window is narrow.</p>
+    </div>
+  </div>
+
+  <div class="slide-footer">MatchUp · Where Passion Belongs</div>
+  <div class="slide-num">02</div>
+</div>
+
+<!-- ============ SLIDE 3: SECTION — MARKET ============ -->
+<div class="slide section-header">
+  <div class="label">Part One</div>
+  <h1>The fastest-growing sport on Earth.</h1>
+  <div class="sub">Racket sports are entering an exponential decade. Pickleball leads. Padel follows. Tennis &amp; badminton are scaling globally. The infrastructure layer is wide open.</div>
+  <div class="slide-num" style="color: var(--mint);">03</div>
+</div>
+
+<!-- ============ SLIDE 4: MARKET SIZE ============ -->
+<div class="slide">
+  <div class="eyebrow">Market Trajectory</div>
+  <h2>A $9 billion market, compounding at 16% CAGR.</h2>
+
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>2023</th><th>2024</th><th>2025 (Est.)</th><th>2033–34 (Proj.)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Total Market Value</strong></td><td>$1.5B</td><td>$2.2B</td><td>$2.6–3.1B</td><td class="num" style="color: var(--green);">$4.4–9.1B</td></tr>
+      <tr><td>US Adult Players</td><td>—</td><td>36.5M</td><td>~48M</td><td>—</td></tr>
+      <tr><td>World Cup Nations</td><td>—</td><td>32</td><td>78</td><td><strong>80 (2026)</strong></td></tr>
+      <tr><td>CAGR</td><td>—</td><td>—</td><td colspan="2" class="num" style="color: var(--green);">15–16% sustained</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: 10mm; color: var(--teal);">The demographic shift that changed everything</h3>
+  <div class="grid-4" style="margin-top: 5mm;">
+    <div class="card"><strong>Pre-2020</strong><p style="font-size: 9pt; margin-top: 2mm;">55+ retirees. "Old person's sport."</p></div>
+    <div class="card"><strong>2020–2023</strong><p style="font-size: 9pt; margin-top: 2mm;">35–54. COVID pivot.</p></div>
+    <div class="card accent"><strong>2024–2026</strong><p style="font-size: 9pt; margin-top: 2mm; color: white;">18–34 Gen Z surge. Mainstream.</p></div>
+    <div class="card dark"><strong>2026+</strong><p style="font-size: 9pt; margin-top: 2mm;">Cross-generational. Olympic aspirant.</p></div>
+  </div>
+
+  <div class="slide-footer">Sources: market.us, CMI, Dimension MR, Forbes</div>
+  <div class="slide-num">04</div>
+</div>
+
+<!-- ============ SLIDE 5: VIETNAM ADVANTAGE ============ -->
+<div class="slide">
+  <div class="eyebrow">Home Market Advantage</div>
+  <h2>Vietnam is the #1 pickleball growth market in the world.</h2>
+
+  <div class="grid-2" style="margin-top: 4mm;">
+    <div>
+      <table>
+        <thead><tr><th>Vietnam Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Pickleball awareness</td><td class="num" style="color: var(--green);">88% (highest globally)</td></tr>
+          <tr><td>Awareness growth YoY</td><td class="num" style="color: var(--green);">+152%</td></tr>
+          <tr><td>DUPR player growth (2025)</td><td class="num" style="color: var(--green);">+184%</td></tr>
+          <tr><td>DUPR players (90-day)</td><td class="num" style="color: var(--green);">+30%</td></tr>
+          <tr><td>World Cup 2026</td><td><strong>Da Nang · Aug 30 – Sep 6</strong></td></tr>
+          <tr><td>World Cup nations / athletes</td><td><strong>80 nations · 4,000 athletes</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="card dark" style="height: 100%;">
+        <h3>The structural moat no competitor can replicate</h3>
+        <ul class="clean" style="margin-top: 4mm;">
+          <li>Vietnamese-built platform with native language &amp; cultural fit</li>
+          <li>Local relationships with hosts, clubs, federations</li>
+          <li>Payment integrations native to the market (VNPay, MoMo)</li>
+          <li>Government alignment with national physical-activity targets</li>
+          <li>12–18 month head start before any US/EU competitor can localize</li>
+        </ul>
+        <p style="margin-top: 6mm; color: var(--mint); font-style: italic;">
+          Vietnam is the beachhead — not the limit.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-footer">Sources: UPA Asia / YouGov · DUPR · Inside The Games</div>
+  <div class="slide-num">05</div>
+</div>
+
+<!-- ============ SLIDE 6: SECTION — PROBLEM ============ -->
+<div class="slide section-header">
+  <div class="label">Part Two</div>
+  <h1>The infrastructure is broken.</h1>
+  <div class="sub">A $9B market is being managed with spreadsheets, group chats, and paper brackets. Competitors solve fragments. No one solves the whole.</div>
+  <div class="slide-num" style="color: var(--mint);">06</div>
+</div>
+
+<!-- ============ SLIDE 7: PROBLEM ============ -->
+<div class="slide">
+  <div class="eyebrow">The Problem</div>
+  <h2>Hosts and players are stuck between fragmented tools.</h2>
+
+  <p class="lead" style="font-style: italic;">
+    "The game was exploding, and the infrastructure was terrible."<br>
+    <span style="font-size: 11pt; color: var(--navy); font-style: normal;">— Jorge Barragan, CEO of The Picklr (61+ locations), Forbes · Feb 2026</span>
+  </p>
+
+  <div class="grid-2" style="margin-top: 6mm;">
+    <div class="card">
+      <h3 style="color: var(--green);">For Hosts &amp; Organizers</h3>
+      <ul class="clean" style="margin-top: 3mm;">
+        <li>Manual member management across WhatsApp, Excel, Google Forms</li>
+        <li>Tournament brackets break at scale (50 → 200+ players)</li>
+        <li>No unified view across multiple groups or events</li>
+        <li>Referee coordination, court allocation, budget — all in different tools</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color: var(--green);">For Players &amp; Communities</h3>
+      <ul class="clean" style="margin-top: 3mm;">
+        <li>No single app to find groups, join tournaments, track progress</li>
+        <li>No persistent identity, history, or rating across events</li>
+        <li>No reason to return weekly — engagement decays after a few sessions</li>
+        <li>No connection between play, health, equipment, and community</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card dark" style="margin-top: 6mm;">
+    <h3 style="color: var(--mint);">The market is fragmented across four tool categories</h3>
+    <p style="margin-top: 3mm;">Tournament software (PB360, Pickleball Brackets, Swish) · Rating systems (DUPR) · Community apps (TeamSnap, Heja, OpenSports) · Facility management (Court Reserve). <strong style="color: var(--mint);">No one has unified them.</strong></p>
+  </div>
+
+  <div class="slide-footer">The white space is the entire ecosystem.</div>
+  <div class="slide-num">07</div>
+</div>
+
+<!-- ============ SLIDE 8: COMPETITIVE MATRIX ============ -->
+<div class="slide">
+  <div class="eyebrow">Competitive Landscape</div>
+  <h2>No competitor offers the full ecosystem.</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>Pickleball Brackets</th>
+        <th>PB360</th>
+        <th>Swish</th>
+        <th>TeamSnap</th>
+        <th>DUPR</th>
+        <th style="background: var(--green);">MatchUp</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Tournament Engine</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>International Standard Seeding</td><td>Basic</td><td>Basic</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Multi-Role Community</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td>Partial</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Gamification (XP, Badges, Coins)</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Health Data Platform</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>AI-Powered Intelligence</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Marketplace / Affiliate</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Coin Wallet + Gifting Economy</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Multi-Sport (Pickleball / Padel / Tennis / Badminton)</td><td class="cross">✗</td><td class="cross">✗</td><td>Partial</td><td class="check">✓</td><td class="cross">✗</td><td class="check">✓</td></tr>
+      <tr><td>Multi-Language (i18n native)</td><td>EN</td><td>EN</td><td>EN</td><td>EN</td><td>EN</td><td><strong>EN + VI +</strong></td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top: 6mm; font-size: 12pt; color: var(--teal); font-weight: 600;">
+    MatchUp is the only platform combining tournament-grade operations, multi-role community, gamification, health data, AI, and marketplace into one ecosystem.
+  </p>
+
+  <div class="slide-num">08</div>
+</div>
+
+<!-- ============ SLIDE 9: SECTION — SOLUTION ============ -->
+<div class="slide section-header">
+  <div class="label">Part Three</div>
+  <h1>An ecosystem, not just an app.</h1>
+  <div class="sub">Five roles. One platform. A flywheel that compounds with every user.</div>
+  <div class="slide-num" style="color: var(--mint);">09</div>
+</div>
+
+<!-- ============ SLIDE 10: THE FLYWHEEL ============ -->
+<div class="slide">
+  <div class="eyebrow">The Multi-Role Flywheel</div>
+  <h2>Five roles. Every new role adds value for the others.</h2>
+
+  <div class="grid-5" style="margin-top: 8mm;">
+    <div class="flow-step"><div class="step-num">1</div><h3 style="font-size: 13pt; color: var(--green);">HOST</h3><p style="font-size: 9pt; margin-top: 3mm;">Creates groups, runs tournaments, grows community</p></div>
+    <div class="flow-step"><div class="step-num">2</div><h3 style="font-size: 13pt; color: var(--green);">REFEREE</h3><p style="font-size: 9pt; margin-top: 3mm;">Officiates matches, earns recognition, builds reputation</p></div>
+    <div class="flow-step"><div class="step-num">3</div><h3 style="font-size: 13pt; color: var(--green);">PLAYER</h3><p style="font-size: 9pt; margin-top: 3mm;">Plays, learns, levels up, gifts, connects</p></div>
+    <div class="flow-step"><div class="step-num">4</div><h3 style="font-size: 13pt; color: var(--green);">COURT OWNER</h3><p style="font-size: 9pt; margin-top: 3mm;">Supplies courts, captures stable demand</p></div>
+    <div class="flow-step"><div class="step-num">5</div><h3 style="font-size: 13pt; color: var(--green);">STORE OWNER</h3><p style="font-size: 9pt; margin-top: 3mm;">Sells gear, earns trust, grows brand</p></div>
+  </div>
+
+  <div class="card dark" style="margin-top: 10mm;">
+    <h3 style="color: var(--mint);">The cross-side network effect</h3>
+    <p style="margin-top: 3mm;">More hosts → more events → more players → more demand for referees and courts → more revenue for stores → more reasons for hosts to stay. <strong style="color: var(--mint);">Each role makes every other role more valuable.</strong> This is the same defensibility mechanism behind Airbnb, Grab, and TikTok.</p>
+  </div>
+
+  <p style="margin-top: 6mm; font-size: 11pt; color: var(--teal); font-style: italic;">
+    Single-function competitors cannot replicate cross-side network effects without rebuilding the entire ecosystem.
+  </p>
+
+  <div class="slide-num">10</div>
+</div>
+
+<!-- ============ SLIDE 11: SECTION — UNIQUE CORE VALUE ============ -->
+<div class="slide section-header">
+  <div class="label">Part Four</div>
+  <h1>A platform that changes how people live.</h1>
+  <div class="sub">Health data. AI. Economic ecosystem. Gamification. Five layers of unique value that no racket-sports competitor builds.</div>
+  <div class="slide-num" style="color: var(--mint);">11</div>
+</div>
+
+<!-- ============ SLIDE 12: HEALTH DATA ============ -->
+<div class="slide">
+  <div class="eyebrow">Unique Value · 01</div>
+  <h2>Health Data — the most valuable longitudinal dataset in racket sports.</h2>
+
+  <p class="lead">Every session generates structured health data. At scale, this becomes a defensible, proprietary asset that no competitor entering later can replicate.</p>
+
+  <div class="grid-2" style="margin-top: 4mm;">
+    <div>
+      <h3 style="color: var(--teal);">What we capture</h3>
+      <ul class="clean" style="margin-top: 3mm;">
+        <li>Calories, steps, heart rate zones, intensity, recovery</li>
+        <li>Session frequency, duration, social context</li>
+        <li>Injury patterns, fitness trajectory, BMI trends</li>
+        <li>Wearable sync (Apple Health, Google Fit, Garmin)</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color: var(--teal);">Who values it</h3>
+      <ul class="clean" style="margin-top: 3mm;">
+        <li><strong>Insurers</strong> — anonymized cohort data on activity &amp; outcomes</li>
+        <li><strong>Healthcare systems</strong> — NCD prevention pathways</li>
+        <li><strong>Sports medicine</strong> — injury research, rehab programs</li>
+        <li><strong>Governments</strong> — physical activity policy targets</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card dark" style="margin-top: 8mm;">
+    <h3 style="color: var(--mint);">The Vietnam policy alignment</h3>
+    <p style="margin-top: 3mm;">Vietnam spends ~$20–25B/year on healthcare; non-communicable diseases (cardiovascular, diabetes, obesity) are the largest growth category. The government has set national physical-activity targets. <strong style="color: var(--mint);">MatchUp directly supports national healthcare policy</strong> — opening a pathway for government partnership and subsidized user acquisition.</p>
+  </div>
+
+  <div class="slide-num">12</div>
+</div>
+
+<!-- ============ SLIDE 13: AI ============ -->
+<div class="slide">
+  <div class="eyebrow">Unique Value · 02</div>
+  <h2>AI woven into every layer — not bolted on.</h2>
+
+  <div class="grid-2" style="margin-top: 4mm;">
+    <div class="card">
+      <h3 style="color: var(--green);">Match Intelligence</h3>
+      <p style="font-size: 10pt; margin-top: 2mm;">AI-powered opponent matching at your level. Smart bracket seeding to eliminate mismatches. Predictive court allocation to maximize utilization.</p>
+    </div>
+    <div class="card">
+      <h3 style="color: var(--green);">Health Intelligence</h3>
+      <p style="font-size: 10pt; margin-top: 2mm;">Personalized activity coach. Injury risk signals from intensity patterns. Adaptive session goals based on fitness trajectory.</p>
+    </div>
+    <div class="card">
+      <h3 style="color: var(--green);">Community Intelligence</h3>
+      <p style="font-size: 10pt; margin-top: 2mm;">Group health scoring. ML-based churn prediction. Right-message-right-moment re-engagement automation.</p>
+    </div>
+    <div class="card">
+      <h3 style="color: var(--green);">Economy Intelligence</h3>
+      <p style="font-size: 10pt; margin-top: 2mm;">Dynamic coin and XP rewards. Personalized store recommendations. Sponsor-to-segment matching for brand campaigns.</p>
+    </div>
+  </div>
+
+  <div class="grid-3" style="margin-top: 8mm;">
+    <div class="card dark"><h3 style="color: var(--mint);">2026</h3><p style="margin-top: 2mm; font-size: 10pt;">AI assistants for hosts — auto-generate schedules, brackets, announcements.</p></div>
+    <div class="card dark"><h3 style="color: var(--mint);">2027</h3><p style="margin-top: 2mm; font-size: 10pt;">Personalized AI health coach trained on MatchUp's own sport-health dataset.</p></div>
+    <div class="card accent"><h3>2028+</h3><p style="margin-top: 2mm; font-size: 10pt;">MatchUp AI as a licensed health-intelligence layer for insurers, clinics, and federations.</p></div>
+  </div>
+
+  <div class="slide-num">13</div>
+</div>
+
+<!-- ============ SLIDE 14: DATA PLATFORM ============ -->
+<div class="slide">
+  <div class="eyebrow">Unique Value · 03</div>
+  <h2>A data platform that compounds in value with every user.</h2>
+
+  <p class="lead">More users → better AI → better experience → more users. The same data flywheel that gave Strava, Garmin, and Peloton defensible moats in adjacent categories.</p>
+
+  <table>
+    <thead><tr><th>Data Asset</th><th>Generated By</th><th>Strategic Value</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Player skill trajectory</strong></td><td>Every match, every score</td><td>Rating system, matchmaking, coaching</td></tr>
+      <tr><td><strong>Social graph</strong></td><td>Friends, group memberships</td><td>Viral growth, churn prediction</td></tr>
+      <tr><td><strong>Health &amp; activity</strong></td><td>Session logs, wearable sync</td><td>Insurance, healthcare, research licensing</td></tr>
+      <tr><td><strong>Economic behavior</strong></td><td>Coin flows, gifting, store purchases</td><td>Financial modeling, brand targeting</td></tr>
+      <tr><td><strong>Tournament patterns</strong></td><td>Brackets, results, formats</td><td>Sports federation insights</td></tr>
+      <tr><td><strong>Venue utilization</strong></td><td>Court bookings, session times</td><td>Real estate &amp; venue investment intelligence</td></tr>
+      <tr><td><strong>Referee performance</strong></td><td>Match outcomes, accuracy</td><td>Officiating certification, federation reporting</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top: 8mm; font-size: 12pt; color: var(--teal); font-weight: 600;">
+    MatchUp will hold the most comprehensive racket-sports behavioral dataset in Southeast Asia — and possibly globally — within 3 years of scaled launch.
+  </p>
+
+  <div class="slide-num">14</div>
+</div>
+
+<!-- ============ SLIDE 15: ECONOMIC ECOSYSTEM ============ -->
+<div class="slide">
+  <div class="eyebrow">Unique Value · 04</div>
+  <h2>An economic ecosystem — the financial rails of racket sports.</h2>
+
+  <p class="lead">MatchUp is not just a platform. It is the economic infrastructure layer for the racket-sports community. Money, recognition, and opportunity all circulate inside the platform.</p>
+
+  <table>
+    <thead><tr><th>Economic Layer</th><th>Mechanism</th><th>Investor Analogue</th></tr></thead>
+    <tbody>
+      <tr><td>Coin Wallet</td><td>Platform currency, bridges digital + physical</td><td>Grab credits · Shopee Xu</td></tr>
+      <tr><td>Gifting Economy</td><td>Social tipping — voluntary value transfer</td><td>TikTok gifts · Twitch bits</td></tr>
+      <tr><td>Affiliate Marketplace</td><td>Revenue share on equipment discovery</td><td>Amazon Associates</td></tr>
+      <tr><td>Tournament Entry Fees</td><td>Event commerce — predictable, recurring</td><td>Eventbrite for sports</td></tr>
+      <tr><td>Host Subscription</td><td>SaaS layer — highest margin</td><td>TeamSnap · Court Reserve</td></tr>
+      <tr><td>Health Data Licensing</td><td>B2B data product — long-term, high value</td><td>Strava Metro · Garmin Health</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card dark" style="margin-top: 8mm;">
+    <h3 style="color: var(--mint);">The App Store fee advantage</h3>
+    <p style="margin-top: 3mm;">MatchUp Coins are classified as a <strong style="color: var(--mint);">physical services wallet</strong> (tournament entry, court booking, marketplace) — same legal structure as Grab and Shopee. Target effective App Store fee: <span class="num" style="color: var(--mint);">&lt; 5%</span> vs. 30% for pure digital goods. <strong style="color: var(--mint);">~$228K/year saved at 100K MAU.</strong></p>
+  </div>
+
+  <div class="slide-num">15</div>
+</div>
+
+<!-- ============ SLIDE 16: GAMIFICATION ============ -->
+<div class="slide">
+  <div class="eyebrow">Unique Value · 05</div>
+  <h2>Gamification — behavioral science with measurable health outcomes.</h2>
+
+  <p class="lead">MatchUp treats engagement as a behavioral design challenge. Not entertainment — clinical-grade habit formation.</p>
+
+  <div class="grid-5" style="margin-top: 6mm;">
+    <div class="card"><h3 style="font-size: 12pt; color: var(--green);">XP &amp; Levels</h3><p style="font-size: 9pt; margin-top: 2mm;">Progress anchors — sunk-cost &amp; progress bias</p></div>
+    <div class="card"><h3 style="font-size: 12pt; color: var(--green);">Badges</h3><p style="font-size: 9pt; margin-top: 2mm;">Identity formation — "I am a player"</p></div>
+    <div class="card"><h3 style="font-size: 12pt; color: var(--green);">Leaderboards</h3><p style="font-size: 9pt; margin-top: 2mm;">Social competition — weekly return trigger</p></div>
+    <div class="card"><h3 style="font-size: 12pt; color: var(--green);">Coin Economy</h3><p style="font-size: 9pt; margin-top: 2mm;">Economic stake in the platform</p></div>
+    <div class="card"><h3 style="font-size: 12pt; color: var(--green);">Streaks</h3><p style="font-size: 9pt; margin-top: 2mm;">21-day habit-formation science</p></div>
+  </div>
+
+  <div class="card dark" style="margin-top: 10mm;">
+    <h3 style="color: var(--mint);">The clinical outcome connection</h3>
+    <p style="margin-top: 3mm; font-style: italic;">"Regular moderate-intensity physical activity (3–4 sessions/week) reduces cardiovascular disease risk by 35%, type 2 diabetes risk by 40%, and depression risk by 30%."</p>
+    <p style="margin-top: 2mm; font-size: 9pt; color: var(--green-pale);">— WHO Global Action Plan on Physical Activity 2018–2030</p>
+    <p style="margin-top: 4mm;">MatchUp's gamification system, applied at population scale, is <strong style="color: var(--mint);">a public health intervention with measurable clinical outcomes</strong> — at a fraction of the cost of pharmaceuticals or structured medical programs.</p>
+  </div>
+
+  <div class="grid-3" style="margin-top: 6mm;">
+    <div class="kpi"><span class="num">$50K</span><span class="lbl">Cost / QALY · Pharma (statins)</span></div>
+    <div class="kpi"><span class="num">$5K</span><span class="lbl">Cost / QALY · Medical exercise program</span></div>
+    <div class="kpi" style="border-color: var(--green); background: var(--green-pale);"><span class="num">&lt; $100</span><span class="lbl">Cost / QALY · MatchUp at scale</span></div>
+  </div>
+
+  <div class="slide-num">16</div>
+</div>
+
+<!-- ============ SLIDE 17: SECTION — WHY NOW ============ -->
+<div class="slide section-header">
+  <div class="label">Part Five</div>
+  <h1>The window is now.</h1>
+  <div class="sub">Five forces converging in Q3 2026. The World Cup in Da Nang is a once-in-a-decade launch catalyst. Pre-event valuation closes fast.</div>
+  <div class="slide-num" style="color: var(--mint);">17</div>
+</div>
+
+<!-- ============ SLIDE 18: 5 FORCES ============ -->
+<div class="slide">
+  <div class="eyebrow">Why Now</div>
+  <h2>Five forces converging at the same moment.</h2>
+
+  <div class="grid-5" style="margin-top: 8mm;">
+    <div class="card">
+      <div class="num" style="color: var(--green); font-size: 24pt;">01</div>
+      <h3 style="font-size: 12pt; margin-top: 2mm;">Sport Explosion</h3>
+      <p style="font-size: 9pt; margin-top: 2mm;">48M+ US players. Global adoption accelerating. Every new player is a potential MatchUp user.</p>
+    </div>
+    <div class="card">
+      <div class="num" style="color: var(--green); font-size: 24pt;">02</div>
+      <h3 style="font-size: 12pt; margin-top: 2mm;">Infrastructure Gap</h3>
+      <p style="font-size: 9pt; margin-top: 2mm;">No dominant all-in-one platform exists. The market leader position is unclaimed.</p>
+    </div>
+    <div class="card">
+      <div class="num" style="color: var(--green); font-size: 24pt;">03</div>
+      <h3 style="font-size: 12pt; margin-top: 2mm;">Professionalization</h3>
+      <p style="font-size: 9pt; margin-top: 2mm;">APP / USA Pickleball + DUPR raising standards. Olympic pathway 2032 elevating expectations.</p>
+    </div>
+    <div class="card">
+      <div class="num" style="color: var(--green); font-size: 24pt;">04</div>
+      <h3 style="font-size: 12pt; margin-top: 2mm;">Capital Inflow</h3>
+      <p style="font-size: 9pt; margin-top: 2mm;">PE circling. M&amp;A staging. First movers get acquired or become the acquirer.</p>
+    </div>
+    <div class="card accent">
+      <div class="num" style="color: white; font-size: 24pt;">05</div>
+      <h3 style="font-size: 12pt; margin-top: 2mm;">Vietnam's Moment</h3>
+      <p style="font-size: 9pt; margin-top: 2mm; color: white;">88% awareness. 184% growth. World Cup 2026 in Da Nang. Once-in-a-decade.</p>
+    </div>
+  </div>
+
+  <div class="card dark" style="margin-top: 10mm;">
+    <h3 style="color: var(--mint);">The World Cup window — August 30 to September 6, 2026</h3>
+    <p style="margin-top: 3mm;"><strong style="color: var(--mint);">4,000 athletes from 80 nations.</strong> Global media. On-site activation: hosts, referees, players using MatchUp live during side events. DUPR partnership opportunity at the same venue. <strong style="color: var(--mint);">Free global brand launch — at near-zero customer acquisition cost.</strong></p>
+  </div>
+
+  <p style="margin-top: 6mm; font-size: 12pt; color: var(--teal); font-weight: 600; text-align: center;">
+    Investors entering before the World Cup get pre-traction valuation. After, the narrative changes — and so does the price.
+  </p>
+
+  <div class="slide-num">18</div>
+</div>
+
+<!-- ============ SLIDE 19: SECTION — GLOBAL VISION ============ -->
+<div class="slide section-header">
+  <div class="label">Part Six</div>
+  <h1>Vietnam first. Pickleball first. Then the world.</h1>
+  <div class="sub">The platform is sport-agnostic and geography-agnostic by design. The engine that wins Vietnam wins Manila, Mumbai, Manchester, and Madrid.</div>
+  <div class="slide-num" style="color: var(--mint);">19</div>
+</div>
+
+<!-- ============ SLIDE 20: ROADMAP ============ -->
+<div class="slide">
+  <div class="eyebrow">Global Expansion Roadmap</div>
+  <h2>From beachhead to category leader in 5 years.</h2>
+
+  <table>
+    <thead><tr><th>Phase</th><th>Year</th><th>Geography</th><th>Sports</th><th>MAU</th><th>Revenue</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color: var(--green);">Beachhead</strong></td><td>2026 (Y1)</td><td>Vietnam</td><td>Pickleball</td><td>10K – 50K</td><td>$0.5 – 2M</td></tr>
+      <tr><td><strong style="color: var(--green);">SEA Expansion</strong></td><td>2027 (Y2)</td><td>VN + Malaysia</td><td>Pickleball + Padel</td><td>50K – 200K</td><td>$3 – 8M</td></tr>
+      <tr><td><strong style="color: var(--green);">Multi-Sport</strong></td><td>2028 (Y3)</td><td>SEA + India + AU</td><td>+ Tennis, Badminton</td><td>200K – 1M</td><td>$10 – 25M</td></tr>
+      <tr><td><strong style="color: var(--green);">APAC + UK</strong></td><td>2029 (Y4)</td><td>+ UK, Japan</td><td>All racket sports</td><td>1M – 3M</td><td>$25 – 60M</td></tr>
+      <tr><td><strong style="color: var(--green);">Global Platform</strong></td><td>2030 (Y5)</td><td>Global</td><td>+ Squash, Table Tennis</td><td>3M – 10M</td><td>$50 – 150M</td></tr>
+    </tbody>
+  </table>
+
+  <div class="grid-2" style="margin-top: 8mm;">
+    <div class="card">
+      <h3 style="color: var(--green);">Why this roadmap is achievable</h3>
+      <ul class="clean" style="margin-top: 3mm;">
+        <li>Same multi-role model works for every racket sport</li>
+        <li>Same engine handles every tournament format</li>
+        <li>i18n architecture is ready from day one (EN + VI, extensible)</li>
+        <li>Health data &amp; AI value compound across sports</li>
+      </ul>
+    </div>
+    <div class="card dark">
+      <h3 style="color: var(--mint);">The Olympic 2032 catalyst</h3>
+      <p style="margin-top: 3mm;">Pickleball is on the pathway to Olympic inclusion at Brisbane 2032. Padel and tennis are already Olympic. <strong style="color: var(--mint);">MatchUp positions to become the tournament-operations standard for racket sports' Olympic decade.</strong></p>
+    </div>
+  </div>
+
+  <div class="slide-num">20</div>
+</div>
+
+<!-- ============ SLIDE 21: SECTION — BUSINESS ============ -->
+<div class="slide section-header">
+  <div class="label">Part Seven</div>
+  <h1>The business model.</h1>
+  <div class="sub">Six revenue streams. High margin. Recurring. Defensible.</div>
+  <div class="slide-num" style="color: var(--mint);">21</div>
+</div>
+
+<!-- ============ SLIDE 22: REVENUE MODEL ============ -->
+<div class="slide">
+  <div class="eyebrow">Revenue Model</div>
+  <h2>Six diversified streams across the ecosystem.</h2>
+
+  <table>
+    <thead><tr><th>Stream</th><th>Mechanism</th><th>Timing</th><th>Margin</th></tr></thead>
+    <tbody>
+      <tr><td>Host SaaS Subscription</td><td>$10–30/mo per active host</td><td>Y1</td><td class="num" style="color: var(--green);">High</td></tr>
+      <tr><td>Tournament Entry Fees</td><td>$1–3 per player per event</td><td>Y1</td><td class="num" style="color: var(--green);">High</td></tr>
+      <tr><td>Coin Wallet (Top-Up)</td><td>Physical services wallet · &lt;5% effective fee</td><td>Y1–Y2</td><td class="num" style="color: var(--green);">Very High</td></tr>
+      <tr><td>Marketplace Commission</td><td>5–10% on equipment GMV</td><td>Y2</td><td class="num" style="color: var(--green);">High</td></tr>
+      <tr><td>Coin Gifting (Platform Cut)</td><td>30% of voluntary tipping volume</td><td>Y2</td><td class="num" style="color: var(--green);">Very High</td></tr>
+      <tr><td>Health Data &amp; AI Licensing</td><td>B2B to insurers, clinics, federations</td><td>Y3+</td><td class="num" style="color: var(--green);">Very High</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card accent" style="margin-top: 8mm;">
+    <h3>The exit thesis</h3>
+    <p style="margin-top: 3mm;">Sports community is the acquisition channel. Multi-role network effects are the retention layer. <strong>Health data is the exit multiple.</strong> MatchUp is positioned to be acquired by — or become — a category-defining sports-health platform within 5–7 years.</p>
+  </div>
+
+  <div class="slide-num">22</div>
+</div>
+
+<!-- ============ SLIDE 23: TAM/SAM/SOM ============ -->
+<div class="slide">
+  <div class="eyebrow">Market Sizing</div>
+  <h2>From a $9B TAM, a clear path to a $150M ARR business.</h2>
+
+  <div class="grid-3" style="margin-top: 8mm;">
+    <div class="card dark" style="text-align: center; padding: 10mm 6mm;">
+      <div class="num" style="color: var(--mint); font-size: 36pt;">$4.4–9.1B</div>
+      <h3 style="color: var(--mint); margin-top: 4mm;">TAM</h3>
+      <p style="margin-top: 3mm; font-size: 10pt;">Global racket sports ecosystem (2033–34). All players, events, facilities, equipment.</p>
+    </div>
+    <div class="card" style="text-align: center; padding: 10mm 6mm; border-left-color: var(--teal);">
+      <div class="num" style="color: var(--teal); font-size: 36pt;">$200–500M</div>
+      <h3 style="color: var(--teal); margin-top: 4mm;">SAM</h3>
+      <p style="margin-top: 3mm; font-size: 10pt;">Tournament + community software (2030). 5–8% of total ecosystem spend.</p>
+    </div>
+    <div class="card accent" style="text-align: center; padding: 10mm 6mm;">
+      <div class="num" style="color: white; font-size: 36pt;">$50–150M</div>
+      <h3 style="margin-top: 4mm;">SOM (Y5)</h3>
+      <p style="margin-top: 3mm; font-size: 10pt; color: white;">APAC + global expansion. Multi-sport, multi-role, multi-revenue.</p>
+    </div>
+  </div>
+
+  <div class="card dark" style="margin-top: 10mm;">
+    <h3 style="color: var(--mint);">Conservative path to $50M+ ARR by Year 5</h3>
+    <p style="margin-top: 3mm;">3–10M MAU across APAC and select Western markets · 5–8% paying conversion · blended ARPU $5–15/mo for hosts and active players · marketplace and B2B data layers compound upside.</p>
+  </div>
+
+  <div class="slide-num">23</div>
+</div>
+
+<!-- ============ SLIDE 24: COMPETITIVE MOAT ============ -->
+<div class="slide">
+  <div class="eyebrow">Competitive Moat</div>
+  <h2>Four layers of defensibility — compounding over time.</h2>
+
+  <div class="grid-2" style="margin-top: 4mm;">
+    <div class="card">
+      <h3 style="color: var(--green);">01 · First-Mover in Vietnam</h3>
+      <p style="font-size: 10pt; margin-top: 3mm;">No US/EU competitor has invested in Vietnamese localization. Home-court advantage = <strong>12–18 month head start</strong> before any competitor can respond meaningfully.</p>
+    </div>
+    <div class="card">
+      <h3 style="color: var(--green);">02 · Ecosystem Lock-In</h3>
+      <p style="font-size: 10pt; margin-top: 3mm;">Hosts lose community data. Players lose XP, badges, coins, friends. Referees lose track records. Court owners lose host relationships. Stores lose affiliate history. <strong>Switching costs at every layer.</strong></p>
+    </div>
+    <div class="card dark">
+      <h3 style="color: var(--mint);">03 · Coin Economy</h3>
+      <p style="font-size: 10pt; margin-top: 3mm;">Once users hold a coin balance, they have a financial reason to stay. Gifting creates social obligation. <strong style="color: var(--mint);">The TikTok retention mechanic, applied to sports.</strong></p>
+    </div>
+    <div class="card dark">
+      <h3 style="color: var(--mint);">04 · Data &amp; AI Compounding</h3>
+      <p style="font-size: 10pt; margin-top: 3mm;">Every session improves matchmaking, health coaching, churn prediction. Late entrants face a permanent data deficit. <strong style="color: var(--mint);">The moat widens with every user.</strong></p>
+    </div>
+  </div>
+
+  <p style="margin-top: 8mm; font-size: 12pt; color: var(--teal); font-weight: 600; text-align: center;">
+    No single-function competitor can match this defensibility without rebuilding the entire ecosystem from scratch.
+  </p>
+
+  <div class="slide-num">24</div>
+</div>
+
+<!-- ============ SLIDE 25: PMF SCORE ============ -->
+<div class="slide">
+  <div class="eyebrow">Product-Market Fit Assessment</div>
+  <h2>PMF Score: <span class="num" style="color: var(--green);">82 / 100</span></h2>
+  <p class="lead">Strong fit. Two of the lowest scores — Revenue Model and Team — are exactly the gaps that investment capital addresses.</p>
+
+  <table>
+    <thead><tr><th>Dimension</th><th>Score</th><th>Weight</th><th>Weighted</th></tr></thead>
+    <tbody>
+      <tr><td>Market Size &amp; Growth</td><td>9/10</td><td>×3</td><td class="num">27</td></tr>
+      <tr><td><strong>Market Timing</strong></td><td><strong style="color: var(--green);">10/10</strong></td><td>×3</td><td class="num">30</td></tr>
+      <tr><td>Problem Urgency</td><td>8/10</td><td>×2</td><td class="num">16</td></tr>
+      <tr><td><strong>Solution Uniqueness</strong></td><td><strong style="color: var(--green);">9/10</strong></td><td>×3</td><td class="num">27</td></tr>
+      <tr><td>Competitive Moat</td><td>7/10</td><td>×3</td><td class="num">21</td></tr>
+      <tr><td><strong>Home Market Advantage</strong></td><td><strong style="color: var(--green);">10/10</strong></td><td>×2</td><td class="num">20</td></tr>
+      <tr><td>Team / Execution</td><td>6/10</td><td>×2</td><td class="num">12</td></tr>
+      <tr><td>Revenue Model Clarity</td><td>5/10</td><td>×2</td><td class="num">10</td></tr>
+      <tr><td>Scalability</td><td>8/10</td><td>×2</td><td class="num">16</td></tr>
+      <tr><td>Network Effects Potential</td><td>9/10</td><td>×2</td><td class="num">18</td></tr>
+      <tr style="background: var(--green-pale);"><td><strong>TOTAL</strong></td><td colspan="2"><strong>Weighted score</strong></td><td class="num" style="font-size: 14pt;">197 / 240 = 82%</td></tr>
+    </tbody>
+  </table>
+
+  <div class="slide-num">25</div>
+</div>
+
+<!-- ============ SLIDE 26: USE OF FUNDS ============ -->
+<div class="slide">
+  <div class="eyebrow">Use of Funds · Seed Round</div>
+  <h2>Capital deployed for World Cup launch and APAC expansion.</h2>
+
+  <div class="grid-2" style="margin-top: 6mm;">
+    <div>
+      <table>
+        <thead><tr><th>Allocation</th><th>%</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Engineering</strong></td><td class="num" style="color: var(--green);">40%</td><td>Full-stack, mobile (iOS/Android), DUPR integration, AI</td></tr>
+          <tr><td><strong>GTM &amp; Marketing</strong></td><td class="num" style="color: var(--green);">25%</td><td>World Cup activation, KOL, social, club onboarding</td></tr>
+          <tr><td><strong>Ops &amp; Infrastructure</strong></td><td class="num" style="color: var(--green);">15%</td><td>Scale, monitoring, compliance, CDN</td></tr>
+          <tr><td><strong>Business Development</strong></td><td class="num" style="color: var(--green);">10%</td><td>DUPR, court owners, store owners, federations</td></tr>
+          <tr><td><strong>Legal &amp; IP</strong></td><td class="num" style="color: var(--green);">5%</td><td>Trademark (international), GDPR / VN cybersecurity</td></tr>
+          <tr><td><strong>Reserve</strong></td><td class="num" style="color: var(--green);">5%</td><td>Bridge to Series A</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="card dark" style="height: 100%;">
+        <h3 style="color: var(--mint);">12-month milestones</h3>
+        <ul class="clean" style="margin-top: 4mm;">
+          <li>iOS + Android live on app stores before World Cup</li>
+          <li>DUPR API integration shipped</li>
+          <li>5–10 Vietnamese pickleball clubs as live beta partners</li>
+          <li>World Cup 2026 on-site activation (hosts + referees + players)</li>
+          <li>50K MAU in Vietnam</li>
+          <li>Malaysia GTM kickoff — Q4 2026</li>
+          <li>Coin Wallet + Gifting Economy live</li>
+          <li>Series A readiness — Q1 2027</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">26</div>
+</div>
+
+<!-- ============ SLIDE 27: THE ASK ============ -->
+<div class="slide cover" style="background: linear-gradient(135deg, var(--green) 0%, var(--teal) 100%);">
+  <div class="label" style="color: var(--white); font-family: 'Space Grotesk', monospace; letter-spacing: 0.3em; font-size: 12pt; margin-bottom: 6mm; opacity: 0.9; z-index: 2; position: relative;">THE ASK</div>
+  <h1 style="font-size: 64pt; max-width: 220mm; line-height: 1.1; z-index: 2; position: relative;">Enter before the World Cup.</h1>
+  <p style="color: var(--white); font-size: 16pt; margin-top: 10mm; max-width: 200mm; line-height: 1.5; z-index: 2; position: relative;">
+    The Pickleball World Cup 2026 is a non-repeatable launch catalyst. Investors who enter now participate in pre-traction valuation, co-design the fundraising narrative, and secure first right of participation in Series A.
+  </p>
+  <p style="color: var(--white); font-size: 14pt; margin-top: 12mm; font-style: italic; opacity: 0.95; z-index: 2; position: relative;">
+    After the World Cup, the narrative becomes "MatchUp after traction." Before it, the narrative is <strong>"MatchUp owns the launch moment."</strong>
+  </p>
+  <div class="footer" style="color: var(--white); opacity: 0.8;">The window is narrow · The opportunity is not</div>
+</div>
+
+<!-- ============ SLIDE 28: CONTACT ============ -->
+<div class="slide cover">
+  <h1 style="font-size: 72pt;">Match<span class="accent">Up</span></h1>
+  <div class="slogan">Where passion belongs.</div>
+  <div class="tagline" style="margin-top: 16mm;">
+    Built in Vietnam. Designed for the world.<br>
+    The all-in-one platform for racket sports communities.
+  </div>
+  <div style="margin-top: 20mm; z-index: 2; position: relative;">
+    <p style="color: var(--mint); font-family: 'Space Grotesk', monospace; letter-spacing: 0.2em; font-size: 11pt;">CONTACT FOR INVESTOR INQUIRIES</p>
+    <p style="color: var(--white); font-size: 13pt; margin-top: 4mm;">app.matchup.asia · matchup.asia</p>
+  </div>
+  <div class="footer">© 2026 MatchUp · Investor Pitch v1.0 · Confidential</div>
+</div>
+
+</body>
+</html>
