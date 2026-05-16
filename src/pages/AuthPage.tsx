@@ -83,8 +83,8 @@ const AuthPage = () => {
       >
         <div className="text-center mb-8">
           <div className="flex flex-col items-center mb-4">
-            <BrandLogo variant="icon" alt={t("app.name")} className="h-20 mb-3" />
-            <BrandLogo variant="wordmark" alt={t("app.name")} className="h-8" />
+            <BrandLogo variant="icon" alt={t("app.name")} className="h-16 mb-1" />
+            <BrandLogo variant="wordmark" alt={t("app.name")} className="h-7" />
           </div>
           <p className="text-muted-foreground">
             {isLogin ? t("auth.tagline.login") : t("auth.tagline.signup")}
