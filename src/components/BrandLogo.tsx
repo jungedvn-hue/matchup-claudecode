@@ -22,10 +22,10 @@ const SRC: Record<Variant, Record<Tone, string>> = {
     green: "/brand/logos/matchup-logo-green.svg",
   },
   icon: {
-    color: "/Logo-icon.png",
+    color: "/logo-icon.png",
     white: "/brand/logos/matchup-icon-white.svg",
     black: "/brand/logos/matchup-icon-black.svg",
-    green: "/Logo-icon.png",
+    green: "/logo-icon.png",
   },
   wordmark: {
     color: "/brand/logos/matchup-wordmark.svg",
