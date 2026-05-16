@@ -6,6 +6,7 @@ import {
   ShoppingBag, ExternalLink, Users, Calendar, Clock,
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
+import BrandLogo from "@/components/BrandLogo";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -78,7 +79,7 @@ const HomePage = () => {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
-          <img src="/logo.png" alt="MatchUp" className="h-7" />
+          <BrandLogo variant="full" className="h-7" />
           <NotificationBell />
         </div>
       </div>

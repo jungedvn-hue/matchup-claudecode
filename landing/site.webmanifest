@@ -4,8 +4,8 @@
   "description": "Where Passion Belongs — Pickleball community platform for Asia",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#25A55A",
-  "theme_color": "#25A55A",
+  "background_color": "#F4F7F6",
+  "theme_color": "#1F9D63",
   "icons": [
     {
       "src": "/brand/favicons/favicon-192x192.png",

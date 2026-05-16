@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Chrome, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
+import BrandLogo from "@/components/BrandLogo";
 
 const AuthPage = () => {
   const { t } = useLanguage();
@@ -81,7 +82,7 @@ const AuthPage = () => {
         className="w-full max-w-md z-10"
       >
         <div className="text-center mb-8">
-          <img src="/logo.png" alt={t("app.name")} className="h-16 mx-auto mb-2 drop-shadow-sm" />
+          <BrandLogo variant="full" alt={t("app.name")} className="h-16 mx-auto mb-2 drop-shadow-sm" />
           <p className="text-sm font-medium text-primary mb-3">{t("app.tagline")}</p>
           <p className="text-muted-foreground">
             {isLogin ? t("auth.tagline.login") : t("auth.tagline.signup")}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,53 +6,63 @@
 
 @layer base {
   :root {
-    --background: 160 10% 97%;
-    --foreground: 160 20% 8%;
+    /* MatchUp Brand 2026 — App-inspired palette */
+    --background: 160 12% 96%;          /* #F4F7F6 */
+    --foreground: 0 0% 12%;             /* #1E1E1E */
 
     --card: 0 0% 100%;
-    --card-foreground: 160 20% 8%;
+    --card-foreground: 0 0% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 160 20% 8%;
+    --popover-foreground: 0 0% 12%;
 
-    --primary: 152 60% 36%;
+    --primary: 150 67% 37%;             /* #1F9D63 — App green */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 12% 92%;
-    --secondary-foreground: 160 20% 15%;
+    --secondary: 153 36% 88%;           /* #CDE4DB tinted */
+    --secondary-foreground: 218 47% 10%;
 
-    --muted: 160 8% 94%;
-    --muted-foreground: 160 8% 45%;
+    --muted: 160 12% 93%;
+    --muted-foreground: 160 8% 42%;
 
-    --accent: 64 90% 55%;
-    --accent-foreground: 160 20% 8%;
+    --accent: 22 100% 71%;              /* #FFA46B — Peach */
+    --accent-foreground: 0 0% 12%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 160 10% 90%;
-    --input: 160 10% 90%;
-    --ring: 152 60% 36%;
+    --border: 160 10% 88%;
+    --input: 160 10% 88%;
+    --ring: 150 67% 37%;
 
     --radius: 0.75rem;
 
-    /* Custom tokens */
-    --court-green: 152 60% 36%;
-    --court-green-light: 152 50% 94%;
-    --neon-yellow: 64 90% 55%;
-    --neon-yellow-light: 64 80% 92%;
-    --sport-orange: 25 95% 55%;
-    --sport-blue: 210 80% 50%;
-    --skill-beginner: 152 50% 50%;
-    --skill-intermediate: 210 70% 50%;
-    --skill-advanced: 25 90% 50%;
+    /* Brand heritage tokens */
+    --brand-navy: 218 47% 6%;           /* #0B1626 */
+    --brand-teal: 190 84% 26%;          /* #0B667A */
+    --brand-mint: 156 67% 64%;          /* #67E0B0 — Heritage mint */
+    --brand-mint-soft: 152 53% 60%;     /* #65D0A3 — App mint */
+    --brand-pale: 153 36% 85%;          /* #CDE4DB */
+    --brand-peach: 22 100% 71%;         /* #FFA46B */
+
+    /* Legacy custom tokens (kept for backward compat) */
+    --court-green: 150 67% 37%;
+    --court-green-light: 152 53% 92%;
+    --neon-yellow: 22 100% 71%;         /* mapped to peach for visual continuity */
+    --neon-yellow-light: 22 100% 92%;
+    --sport-orange: 22 100% 65%;
+    --sport-blue: 190 84% 36%;          /* mapped to teal */
+    --skill-beginner: 156 67% 50%;
+    --skill-intermediate: 190 84% 36%;
+    --skill-advanced: 22 100% 60%;
     --skill-pro: 340 75% 50%;
 
-    --shadow-card: 0 2px 12px -2px hsl(160 20% 8% / 0.06);
-    --shadow-elevated: 0 8px 30px -4px hsl(160 20% 8% / 0.1);
-    --gradient-court: linear-gradient(135deg, hsl(152 60% 36%), hsl(152 45% 28%));
-    --gradient-neon: linear-gradient(135deg, hsl(64 90% 55%), hsl(80 80% 45%));
-    --gradient-hero: linear-gradient(180deg, hsl(152 60% 36% / 0.08) 0%, transparent 60%);
+    --shadow-card: 0 2px 12px -2px hsl(218 47% 6% / 0.06);
+    --shadow-elevated: 0 8px 30px -4px hsl(218 47% 6% / 0.1);
+    --gradient-court: linear-gradient(135deg, hsl(150 67% 37%), hsl(190 84% 26%));
+    --gradient-neon: linear-gradient(135deg, hsl(22 100% 71%), hsl(22 100% 60%));
+    --gradient-hero: linear-gradient(180deg, hsl(150 67% 37% / 0.08) 0%, transparent 60%);
+    --gradient-brand: linear-gradient(135deg, hsl(150 67% 37%) 0%, hsl(190 84% 26%) 100%);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -65,38 +75,46 @@
   }
 
   .dark {
-    --background: 160 15% 7%;
+    /* MatchUp Brand 2026 — Dark mode (heritage navy base) */
+    --background: 218 47% 6%;           /* #0B1626 */
     --foreground: 160 10% 95%;
 
-    --card: 160 12% 11%;
+    --card: 218 35% 10%;
     --card-foreground: 160 10% 95%;
 
-    --popover: 160 12% 11%;
+    --popover: 218 35% 10%;
     --popover-foreground: 160 10% 95%;
 
-    --primary: 152 55% 45%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 156 67% 55%;             /* brighter mint-green for dark */
+    --primary-foreground: 218 47% 6%;
 
-    --secondary: 160 10% 16%;
+    --secondary: 218 25% 18%;
     --secondary-foreground: 160 10% 90%;
 
-    --muted: 160 10% 16%;
-    --muted-foreground: 160 8% 55%;
+    --muted: 218 25% 18%;
+    --muted-foreground: 160 8% 60%;
 
-    --accent: 64 85% 55%;
-    --accent-foreground: 160 20% 8%;
+    --accent: 22 100% 71%;
+    --accent-foreground: 218 47% 6%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 160 10% 18%;
-    --input: 160 10% 18%;
-    --ring: 152 55% 45%;
+    --border: 218 25% 20%;
+    --input: 218 25% 20%;
+    --ring: 156 67% 55%;
 
-    --court-green: 152 55% 45%;
-    --court-green-light: 152 30% 15%;
-    --neon-yellow: 64 85% 55%;
-    --neon-yellow-light: 64 50% 15%;
+    --brand-navy: 218 47% 6%;
+    --brand-teal: 190 84% 36%;
+    --brand-mint: 156 67% 64%;
+    --brand-mint-soft: 152 53% 60%;
+    --brand-pale: 153 36% 85%;
+    --brand-peach: 22 100% 71%;
+
+    --court-green: 156 67% 55%;
+    --court-green-light: 156 30% 18%;
+    --neon-yellow: 22 100% 71%;
+    --neon-yellow-light: 22 50% 18%;
 
     --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
     --shadow-elevated: 0 8px 30px -4px hsl(0 0% 0% / 0.4);

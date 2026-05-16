@@ -15,8 +15,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        display: ['Manrope', 'system-ui', 'sans-serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
+        stat: ['"Space Grotesk"', 'ui-monospace', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -55,6 +56,14 @@ export default {
         court: {
           DEFAULT: "hsl(var(--court-green))",
           light: "hsl(var(--court-green-light))",
+        },
+        brand: {
+          navy: "hsl(var(--brand-navy))",
+          teal: "hsl(var(--brand-teal))",
+          mint: "hsl(var(--brand-mint))",
+          "mint-soft": "hsl(var(--brand-mint-soft))",
+          pale: "hsl(var(--brand-pale))",
+          peach: "hsl(var(--brand-peach))",
         },
         neon: {
           DEFAULT: "hsl(var(--neon-yellow))",
