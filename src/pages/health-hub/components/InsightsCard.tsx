@@ -6,7 +6,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { useHealthInsights, type InsightSeverity } from "@/hooks/useHealthExtras";
 
 const severityClass = (s: InsightSeverity) => ({
-  positive: { bg: "from-emerald-500/15 to-emerald-500/5", border: "border-emerald-500/20", icon: ThumbsUp, color: "text-emerald-600 dark:text-emerald-400" },
+  positive: { bg: "from-primary/15 to-primary/5", border: "border-primary/20", icon: ThumbsUp, color: "text-primary dark:text-primary" },
   warning:  { bg: "from-amber-500/15 to-amber-500/5",     border: "border-amber-500/20",   icon: AlertTriangle, color: "text-amber-600 dark:text-amber-400" },
   urgent:   { bg: "from-rose-500/15 to-rose-500/5",       border: "border-rose-500/20",    icon: AlertOctagon, color: "text-rose-600 dark:text-rose-400" },
   info:     { bg: "from-blue-500/15 to-blue-500/5",       border: "border-blue-500/20",    icon: Info, color: "text-blue-600 dark:text-blue-400" },

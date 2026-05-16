@@ -180,7 +180,7 @@ const HostDashboard = () => {
                   s.tone === "primary" ? "bg-primary/10 text-primary" :
                   s.tone === "blue" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" :
                   s.tone === "amber" ? "bg-amber-500/10 text-amber-600 dark:text-amber-500" :
-                  "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  "bg-primary/10 text-primary dark:text-primary"
                 }`}>
                   <s.icon className="h-3.5 w-3.5" />
                 </div>
@@ -215,7 +215,7 @@ const HostDashboard = () => {
                 <div className={`h-7 w-7 mx-auto mb-1.5 rounded-lg flex items-center justify-center ${
                   s.tone === "violet" ? "bg-violet-500/10 text-violet-600 dark:text-violet-400" :
                   s.tone === "sky" ? "bg-sky-500/10 text-sky-600 dark:text-sky-400" :
-                  "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  "bg-primary/10 text-primary dark:text-primary"
                 }`}>
                   <s.icon className="h-3.5 w-3.5" />
                 </div>
@@ -257,12 +257,12 @@ const HostDashboard = () => {
         {pending.length > 0 && (
           <section className="space-y-2">
             <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
-              <UserPlus className="h-4 w-4 text-emerald-500" />
+              <UserPlus className="h-4 w-4 text-primary" />
               {t("dashboard.pendingRequests")} ({pending.length})
             </h2>
             <div className="space-y-2">
               {pending.map(p => (
-                <Card key={p.id} className="p-3 shadow-card bg-gradient-to-br from-emerald-500/5 via-card to-card">
+                <Card key={p.id} className="p-3 shadow-card bg-gradient-to-br from-primary/5 via-card to-card">
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-lg shrink-0">
                       {p.group_emoji}
@@ -386,7 +386,7 @@ const HostDashboard = () => {
                         <p className="text-sm font-bold text-foreground truncate">{tour.name}</p>
                         <p className="text-[11px] text-muted-foreground">{tour.date} · {tour.location}</p>
                       </div>
-                      <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full shrink-0 animate-pulse">LIVE</span>
+                      <span className="text-[9px] font-bold text-primary dark:text-primary bg-primary/10 px-1.5 py-0.5 rounded-full shrink-0 animate-pulse">LIVE</span>
                     </div>
                   </Card>
                 </button>

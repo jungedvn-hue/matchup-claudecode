@@ -112,8 +112,8 @@ const ServiceDetailPage = () => {
   if (success) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center gap-3">
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="h-20 w-20 rounded-full bg-emerald-500/15 flex items-center justify-center">
-          <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="h-20 w-20 rounded-full bg-primary/15 flex items-center justify-center">
+          <CheckCircle2 className="h-10 w-10 text-primary" />
         </motion.div>
         <h2 className="text-xl font-display font-bold text-foreground">{!isService && hasPrice ? t("service.purchased") : t("service.bookingSent")}</h2>
         <p className="text-sm text-muted-foreground">{t("service.viewInTickets")}</p>

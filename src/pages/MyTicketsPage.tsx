@@ -21,7 +21,7 @@ const MyTicketsPage = () => {
   const [qrTicket, setQrTicket] = useState<EventTicket | null>(null);
 
   const statusTone: Record<string, { label: string; cls: string }> = {
-    valid:     { label: t("tickets.valid"),     cls: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+    valid:     { label: t("tickets.valid"),     cls: "bg-primary/10 text-primary dark:text-primary border-primary/20" },
     used:      { label: t("tickets.used"),      cls: "bg-secondary text-muted-foreground border-border" },
     cancelled: { label: t("tickets.cancelled"), cls: "bg-destructive/10 text-destructive border-destructive/20" },
   };
@@ -79,7 +79,7 @@ const MyTicketsPage = () => {
                         </Button>
                       )}
                       {tk.status === "used" && tk.checked_in_at && (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <span className="text-[10px] text-primary dark:text-primary flex items-center gap-1">
                           <CheckCircle2 className="h-3 w-3" /> {t("tickets.checkedInAt")} {fmtDate(tk.checked_in_at)}
                         </span>
                       )}

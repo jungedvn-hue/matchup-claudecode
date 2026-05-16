@@ -320,7 +320,7 @@ const TourManagerCreatePage = () => {
             </SectionCard>
 
             {/* Card 3 — Schedule */}
-            <SectionCard icon={Settings} title={t("tm.scheduleTitle") || "Schedule"} tone="from-emerald-500/5">
+            <SectionCard icon={Settings} title={t("tm.scheduleTitle") || "Schedule"} tone="from-primary/5">
               <div className="grid grid-cols-2 gap-2.5">
                 <Field label={t("tm.courts")}>
                   <Input type="number" min={1} value={courts} onChange={(e) => setCourts(Number(e.target.value))} className="h-10" />

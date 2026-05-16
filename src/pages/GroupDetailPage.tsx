@@ -409,7 +409,7 @@ const GroupDetailPage = () => {
                               onClick={() => handleRSVP(ev.id, myRsvp, s)}
                               className={`flex-1 h-7 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                                 myRsvp === s
-                                  ? s === "going" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/30"
+                                  ? s === "going" ? "bg-primary/15 text-primary dark:text-primary ring-1 ring-primary/30"
                                   : s === "maybe" ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 ring-1 ring-amber-500/30"
                                   : "bg-muted text-muted-foreground ring-1 ring-border"
                                   : "bg-secondary/60 text-muted-foreground hover:text-foreground"

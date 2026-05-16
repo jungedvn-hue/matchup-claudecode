@@ -143,8 +143,8 @@ const ArenaPage = () => {
                           {t("arena.claim")}
                         </Button>
                       ) : claimed ? (
-                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                          <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Check className="h-4 w-4 text-primary dark:text-primary" />
                         </div>
                       ) : null}
                     </div>
@@ -201,7 +201,7 @@ const ArenaPage = () => {
                     <p className="text-xs font-medium text-foreground">{t(`arena.source.${tx.source}`)}</p>
                     <p className="text-[10px] text-muted-foreground">{new Date(tx.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                   </div>
-                  <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">+{tx.amount}</span>
+                  <span className="text-sm font-bold text-primary dark:text-primary tabular-nums">+{tx.amount}</span>
                 </div>
               ))}
             </Card>

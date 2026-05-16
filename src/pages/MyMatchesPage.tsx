@@ -198,7 +198,7 @@ const MyMatchesPage = () => {
     const statusBadge =
       m.status === "completed" ? (
         iWon ? (
-          <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px] h-5">
+          <Badge className="bg-primary/15 text-primary dark:text-primary border-primary/30 text-[10px] h-5">
             🏆 {t("mm.won")}
           </Badge>
         ) : (
@@ -273,9 +273,9 @@ const MyMatchesPage = () => {
             <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium uppercase">{t("ref.upcoming")}</p>
             <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{upcoming.length}</p>
           </div>
-          <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2 text-center">
-            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium uppercase">{t("ref.done") || "Done"}</p>
-            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{done.length}</p>
+          <div className="rounded-lg bg-primary/10 border border-primary/20 p-2 text-center">
+            <p className="text-[10px] text-primary dark:text-primary font-medium uppercase">{t("ref.done") || "Done"}</p>
+            <p className="text-lg font-bold text-primary dark:text-primary">{done.length}</p>
           </div>
         </div>
       </div>
@@ -323,7 +323,7 @@ const MyMatchesPage = () => {
               )}
               {done.length > 0 && (
                 <section className="space-y-2">
-                  <h3 className="text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold uppercase text-primary dark:text-primary flex items-center gap-1.5">
                     <CheckCircle2 className="h-3 w-3" /> {t("ref.doneSection")} ({done.length})
                   </h3>
                   <div className="space-y-2">{done.map((m) => <MatchRow key={m.id} m={m} />)}</div>

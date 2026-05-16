@@ -60,11 +60,11 @@ const VerificationPage = () => {
               <Clock className="h-2.5 w-2.5" /> {isMyOpponent ? t("verify.opponentBadge") : t("verify.refereeBadge")}
             </div>
             <div className="flex gap-1">
-              <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold border ${match.opponent_verified ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : "bg-secondary text-muted-foreground border-border"}`}>
+              <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold border ${match.opponent_verified ? "bg-primary/15 text-primary dark:text-primary border-primary/30" : "bg-secondary text-muted-foreground border-border"}`}>
                 {t("verify.opp")} {match.opponent_verified ? "✓" : ""}
               </span>
               {match.referee_user_id && (
-                <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold border ${match.referee_verified ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : "bg-secondary text-muted-foreground border-border"}`}>
+                <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold border ${match.referee_verified ? "bg-primary/15 text-primary dark:text-primary border-primary/30" : "bg-secondary text-muted-foreground border-border"}`}>
                   {t("verify.ref")} {match.referee_verified ? "✓" : ""}
                 </span>
               )}
@@ -89,7 +89,7 @@ const VerificationPage = () => {
           <div className="bg-secondary/40 rounded-xl p-3 mb-4">
             <div className="flex justify-between items-center text-xs mb-2">
               <span className="text-muted-foreground">{t("verify.recordedResult")}</span>
-              <span className={`font-bold ${verifierResult === "won" ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
+              <span className={`font-bold ${verifierResult === "won" ? "text-primary dark:text-primary" : "text-destructive"}`}>
                 {verifierResult === "won" ? t("verify.youWin") : t("verify.youLose")}
               </span>
             </div>

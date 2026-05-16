@@ -119,7 +119,7 @@ const StoreEditPage = () => {
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t("store.mapUrl")}</Label>
             <Input type="url" value={mapUrl} onChange={e => setMapUrl(e.target.value)} placeholder="https://maps.google.com/..." />
-            {mapUrl && <p className="text-[10px] text-emerald-600 dark:text-emerald-400">✓ {t("store.mapUrlSet")}</p>}
+            {mapUrl && <p className="text-[10px] text-primary dark:text-primary">✓ {t("store.mapUrlSet")}</p>}
           </div>
 
           <div className="space-y-1.5">

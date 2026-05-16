@@ -179,7 +179,7 @@ const AdminCoinsPage = () => {
                     <p className="text-[11px] text-muted-foreground truncate">{g.description ?? t("adminCoins.noReason")}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-display font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">+{formatCoin(g.amount)}</p>
+                    <p className="text-sm font-display font-bold text-primary dark:text-primary tabular-nums">+{formatCoin(g.amount)}</p>
                     <p className="text-[9px] text-muted-foreground">{formatDate(g.created_at)}</p>
                   </div>
                 </Card>

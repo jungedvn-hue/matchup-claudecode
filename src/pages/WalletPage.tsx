@@ -22,7 +22,7 @@ const toneClass = (tone: string) =>
   tone === "pink" ? "bg-pink-500/10 text-pink-500" :
   tone === "amber" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
   tone === "blue" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" :
-  tone === "emerald" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+  tone === "emerald" ? "bg-primary/10 text-primary dark:text-primary" :
   "bg-violet-500/10 text-violet-600 dark:text-violet-400";
 
 const WalletPage = () => {
@@ -70,7 +70,7 @@ const WalletPage = () => {
           <div className="grid grid-cols-2 gap-2">
             <Card className="p-3 shadow-card">
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <TrendingUp className="h-3 w-3 text-emerald-500" /> {t("wallet.lifetimeEarned")}
+                <TrendingUp className="h-3 w-3 text-primary" /> {t("wallet.lifetimeEarned")}
               </div>
               <p className="mt-1 text-lg font-display font-bold text-foreground tabular-nums">{formatCoin(balance.lifetime_earned)}</p>
             </Card>
@@ -112,7 +112,7 @@ const WalletPage = () => {
                       <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(tx.created_at)}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className={`text-sm font-display font-bold tabular-nums ${isCredit ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500"}`}>
+                      <p className={`text-sm font-display font-bold tabular-nums ${isCredit ? "text-primary dark:text-primary" : "text-rose-500"}`}>
                         {isCredit ? "+" : ""}{formatCoin(tx.amount)}
                       </p>
                       <p className="text-[9px] text-muted-foreground tabular-nums">{formatCoin(tx.balance_after)}</p>

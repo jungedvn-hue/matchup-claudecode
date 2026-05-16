@@ -1271,7 +1271,7 @@ const TourManagerControlPage = () => {
                           </strong>
                         </button>
                         {ref.userId ? (
-                          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 text-[10px] h-5">
+                          <Badge className="bg-primary/10 text-primary dark:text-primary border-primary/20 text-[10px] h-5">
                             ✓ {t("tm.joined")}
                           </Badge>
                         ) : (
@@ -2219,7 +2219,7 @@ const StatPill = ({
 }) => {
   const tones = {
     primary: "bg-primary/10 text-primary",
-    emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    emerald: "bg-primary/10 text-primary dark:text-primary",
     amber: "bg-amber-500/10 text-amber-600 dark:text-amber-500",
     blue: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     muted: "bg-muted/60 text-muted-foreground",

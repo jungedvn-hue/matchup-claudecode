@@ -25,7 +25,7 @@ interface Tournament {
 const STATUS_COLOR: Record<string, string> = {
   draft: "bg-secondary text-muted-foreground",
   registration: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-  ongoing: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+  ongoing: "bg-primary/10 text-primary dark:text-primary border-primary/20",
   completed: "bg-primary/10 text-primary border-primary/20",
 };
 

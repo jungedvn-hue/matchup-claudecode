@@ -139,7 +139,7 @@ const DevicesTab = () => {
                   <p className="text-sm font-semibold text-foreground truncate">{c.device_name ?? c.provider}</p>
                   <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                     {c.last_sync_at ? (
-                      <><CheckCircle2 className="h-3 w-3 text-emerald-500" /> {t("health.device.lastSync")} {new Date(c.last_sync_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</>
+                      <><CheckCircle2 className="h-3 w-3 text-primary" /> {t("health.device.lastSync")} {new Date(c.last_sync_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</>
                     ) : (
                       <><AlertCircle className="h-3 w-3 text-amber-500" /> {t("health.device.neverSynced")}</>
                     )}

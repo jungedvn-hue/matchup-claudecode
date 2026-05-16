@@ -17,8 +17,8 @@ const PaymentModal = ({ order, onClose, onSuccess }: { order: PaymentOrder; onCl
     return (
       <DialogContent className="max-w-sm rounded-2xl">
         <div className="text-center py-6">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="h-16 w-16 mx-auto rounded-full bg-emerald-500/15 flex items-center justify-center mb-3">
-            <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="h-16 w-16 mx-auto rounded-full bg-primary/15 flex items-center justify-center mb-3">
+            <CheckCircle2 className="h-8 w-8 text-primary" />
           </motion.div>
           <h3 className="text-lg font-display font-bold text-foreground">{t("topup.success")}</h3>
           <p className="text-sm text-muted-foreground mt-1">+{formatCoin(current.coins_to_credit)} {t("wallet.coins")}</p>
@@ -155,7 +155,7 @@ const TopupPage = () => {
                         </p>
                         <p className="text-xs font-semibold text-muted-foreground">{t("wallet.coins")}</p>
                         {pkg.bonus_coins > 0 && (
-                          <span className="ml-1 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold flex items-center gap-0.5">
+                          <span className="ml-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary dark:text-primary text-[9px] font-bold flex items-center gap-0.5">
                             <Sparkles className="h-2.5 w-2.5" /> +{formatCoin(pkg.bonus_coins)}
                           </span>
                         )}

@@ -87,7 +87,7 @@ const InAppBrowserBanner = () => {
               onClick={handleCopy}
               className="h-8 px-3 rounded-lg bg-card border border-border text-[11px] font-semibold text-foreground flex items-center gap-1.5 hover:bg-secondary active:scale-95 transition-all"
             >
-              {copied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+              {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
               {t("iab.copyLink")}
             </button>
           </div>

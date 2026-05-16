@@ -147,7 +147,7 @@ const RefereeProfilePage = () => {
 
 const StatCard = ({ icon: Icon, label, value, tone }: any) => {
   const toneClass = tone === "amber" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
-    tone === "emerald" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+    tone === "emerald" ? "bg-primary/10 text-primary dark:text-primary" :
     "bg-primary/10 text-primary";
   return (
     <Card className="p-3 shadow-card text-center">

@@ -108,7 +108,7 @@ const AdminStatsPage = () => {
                   <p className="text-xs text-muted-foreground">Tổng tournament</p>
                 </div>
                 <p className="text-2xl font-bold">{stats.totalTournaments}</p>
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                <p className="text-[11px] text-primary dark:text-primary">
                   {stats.ongoingTournaments} đang diễn ra
                 </p>
               </Card>

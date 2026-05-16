@@ -106,7 +106,7 @@ const StatisticsPage = () => {
               <Card className="p-3 shadow-card">
                 <div className={`h-7 w-7 rounded-lg flex items-center justify-center mb-1.5 ${
                   stat.tone === "primary" ? "bg-primary/10 text-primary" :
-                  stat.tone === "emerald" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                  stat.tone === "emerald" ? "bg-primary/10 text-primary dark:text-primary" :
                   stat.tone === "blue" ? "bg-blue-500/10 text-blue-600 dark:text-blue-400" :
                   "bg-amber-500/10 text-amber-600 dark:text-amber-500"
                 }`}>
@@ -123,7 +123,7 @@ const StatisticsPage = () => {
           <Card className="p-4 shadow-card">
             <h3 className="text-sm font-display font-semibold text-card-foreground mb-3">{t("statistics.winLoss")}</h3>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold tabular-nums">{data.wins}W</span>
+              <span className="text-xs text-primary dark:text-primary font-semibold tabular-nums">{data.wins}W</span>
               <Progress value={(data.wins / data.total) * 100} className="flex-1 h-2.5" />
               <span className="text-xs text-destructive font-semibold tabular-nums">{data.losses}L</span>
             </div>

@@ -134,7 +134,7 @@ const CheckinScannerPage = () => {
                 </div>
               )}
               {active && (
-                <div className="absolute inset-8 border-2 border-emerald-400/70 rounded-2xl pointer-events-none animate-pulse" />
+                <div className="absolute inset-8 border-2 border-primary/70 rounded-2xl pointer-events-none animate-pulse" />
               )}
             </div>
             {camError && <p className="text-[11px] text-destructive mt-2 text-center">{camError}</p>}
@@ -165,10 +165,10 @@ const CheckinScannerPage = () => {
         )}
 
         {result && (
-          <Card className={`p-5 shadow-card text-center bg-gradient-to-br ${result.ok ? "from-emerald-500/10" : "from-destructive/10"} via-card to-card`}>
+          <Card className={`p-5 shadow-card text-center bg-gradient-to-br ${result.ok ? "from-primary/10" : "from-destructive/10"} via-card to-card`}>
             {result.ok ? (
               <>
-                <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-2" />
+                <CheckCircle2 className="h-12 w-12 text-primary mx-auto mb-2" />
                 <p className="text-base font-display font-bold text-foreground">{t("checkin.success", { name: result.display_name ?? "" })}</p>
                 <p className="text-xs text-muted-foreground mt-1">{t("checkin.successHint")}</p>
               </>

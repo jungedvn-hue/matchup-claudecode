@@ -64,12 +64,12 @@ const TourManagerPage = () => {
     const isMine = tournament.host_id === user?.id;
 
     const tone =
-      tournament.status === "active"    ? "from-emerald-500/8" :
+      tournament.status === "active"    ? "from-primary/8" :
       tournament.status === "completed" ? "from-secondary"     :
       "from-amber-500/8";
 
     const statusBadge =
-      tournament.status === "active"    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" :
+      tournament.status === "active"    ? "bg-primary/10 text-primary dark:text-primary border-primary/20" :
       tournament.status === "completed" ? "bg-secondary text-muted-foreground border-border" :
                                           "bg-amber-500/10 text-amber-700 dark:text-amber-500 border-amber-500/20";
 
@@ -125,10 +125,10 @@ const TourManagerPage = () => {
           <div className="mt-2.5">
             <div className="flex justify-between text-[10px] mb-1">
               <span className="text-muted-foreground">{t("tm.progress")}</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{progress.pct}%</span>
+              <span className="font-bold text-primary dark:text-primary tabular-nums">{progress.pct}%</span>
             </div>
             <div className="h-1.5 bg-secondary/80 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all"
+              <div className="h-full bg-gradient-to-r from-primary to-primary rounded-full transition-all"
                    style={{ width: `${progress.pct}%` }} />
             </div>
           </div>
@@ -138,7 +138,7 @@ const TourManagerPage = () => {
   };
 
   const TABS: { key: TabKey; label: string; icon: any; count: number; tone: string }[] = [
-    { key: "active",     label: t("tm.active"),     icon: Clock,        count: active.length,     tone: "text-emerald-600 dark:text-emerald-400" },
+    { key: "active",     label: t("tm.active"),     icon: Clock,        count: active.length,     tone: "text-primary dark:text-primary" },
     { key: "draft",      label: t("tm.drafts"),     icon: FileEdit,     count: draft.length,      tone: "text-amber-600 dark:text-amber-500" },
     { key: "completed",  label: t("tm.completed"),  icon: CheckCircle2, count: completed.length,  tone: "text-muted-foreground" },
     { key: "refereeing", label: t("tm.referee"),    icon: Gavel,        count: refereeing.length, tone: "text-violet-600 dark:text-violet-400" },
@@ -194,7 +194,7 @@ const TourManagerPage = () => {
         <Card className="p-4 shadow-card overflow-hidden bg-gradient-to-br from-primary/5 via-card to-card">
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center">
-              <p className="text-2xl font-display font-bold text-emerald-600 dark:text-emerald-400 tabular-nums leading-none">{active.length}</p>
+              <p className="text-2xl font-display font-bold text-primary dark:text-primary tabular-nums leading-none">{active.length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("tm.active")}</p>
             </div>
             <div className="text-center border-x border-border/50">

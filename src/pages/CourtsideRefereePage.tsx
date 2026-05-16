@@ -216,7 +216,7 @@ const CourtsideRefereePage = () => {
           </button>
         )}
         {matchWinner && (
-          <button onClick={finishMatch} className="w-full h-12 rounded-xl bg-emerald-500 text-white font-bold flex items-center justify-center gap-2">
+          <button onClick={finishMatch} className="w-full h-12 rounded-xl bg-primary text-white font-bold flex items-center justify-center gap-2">
             <Trophy className="h-4 w-4" /> {t("ref.courtside.finishMatch")}
           </button>
         )}
@@ -239,7 +239,7 @@ const ScorePanel = ({ name, score, setsWon, highlight, onUp, onDown }: {
   name: string; score: number; setsWon: number; highlight: boolean;
   onUp: () => void; onDown: () => void;
 }) => (
-  <div className={`rounded-2xl p-3 flex flex-col ${highlight ? "bg-emerald-500/10 border border-emerald-500/30" : "bg-white/5"}`}>
+  <div className={`rounded-2xl p-3 flex flex-col ${highlight ? "bg-primary/10 border border-primary/30" : "bg-white/5"}`}>
     <div className="text-center">
       <p className="text-xs font-bold opacity-90 truncate px-2">{name}</p>
       <p className="text-[9px] uppercase tracking-wider opacity-50 mt-0.5">{setsWon} sets</p>

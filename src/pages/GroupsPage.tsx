@@ -124,7 +124,7 @@ const GroupsPage = () => {
                     </div>
                     {group.description && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{group.description}</p>}
                   </div>
-                  <span className={`shrink-0 text-[9px] font-bold px-2 py-1 rounded-full ${group.is_open ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-secondary text-muted-foreground"}`}>
+                  <span className={`shrink-0 text-[9px] font-bold px-2 py-1 rounded-full ${group.is_open ? "bg-primary/10 text-primary dark:text-primary" : "bg-secondary text-muted-foreground"}`}>
                     {group.is_open ? t("groups.open") : t("groups.closed")}
                   </span>
                 </div>

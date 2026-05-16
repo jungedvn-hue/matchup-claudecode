@@ -148,7 +148,7 @@ const ProfilePage = () => {
               <Card className="p-2.5 shadow-card text-center bg-card">
                 <div className={`h-7 w-7 mx-auto mb-1.5 rounded-lg flex items-center justify-center ${
                   s.tone === "primary" ? "bg-primary/10 text-primary" :
-                  s.tone === "emerald" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                  s.tone === "emerald" ? "bg-primary/10 text-primary dark:text-primary" :
                   s.tone === "amber" ? "bg-amber-500/10 text-amber-600 dark:text-amber-500" :
                   "bg-blue-500/10 text-blue-600 dark:text-blue-400"
                 }`}>
@@ -180,14 +180,14 @@ const ProfilePage = () => {
                 return (
                   <div key={m.id} className={`flex items-center justify-between px-3.5 py-2.5 ${i < matches.length - 1 ? "border-b border-border" : ""}`}>
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`h-2 w-2 rounded-full shrink-0 ${v.isWon ? "bg-emerald-500" : "bg-destructive"}`} />
+                      <div className={`h-2 w-2 rounded-full shrink-0 ${v.isWon ? "bg-primary" : "bg-destructive"}`} />
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-card-foreground truncate">vs {v.name}</p>
                         <p className="text-[11px] text-muted-foreground tabular-nums">{v.score}</p>
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className={`text-xs font-semibold ${v.isWon ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
+                      <p className={`text-xs font-semibold ${v.isWon ? "text-primary dark:text-primary" : "text-destructive"}`}>
                         {v.isWon ? t("common.won") : t("common.lost")}
                         {!v.verified && <span className="text-[9px] text-amber-600 dark:text-amber-500 ml-1">·{t("profile.pending")}</span>}
                       </p>

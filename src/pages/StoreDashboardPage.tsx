@@ -57,7 +57,7 @@ const StoreDashboardPage = () => {
 
   const stats = [
     { icon: Package, labelKey: "store.stats.products", value: products.length, tone: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
-    { icon: Calendar, labelKey: "store.stats.bookings", value: activeBookings, tone: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+    { icon: Calendar, labelKey: "store.stats.bookings", value: activeBookings, tone: "bg-primary/10 text-primary dark:text-primary" },
     { icon: MessageSquare, labelKey: "store.stats.reviews", value: store.review_count, tone: "bg-purple-500/10 text-purple-600 dark:text-purple-400" },
     { icon: Star, labelKey: "store.stats.rating", value: store.avg_rating > 0 ? store.avg_rating.toFixed(1) : "—", tone: "bg-amber-500/10 text-amber-600 dark:text-amber-500" },
   ];
@@ -194,7 +194,7 @@ const StoreDashboardPage = () => {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-display font-bold text-emerald-600 dark:text-emerald-400 tabular-nums flex items-center gap-1 justify-end">
+                    <p className="text-sm font-display font-bold text-primary dark:text-primary tabular-nums flex items-center gap-1 justify-end">
                       <Coins className="h-3 w-3 text-amber-500" /> +{formatCoin(b.total_coins ?? 0)}
                     </p>
                   </div>
@@ -376,7 +376,7 @@ const BookingStatusBadge = ({ status, t }: { status: string; t: (k: string) => s
   const colors: Record<string, string> = {
     pending: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     confirmed: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-    completed: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    completed: "bg-primary/10 text-primary dark:text-primary border-primary/20",
     cancelled: "bg-muted text-muted-foreground",
     rejected: "bg-destructive/10 text-destructive border-destructive/20",
   };

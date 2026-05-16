@@ -47,7 +47,7 @@ const FAQ_SECTIONS = [
   { id: "start",       icon: Rocket,      tone: "from-primary/8" },
   { id: "arena",       icon: Sparkles,    tone: "from-amber-500/8" },
   { id: "groups",      icon: Users,       tone: "from-blue-500/8" },
-  { id: "tourneys",    icon: Trophy,      tone: "from-emerald-500/8" },
+  { id: "tourneys",    icon: Trophy,      tone: "from-primary/8" },
   { id: "tourMgr",     icon: Award,       tone: "from-violet-500/8" },
   { id: "marketplace", icon: ShoppingBag, tone: "from-rose-500/8" },
   { id: "contact",     icon: Mail,        tone: "from-cyan-500/8" },

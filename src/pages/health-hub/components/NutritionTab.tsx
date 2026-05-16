@@ -231,7 +231,7 @@ const MacroStat = ({ label, value, tone }: { label: string; value: string; tone:
     tone === "primary" ? "bg-primary/10 text-primary" :
     tone === "rose" ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" :
     tone === "amber" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
-    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
+    "bg-primary/10 text-primary dark:text-primary";
   return (
     <div className={`text-center p-2 rounded-xl ${toneClass}`}>
       <p className="text-base font-display font-bold tabular-nums">{value}</p>

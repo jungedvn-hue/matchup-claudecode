@@ -9,13 +9,13 @@ import { cn } from "@/lib/utils";
 
 const TYPE_META: Record<string, { icon: React.ElementType; color: string }> = {
   group_join_request: { icon: UserPlus,  color: "text-amber-500 bg-amber-500/10" },
-  group_approved:     { icon: Check,     color: "text-emerald-500 bg-emerald-500/10" },
+  group_approved:     { icon: Check,     color: "text-primary bg-primary/10" },
   group_announcement: { icon: Megaphone, color: "text-blue-500 bg-blue-500/10" },
   event_created:      { icon: Calendar,  color: "text-purple-500 bg-purple-500/10" },
   event_reminder:     { icon: Calendar,  color: "text-orange-500 bg-orange-500/10" },
   gift_received:      { icon: Gift,      color: "text-pink-500 bg-pink-500/10" },
   friend_request:     { icon: UserPlus,  color: "text-primary bg-primary/10" },
-  friend_accepted:    { icon: Users,     color: "text-emerald-500 bg-emerald-500/10" },
+  friend_accepted:    { icon: Users,     color: "text-primary bg-primary/10" },
 };
 
 const formatTime = (iso: string) => {

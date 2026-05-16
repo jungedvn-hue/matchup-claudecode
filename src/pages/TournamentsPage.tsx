@@ -85,7 +85,7 @@ const TournamentsPage = () => {
               {counts[key] > 0 && (
                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                   tab === key
-                    ? key === "active" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                    ? key === "active" ? "bg-primary/15 text-primary dark:text-primary"
                     : "bg-primary/10 text-primary"
                     : "bg-secondary text-muted-foreground"
                 }`}>
@@ -139,7 +139,7 @@ const TournamentsPage = () => {
                   onClick={() => navigate(`/tournament-live/${to.id}`)}
                 >
                   <Card className={`overflow-hidden shadow-card hover:border-primary/30 transition-all ${
-                    isActive ? "bg-gradient-to-br from-emerald-500/5 via-card to-card" :
+                    isActive ? "bg-gradient-to-br from-primary/5 via-card to-card" :
                     isCompleted ? "bg-gradient-to-br from-muted/30 via-card to-card opacity-80" :
                     "bg-gradient-to-br from-primary/5 via-card to-card"
                   }`}>
@@ -150,7 +150,7 @@ const TournamentsPage = () => {
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="text-sm font-display font-bold text-card-foreground truncate">{to.name}</h3>
                             {isActive && (
-                              <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full animate-pulse shrink-0">
+                              <span className="text-[9px] font-bold text-primary dark:text-primary bg-primary/10 px-1.5 py-0.5 rounded-full animate-pulse shrink-0">
                                 LIVE
                               </span>
                             )}
@@ -188,10 +188,10 @@ const TournamentsPage = () => {
                         <div className="space-y-1">
                           <div className="flex justify-between text-[10px]">
                             <span className="text-muted-foreground">{progress.completed}/{progress.total} {t("home.matchesDone")}</span>
-                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{progress.pct}%</span>
+                            <span className="font-semibold text-primary dark:text-primary">{progress.pct}%</span>
                           </div>
                           <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${progress.pct}%` }} />
+                            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress.pct}%` }} />
                           </div>
                         </div>
                       )}

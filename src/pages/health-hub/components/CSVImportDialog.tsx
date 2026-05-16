@@ -191,8 +191,8 @@ const CSVImportDialog = ({ open, onOpenChange, onImported }: Props) => {
 
           {rows.length > 0 && !done && (
             <>
-              <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <div className="rounded-xl bg-primary/10 border border-primary/20 p-3 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
                 <p className="text-sm text-foreground">
                   <span className="font-bold">{rows.length}</span> {t("csv.rowsParsed")}
                 </p>
@@ -219,7 +219,7 @@ const CSVImportDialog = ({ open, onOpenChange, onImported }: Props) => {
 
           {done && (
             <div className="text-center py-4">
-              <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto" />
+              <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />
               <p className="text-base font-display font-bold text-foreground mt-2">{t("csv.success")}</p>
             </div>
           )}

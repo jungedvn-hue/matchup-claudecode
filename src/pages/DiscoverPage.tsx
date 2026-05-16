@@ -125,7 +125,7 @@ const DiscoverPage = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold">{matchRecommendation.group.name}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold flex items-center gap-0.5">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold flex items-center gap-0.5">
                         <CheckCircle2 className="h-3 w-3" /> ELO {matchRecommendation.group.matchScore}% Match
                       </span>
                     </div>

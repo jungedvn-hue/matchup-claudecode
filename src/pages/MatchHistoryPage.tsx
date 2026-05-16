@@ -67,7 +67,7 @@ const MatchHistoryPage = () => {
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("history.total")}</p>
             </div>
             <div className="text-center border-x border-border/50">
-              <p className="text-xl font-display font-bold text-emerald-600 dark:text-emerald-400 tabular-nums leading-none">{wins}</p>
+              <p className="text-xl font-display font-bold text-primary dark:text-primary tabular-nums leading-none">{wins}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("common.won")}</p>
             </div>
             <div className="text-center">
@@ -110,7 +110,7 @@ const MatchHistoryPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-card-foreground truncate">vs {match.opponent}</p>
-                      <span className={`text-xs font-bold shrink-0 ${match.result === "won" ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"}`}>
+                      <span className={`text-xs font-bold shrink-0 ${match.result === "won" ? "text-primary dark:text-primary" : "text-destructive"}`}>
                         {match.result === "won" ? t("common.won") : t("common.lost")}
                       </span>
                     </div>

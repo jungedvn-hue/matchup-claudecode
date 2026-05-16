@@ -123,7 +123,7 @@ const StatsTab = () => {
             <Card className="p-4 shadow-card">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-display font-bold text-foreground flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5 text-emerald-500" /> {t("health.stats.hrvTrend")}
+                  <Activity className="h-3.5 w-3.5 text-primary" /> {t("health.stats.hrvTrend")}
                 </h3>
                 {hrvBaseline && (
                   <span className="text-[10px] text-muted-foreground">

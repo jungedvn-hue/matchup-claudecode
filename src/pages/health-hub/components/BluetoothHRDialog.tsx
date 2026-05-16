@@ -167,7 +167,7 @@ const BluetoothHRDialog = ({ open, onOpenChange }: Props) => {
                   <BluetoothOff className="h-3.5 w-3.5" /> {t("bt.disconnect")}
                 </button>
                 <button onClick={saveSession} disabled={!stats}
-                  className="flex-1 h-10 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center justify-center gap-1.5 disabled:opacity-40">
+                  className="flex-1 h-10 rounded-xl bg-primary hover:bg-primary text-white font-bold flex items-center justify-center gap-1.5 disabled:opacity-40">
                   <Save className="h-3.5 w-3.5" /> {t("bt.saveSession")}
                 </button>
               </div>

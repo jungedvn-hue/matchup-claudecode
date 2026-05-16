@@ -185,12 +185,12 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-2">
-        <Card className="p-3 bg-emerald-500/5 border-emerald-500/20">
+        <Card className="p-3 bg-primary/5 border-primary/20">
           <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
+            <TrendingUp className="h-4 w-4 text-primary" />
             <span className="text-xs font-medium text-muted-foreground">{t("budget.totalRevenue")}</span>
           </div>
-          <p className="text-lg font-display font-bold text-emerald-600 dark:text-emerald-400">
+          <p className="text-lg font-display font-bold text-primary dark:text-primary">
             {formatMoney(totalRevenue, budget.currency)}
           </p>
         </Card>
@@ -215,7 +215,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
           </div>
           <div className="mt-2 space-y-1">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" /> {t("budget.paid")}</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-primary" /> {t("budget.paid")}</span>
               <span>{paidPercent}% ({formatMoney(paidAmount, budget.currency)})</span>
             </div>
             <Progress value={paidPercent} className="h-1.5" />
@@ -265,9 +265,9 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
               onChange={e => updateRevenue("sponsorship", parseFloat(e.target.value) || 0)}
               placeholder={budget.currency === "VND" ? "5,000,000" : "200"} />
           </div>
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+          <div className="flex items-center justify-between p-2.5 rounded-lg bg-primary/5 border border-primary/20">
             <span className="text-xs font-medium text-muted-foreground">{t("budget.totalRevenueExpected")}</span>
-            <span className="text-sm font-bold text-emerald-600">{formatMoney(totalRevenue, budget.currency)}</span>
+            <span className="text-sm font-bold text-primary">{formatMoney(totalRevenue, budget.currency)}</span>
           </div>
         </CardContent>
       </Card>
@@ -312,7 +312,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
                     <div className="px-4 py-3 space-y-2">
                       {/* Existing items */}
                       {items.map(item => (
-                        <div key={item.id} className={`flex items-center gap-2 p-2.5 rounded-lg border ${item.isPaid ? "bg-emerald-500/5 border-emerald-500/20" : "bg-secondary/40 border-transparent"}`}>
+                        <div key={item.id} className={`flex items-center gap-2 p-2.5 rounded-lg border ${item.isPaid ? "bg-primary/5 border-primary/20" : "bg-secondary/40 border-transparent"}`}>
                           <Switch checked={item.isPaid} onCheckedChange={() => togglePaid(item.id)} className="scale-75" />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium text-foreground truncate">{item.description}</p>

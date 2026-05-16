@@ -76,7 +76,7 @@ const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary/60 w-full overflow-hidden">
             <p className="flex-1 min-w-0 text-[11px] font-mono text-foreground/80 truncate">{url}</p>
             <button onClick={handleCopy} className="h-7 w-7 shrink-0 rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:text-foreground" aria-label={t("share.copyLink")}>
-              {justCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+              {justCopied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
           </div>
 

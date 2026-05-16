@@ -69,7 +69,7 @@ const HomePage = () => {
   const toneClass = (tone: string) =>
     tone === "primary" ? "bg-primary/10 text-primary" :
     tone === "amber" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
-    tone === "emerald" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+    tone === "emerald" ? "bg-primary/10 text-primary dark:text-primary" :
     "bg-blue-500/10 text-blue-600 dark:text-blue-400";
 
   return (
@@ -195,7 +195,7 @@ const HomePage = () => {
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="text-xs font-bold text-foreground truncate">{ev.title}</p>
                             {ev.my_rsvp === "going" && (
-                              <span className="text-[9px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">{t("events.rsvp.going")}</span>
+                              <span className="text-[9px] font-bold bg-primary/15 text-primary dark:text-primary px-1.5 py-0.5 rounded-full">{t("events.rsvp.going")}</span>
                             )}
                           </div>
                           <p className="text-[11px] text-muted-foreground truncate">{ev.group_name}</p>
@@ -264,7 +264,7 @@ const HomePage = () => {
                             <p className="text-sm font-semibold text-foreground truncate">{tour.name}</p>
                             <p className="text-[11px] text-muted-foreground">{tour.date} · {tour.location}</p>
                           </div>
-                          <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full shrink-0 ml-2">LIVE</span>
+                          <span className="text-[9px] font-bold text-primary dark:text-primary bg-primary/10 px-1.5 py-0.5 rounded-full shrink-0 ml-2">LIVE</span>
                         </div>
                         <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                           <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
