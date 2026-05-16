@@ -11,8 +11,8 @@ interface BrandLogoProps {
 }
 
 // Primary brand assets uploaded to /public:
-//   /logo.png       — full lockup (icon + wordmark + slogan "Where passion belongs")
-//   /Logo-icon.png  — icon-only (paddle + swoosh + pickleball)
+//   /logo.png       — wordmark + slogan "Where passion belongs" (no icon, transparent bg)
+//   /logo-icon.png  — icon-only (paddle + swoosh + pickleball, transparent bg)
 // Legacy SVG variants kept under /brand/logos/ for tone overrides.
 const SRC: Record<Variant, Record<Tone, string>> = {
   full: {
