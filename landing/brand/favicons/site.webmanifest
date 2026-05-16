@@ -1,0 +1,22 @@
+{
+  "name": "MatchUp",
+  "short_name": "MatchUp",
+  "description": "Where Passion Belongs — Pickleball community platform for Asia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#25A55A",
+  "theme_color": "#25A55A",
+  "icons": [
+    {
+      "src": "/brand/favicons/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/favicons/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
