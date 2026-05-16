@@ -19,7 +19,7 @@ const BIMarketTab = ({ data: _data }: { data: InvestorBIData }) => {
             {t("investorBI.market.worldCupCountdown")}
           </p>
         </div>
-        <p className="text-3xl font-display font-bold text-primary">
+        <p className="text-3xl font-stat font-bold text-primary">
           {daysToGo} <span className="text-sm text-muted-foreground font-normal">{t("investorBI.market.daysToGo")}</span>
         </p>
         <p className="text-[10px] text-muted-foreground mt-1">{t("investorBI.market.eventDate")}</p>
@@ -35,8 +35,8 @@ const BIMarketTab = ({ data: _data }: { data: InvestorBIData }) => {
           </p>
         </div>
         <div className="flex items-baseline gap-2">
-          <p className="text-3xl font-display font-bold text-primary">82</p>
-          <p className="text-sm text-muted-foreground font-mono">/ 100</p>
+          <p className="text-3xl font-stat font-bold text-primary">82</p>
+          <p className="text-sm text-muted-foreground font-stat">/ 100</p>
         </div>
         <div className="h-1.5 bg-secondary rounded-full overflow-hidden mt-2">
           <div className="h-full bg-primary" style={{ width: "82%" }} />
@@ -55,19 +55,19 @@ const BIMarketTab = ({ data: _data }: { data: InvestorBIData }) => {
         <div className="grid grid-cols-2 gap-2">
           <div className="p-2 rounded-lg bg-secondary/50">
             <p className="text-[9px] text-muted-foreground">{t("investorBI.market.awareness")}</p>
-            <p className="text-lg font-display font-bold text-primary">88%</p>
+            <p className="text-lg font-stat font-bold text-primary">88%</p>
           </div>
           <div className="p-2 rounded-lg bg-secondary/50">
             <p className="text-[9px] text-muted-foreground">{t("investorBI.market.duprGrowth")}</p>
-            <p className="text-lg font-display font-bold text-primary">+184%</p>
+            <p className="text-lg font-stat font-bold text-primary">+184%</p>
           </div>
           <div className="p-2 rounded-lg bg-secondary/50">
             <p className="text-[9px] text-muted-foreground">{t("investorBI.market.tam")}</p>
-            <p className="text-lg font-display font-bold text-primary">$9.1B</p>
+            <p className="text-lg font-stat font-bold text-primary">$9.1B</p>
           </div>
           <div className="p-2 rounded-lg bg-secondary/50">
             <p className="text-[9px] text-muted-foreground">{t("investorBI.market.cagr")}</p>
-            <p className="text-lg font-display font-bold text-primary">15–16%</p>
+            <p className="text-lg font-stat font-bold text-primary">15–16%</p>
           </div>
         </div>
       </Card>

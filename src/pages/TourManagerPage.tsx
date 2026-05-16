@@ -125,7 +125,7 @@ const TourManagerPage = () => {
           <div className="mt-2.5">
             <div className="flex justify-between text-[10px] mb-1">
               <span className="text-muted-foreground">{t("tm.progress")}</span>
-              <span className="font-bold text-primary dark:text-primary tabular-nums">{progress.pct}%</span>
+              <span className="font-stat font-bold text-primary dark:text-primary tabular-nums">{progress.pct}%</span>
             </div>
             <div className="h-1.5 bg-secondary/80 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-primary to-primary rounded-full transition-all"
@@ -194,15 +194,15 @@ const TourManagerPage = () => {
         <Card className="p-4 shadow-card overflow-hidden bg-gradient-to-br from-primary/5 via-card to-card">
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center">
-              <p className="text-2xl font-display font-bold text-primary dark:text-primary tabular-nums leading-none">{active.length}</p>
+              <p className="text-2xl font-stat font-bold text-primary dark:text-primary tabular-nums leading-none">{active.length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("tm.active")}</p>
             </div>
             <div className="text-center border-x border-border/50">
-              <p className="text-2xl font-display font-bold text-amber-600 dark:text-amber-500 tabular-nums leading-none">{draft.length}</p>
+              <p className="text-2xl font-stat font-bold text-amber-600 dark:text-amber-500 tabular-nums leading-none">{draft.length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("tm.drafts")}</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-display font-bold text-foreground tabular-nums leading-none">{completed.length}</p>
+              <p className="text-2xl font-stat font-bold text-foreground tabular-nums leading-none">{completed.length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("tm.completed")}</p>
             </div>
           </div>

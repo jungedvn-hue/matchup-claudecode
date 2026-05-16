@@ -32,7 +32,7 @@ const XPProgressBar = ({ currentXP, level }: XPProgressBarProps) => {
         </div>
         <div className="text-right">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Progress</p>
-          <p className="text-xs font-bold text-primary">{Math.floor(progressPercentage)}%</p>
+          <p className="text-xs font-stat font-bold text-primary">{Math.floor(progressPercentage)}%</p>
         </div>
       </div>
       

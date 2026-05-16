@@ -15,7 +15,7 @@ const Kpi = ({
       <Icon className={`h-3.5 w-3.5 ${accent ? "text-primary" : "text-muted-foreground"}`} />
       <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
     </div>
-    <p className="text-xl font-display font-bold mt-1">{value}</p>
+    <p className="text-xl font-stat font-bold mt-1">{value}</p>
   </Card>
 );
 

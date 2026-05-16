@@ -117,7 +117,7 @@ const UserProfilePage = () => {
         <div className="grid grid-cols-2 gap-2">
           <Card className="p-3.5 shadow-card text-center">
             <Trophy className="h-4 w-4 text-amber-500 mx-auto mb-1" />
-            <p className="text-base font-display font-bold tabular-nums">{profile.dupr_rating?.toFixed(2) ?? "—"}</p>
+            <p className="text-base font-stat font-bold tabular-nums">{profile.dupr_rating?.toFixed(2) ?? "—"}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5">DUPR</p>
           </Card>
           <Card className="p-3.5 shadow-card text-center">

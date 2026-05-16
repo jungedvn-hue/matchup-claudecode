@@ -127,7 +127,7 @@ const StatsTab = () => {
                 </h3>
                 {hrvBaseline && (
                   <span className="text-[10px] text-muted-foreground">
-                    {t("health.stats.baseline")} <span className="font-bold text-foreground tabular-nums">{hrvBaseline}ms</span>
+                    {t("health.stats.baseline")} <span className="font-stat font-bold text-foreground tabular-nums">{hrvBaseline}ms</span>
                   </span>
                 )}
               </div>

@@ -20,19 +20,19 @@ const BIGrowthTab = ({ data }: { data: InvestorBIData }) => {
           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
             {t("investorBI.growth.signups7d")}
           </p>
-          <p className="text-xl font-display font-bold mt-1 text-primary">{fmt(data.signups7d)}</p>
+          <p className="text-xl font-stat font-bold mt-1 text-primary">{fmt(data.signups7d)}</p>
         </Card>
         <Card className="p-3 text-center">
           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
             {t("investorBI.growth.signups30d")}
           </p>
-          <p className="text-xl font-display font-bold mt-1 text-primary">{fmt(data.signups30d)}</p>
+          <p className="text-xl font-stat font-bold mt-1 text-primary">{fmt(data.signups30d)}</p>
         </Card>
         <Card className="p-3 text-center">
           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
             {t("investorBI.growth.signups90d")}
           </p>
-          <p className="text-xl font-display font-bold mt-1 text-primary">{fmt(data.signups90d)}</p>
+          <p className="text-xl font-stat font-bold mt-1 text-primary">{fmt(data.signups90d)}</p>
         </Card>
       </div>
 
@@ -72,7 +72,7 @@ const BIGrowthTab = ({ data }: { data: InvestorBIData }) => {
               <div key={c.city}>
                 <div className="flex justify-between text-[11px] mb-1">
                   <span className="font-medium">{display}</span>
-                  <span className="font-mono text-muted-foreground">
+                  <span className="font-stat text-muted-foreground">
                     {fmt(c.count)} · {pct.toFixed(1)}%
                   </span>
                 </div>

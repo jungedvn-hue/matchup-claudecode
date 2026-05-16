@@ -25,7 +25,7 @@ const PlayerAvatar = ({ name, skill, rating, size = "md" }: PlayerAvatarProps) =
       </Avatar>
       <span className="text-[10px] font-medium text-foreground truncate max-w-[60px]">{name.split(" ")[0]}</span>
       {rating !== undefined && (
-        <span className="text-[10px] text-muted-foreground">{rating.toFixed(1)}</span>
+        <span className="text-[10px] font-stat text-muted-foreground">{rating.toFixed(1)}</span>
       )}
     </div>
   );

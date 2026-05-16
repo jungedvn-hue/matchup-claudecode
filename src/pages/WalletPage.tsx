@@ -51,7 +51,7 @@ const WalletPage = () => {
                 <Loader2 className="h-7 w-7 animate-spin text-amber-500/40" />
               ) : (
                 <>
-                  <p className="text-4xl font-display font-bold text-foreground tabular-nums">{formatCoin(balance?.balance ?? 0)}</p>
+                  <p className="text-4xl font-stat font-bold text-foreground tabular-nums">{formatCoin(balance?.balance ?? 0)}</p>
                   <p className="text-sm font-semibold text-muted-foreground">{t("wallet.coins")}</p>
                 </>
               )}
@@ -72,13 +72,13 @@ const WalletPage = () => {
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <TrendingUp className="h-3 w-3 text-primary" /> {t("wallet.lifetimeEarned")}
               </div>
-              <p className="mt-1 text-lg font-display font-bold text-foreground tabular-nums">{formatCoin(balance.lifetime_earned)}</p>
+              <p className="mt-1 text-lg font-stat font-bold text-foreground tabular-nums">{formatCoin(balance.lifetime_earned)}</p>
             </Card>
             <Card className="p-3 shadow-card">
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <TrendingDown className="h-3 w-3 text-rose-500" /> {t("wallet.lifetimeSpent")}
               </div>
-              <p className="mt-1 text-lg font-display font-bold text-foreground tabular-nums">{formatCoin(balance.lifetime_spent)}</p>
+              <p className="mt-1 text-lg font-stat font-bold text-foreground tabular-nums">{formatCoin(balance.lifetime_spent)}</p>
             </Card>
           </div>
         )}
@@ -112,10 +112,10 @@ const WalletPage = () => {
                       <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(tx.created_at)}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className={`text-sm font-display font-bold tabular-nums ${isCredit ? "text-primary dark:text-primary" : "text-rose-500"}`}>
+                      <p className={`text-sm font-stat font-bold tabular-nums ${isCredit ? "text-primary dark:text-primary" : "text-rose-500"}`}>
                         {isCredit ? "+" : ""}{formatCoin(tx.amount)}
                       </p>
-                      <p className="text-[9px] text-muted-foreground tabular-nums">{formatCoin(tx.balance_after)}</p>
+                      <p className="text-[9px] text-muted-foreground font-stat tabular-nums">{formatCoin(tx.balance_after)}</p>
                     </div>
                   </Card>
                 );

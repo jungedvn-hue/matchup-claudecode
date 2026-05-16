@@ -164,7 +164,7 @@ export function TournamentStats({ category, entryMap, t }: TournamentStatsProps)
               <Target className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground">{totalPoints}</p>
+              <p className="text-lg font-stat font-bold text-foreground">{totalPoints}</p>
               <p className="text-[10px] text-muted-foreground">{t("tm.stats.totalPts")}</p>
             </div>
           </CardContent>
@@ -175,7 +175,7 @@ export function TournamentStats({ category, entryMap, t }: TournamentStatsProps)
               <TrendingUp className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground">{avgPointsPerMatch}</p>
+              <p className="text-lg font-stat font-bold text-foreground">{avgPointsPerMatch}</p>
               <p className="text-[10px] text-muted-foreground">{t("tm.stats.avgPerMatch")}</p>
             </div>
           </CardContent>
@@ -186,7 +186,7 @@ export function TournamentStats({ category, entryMap, t }: TournamentStatsProps)
               <Award className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-lg font-bold text-foreground">
+              <p className="text-lg font-stat font-bold text-foreground">
                 {closestMatch.match
                   ? `${closestMatch.match.scoreA}-${closestMatch.match.scoreB}`
                   : "—"}
@@ -307,13 +307,13 @@ export function TournamentStats({ category, entryMap, t }: TournamentStatsProps)
                   .sort((a, b) => b.winRate - a.winRate || b.pointDiff - a.pointDiff)
                   .map((p, i) => (
                     <tr key={p.id} className="border-t border-border">
-                      <td className="p-2 font-bold text-primary">{i + 1}</td>
+                      <td className="p-2 font-stat font-bold text-primary">{i + 1}</td>
                       <td className="p-2 font-medium text-foreground truncate max-w-[100px]">{p.name}</td>
-                      <td className="p-2 text-center text-primary font-semibold">{p.wins}</td>
-                      <td className="p-2 text-center text-destructive">{p.losses}</td>
-                      <td className="p-2 text-center font-semibold">{p.winRate}%</td>
-                      <td className="p-2 text-center text-muted-foreground">{p.pointsScored}</td>
-                      <td className="p-2 text-center">{p.pointDiff > 0 ? `+${p.pointDiff}` : p.pointDiff}</td>
+                      <td className="p-2 text-center text-primary font-stat font-semibold">{p.wins}</td>
+                      <td className="p-2 text-center text-destructive font-stat">{p.losses}</td>
+                      <td className="p-2 text-center font-stat font-semibold">{p.winRate}%</td>
+                      <td className="p-2 text-center text-muted-foreground font-stat">{p.pointsScored}</td>
+                      <td className="p-2 text-center font-stat">{p.pointDiff > 0 ? `+${p.pointDiff}` : p.pointDiff}</td>
                     </tr>
                   ))}
               </tbody>

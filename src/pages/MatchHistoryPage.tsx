@@ -63,15 +63,15 @@ const MatchHistoryPage = () => {
         <Card className="p-4 shadow-card overflow-hidden bg-gradient-to-br from-primary/5 via-card to-card">
           <div className="grid grid-cols-3 gap-2.5">
             <div className="text-center">
-              <p className="text-xl font-display font-bold text-primary tabular-nums leading-none">{view.length}</p>
+              <p className="text-xl font-stat font-bold text-primary tabular-nums leading-none">{view.length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("history.total")}</p>
             </div>
             <div className="text-center border-x border-border/50">
-              <p className="text-xl font-display font-bold text-primary dark:text-primary tabular-nums leading-none">{wins}</p>
+              <p className="text-xl font-stat font-bold text-primary dark:text-primary tabular-nums leading-none">{wins}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("common.won")}</p>
             </div>
             <div className="text-center">
-              <p className="text-xl font-display font-bold text-destructive tabular-nums leading-none">{losses}</p>
+              <p className="text-xl font-stat font-bold text-destructive tabular-nums leading-none">{losses}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1.5">{t("common.lost")}</p>
             </div>
           </div>
@@ -114,7 +114,7 @@ const MatchHistoryPage = () => {
                         {match.result === "won" ? t("common.won") : t("common.lost")}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground tabular-nums mt-0.5">{match.score}</p>
+                    <p className="text-xs text-muted-foreground font-stat tabular-nums mt-0.5">{match.score}</p>
                     <div className="flex items-center gap-1.5 mt-1 text-[10px] text-muted-foreground">
                       <span>{match.date}</span>
                       <span>·</span>

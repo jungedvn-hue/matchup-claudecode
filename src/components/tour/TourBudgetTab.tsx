@@ -190,7 +190,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
             <TrendingUp className="h-4 w-4 text-primary" />
             <span className="text-xs font-medium text-muted-foreground">{t("budget.totalRevenue")}</span>
           </div>
-          <p className="text-lg font-display font-bold text-primary dark:text-primary">
+          <p className="text-lg font-stat font-bold text-primary dark:text-primary">
             {formatMoney(totalRevenue, budget.currency)}
           </p>
         </Card>
@@ -199,7 +199,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
             <TrendingDown className="h-4 w-4 text-rose-500" />
             <span className="text-xs font-medium text-muted-foreground">{t("budget.totalExpense")}</span>
           </div>
-          <p className="text-lg font-display font-bold text-rose-600 dark:text-rose-400">
+          <p className="text-lg font-stat font-bold text-rose-600 dark:text-rose-400">
             {formatMoney(totalExpense, budget.currency)}
           </p>
         </Card>
@@ -209,7 +209,7 @@ const TourBudgetTab = ({ tournament }: TourBudgetTabProps) => {
               <Wallet className={`h-4 w-4 ${isProfit ? "text-blue-500" : "text-orange-500"}`} />
               <span className="text-sm font-bold text-foreground">{isProfit ? t("budget.profitExpected") : t("budget.lossExpected")}</span>
             </div>
-            <p className={`text-lg font-display font-bold ${isProfit ? "text-blue-600 dark:text-blue-400" : "text-orange-600 dark:text-orange-400"}`}>
+            <p className={`text-lg font-stat font-bold ${isProfit ? "text-blue-600 dark:text-blue-400" : "text-orange-600 dark:text-orange-400"}`}>
               {isProfit ? "+" : ""}{formatMoney(profitLoss, budget.currency)}
             </p>
           </div>

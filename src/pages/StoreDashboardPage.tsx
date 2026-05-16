@@ -103,7 +103,7 @@ const StoreDashboardPage = () => {
             <div className="mt-2 flex items-end justify-between gap-3">
               <div>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-3xl font-display font-bold text-foreground tabular-nums">{formatCoin(totalEarnedCoins)}</p>
+                  <p className="text-3xl font-stat font-bold text-foreground tabular-nums">{formatCoin(totalEarnedCoins)}</p>
                   <p className="text-xs font-semibold text-muted-foreground">{t("wallet.coins")}</p>
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -128,7 +128,7 @@ const StoreDashboardPage = () => {
                     <s.icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-lg font-display font-bold text-foreground leading-none">{s.value}</p>
+                    <p className="text-lg font-stat font-bold text-foreground leading-none">{s.value}</p>
                     <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider truncate">{t(s.labelKey)}</p>
                   </div>
                 </div>

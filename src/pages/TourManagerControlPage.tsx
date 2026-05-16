@@ -1095,7 +1095,7 @@ const TourManagerControlPage = () => {
                           <>
                             <div className="flex flex-col justify-center items-center gap-0 w-full mb-1">
                               <span className="truncate w-full text-xs font-semibold">{currentMatch.entryAName}</span>
-                              <span className="text-primary font-display text-sm font-bold">{currentMatch.scoreA} - {currentMatch.scoreB}</span>
+                              <span className="text-primary font-stat text-sm font-bold">{currentMatch.scoreA} - {currentMatch.scoreB}</span>
                               <span className="truncate w-full text-xs font-semibold">{currentMatch.entryBName}</span>
                             </div>
                             {currentMatch.refereeId && refereeMap?.[currentMatch.refereeId] && (
@@ -1915,9 +1915,9 @@ function MatchCard({
               </>
             ) : (
               <div className="px-4 py-2 flex items-center gap-3">
-                <span className="text-2xl font-display font-black text-foreground">{match.scoreA}</span>
+                <span className="text-2xl font-stat font-black text-foreground">{match.scoreA}</span>
                 <span className="text-muted-foreground font-bold">:</span>
-                <span className="text-2xl font-display font-black text-foreground">{match.scoreB}</span>
+                <span className="text-2xl font-stat font-black text-foreground">{match.scoreB}</span>
               </div>
             )}
           </div>

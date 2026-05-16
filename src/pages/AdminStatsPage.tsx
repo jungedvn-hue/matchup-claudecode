@@ -100,14 +100,14 @@ const AdminStatsPage = () => {
                   <Users className="h-4 w-4 text-primary" />
                   <p className="text-xs text-muted-foreground">Tổng user</p>
                 </div>
-                <p className="text-2xl font-bold">{stats.totalUsers}</p>
+                <p className="text-2xl font-bold font-stat">{stats.totalUsers}</p>
               </Card>
               <Card className="p-4 space-y-1">
                 <div className="flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-primary" />
                   <p className="text-xs text-muted-foreground">Tổng tournament</p>
                 </div>
-                <p className="text-2xl font-bold">{stats.totalTournaments}</p>
+                <p className="text-2xl font-bold font-stat">{stats.totalTournaments}</p>
                 <p className="text-[11px] text-primary dark:text-primary">
                   {stats.ongoingTournaments} đang diễn ra
                 </p>
@@ -117,7 +117,7 @@ const AdminStatsPage = () => {
                   <TrendingUp className="h-4 w-4 text-primary" />
                   <p className="text-xs text-muted-foreground">Signup 7 ngày</p>
                 </div>
-                <p className="text-2xl font-bold">{stats.signupsLast7Days}</p>
+                <p className="text-2xl font-bold font-stat">{stats.signupsLast7Days}</p>
                 <p className="text-[11px] text-muted-foreground">{stats.signupsLast30Days} trong 30 ngày</p>
               </Card>
               <Card className="p-4 space-y-1">
@@ -125,7 +125,7 @@ const AdminStatsPage = () => {
                   <FileText className="h-4 w-4 text-primary" />
                   <p className="text-xs text-muted-foreground">Đơn pending</p>
                 </div>
-                <p className="text-2xl font-bold">{stats.pendingApplications}</p>
+                <p className="text-2xl font-bold font-stat">{stats.pendingApplications}</p>
                 <button onClick={() => navigate("/admin/applications")} className="text-[11px] text-primary hover:underline">
                   Xem đơn →
                 </button>

@@ -22,7 +22,7 @@ const BIRevenueTab = ({ data }: { data: InvestorBIData }) => {
               {t("investorBI.revenue.coinVolume30d")}
             </p>
           </div>
-          <p className="text-xl font-display font-bold mt-1 text-primary">{fmt(data.coinVolume30d)}</p>
+          <p className="text-xl font-stat font-bold mt-1 text-primary">{fmt(data.coinVolume30d)}</p>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2">
@@ -31,7 +31,7 @@ const BIRevenueTab = ({ data }: { data: InvestorBIData }) => {
               {t("investorBI.revenue.coinVolume7d")}
             </p>
           </div>
-          <p className="text-xl font-display font-bold mt-1">{fmt(data.coinVolume7d)}</p>
+          <p className="text-xl font-stat font-bold mt-1">{fmt(data.coinVolume7d)}</p>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2">
@@ -40,7 +40,7 @@ const BIRevenueTab = ({ data }: { data: InvestorBIData }) => {
               {t("investorBI.revenue.giftingVolume")}
             </p>
           </div>
-          <p className="text-xl font-display font-bold mt-1">{fmt(data.giftingVolume30d)}</p>
+          <p className="text-xl font-stat font-bold mt-1">{fmt(data.giftingVolume30d)}</p>
         </Card>
         <Card className="p-3">
           <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ const BIRevenueTab = ({ data }: { data: InvestorBIData }) => {
               {t("investorBI.revenue.affiliateClicks")}
             </p>
           </div>
-          <p className="text-xl font-display font-bold mt-1">{fmt(data.affiliateClicks30d)}</p>
+          <p className="text-xl font-stat font-bold mt-1">{fmt(data.affiliateClicks30d)}</p>
         </Card>
         <Card className="p-3 col-span-2 border-primary/40 bg-primary/5">
           <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ const BIRevenueTab = ({ data }: { data: InvestorBIData }) => {
               {t("investorBI.revenue.estimatedGMV")}
             </p>
           </div>
-          <p className="text-xl font-display font-bold mt-1 text-primary">{vnd(data.estimatedGMV)}</p>
+          <p className="text-xl font-stat font-bold mt-1 text-primary">{vnd(data.estimatedGMV)}</p>
         </Card>
       </div>
 

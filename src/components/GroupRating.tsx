@@ -76,7 +76,7 @@ const GroupRating = ({ groupName, avgRating, totalReviews, reviews, canRate }: G
       <Card className="p-4 shadow-card">
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <p className="text-2xl font-display font-bold text-foreground">{avgRating.toFixed(1)}</p>
+            <p className="text-2xl font-stat font-bold text-foreground">{avgRating.toFixed(1)}</p>
             <StarDisplay rating={avgRating} size="md" />
             <p className="text-[10px] text-muted-foreground mt-1">{totalReviews} {t("rating.totalReviews")}</p>
           </div>

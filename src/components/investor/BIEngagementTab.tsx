@@ -71,7 +71,7 @@ const BIEngagementTab = ({ data }: { data: InvestorBIData }) => {
           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
             {t("investorBI.engagement.wauMau")}
           </p>
-          <p className="text-xl font-display font-bold mt-1 text-primary">{wauMauPct}%</p>
+          <p className="text-xl font-stat font-bold mt-1 text-primary">{wauMauPct}%</p>
           <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">
             {t("investorBI.engagement.wau")} {fmt(data.wau)} / {t("investorBI.engagement.mau")} {fmt(data.mau)}
           </p>
@@ -80,13 +80,13 @@ const BIEngagementTab = ({ data }: { data: InvestorBIData }) => {
           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
             {t("investorBI.engagement.sessionsPerUser")}
           </p>
-          <p className="text-xl font-display font-bold mt-1 text-primary">{data.sessionsPerActiveUser}</p>
+          <p className="text-xl font-stat font-bold mt-1 text-primary">{data.sessionsPerActiveUser}</p>
         </Card>
         <Card className="p-3 col-span-2 border-primary/40 bg-primary/5">
           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
             {t("investorBI.engagement.avgDailyTime")}
           </p>
-          <p className="text-xl font-display font-bold mt-1 text-primary">
+          <p className="text-xl font-stat font-bold mt-1 text-primary">
             {data.avgDailyMinutes} <span className="text-xs">{t("investorBI.unit.minutes")}</span>
           </p>
           <p className="text-[9px] text-muted-foreground mt-0.5 italic">
@@ -164,7 +164,7 @@ const BIEngagementTab = ({ data }: { data: InvestorBIData }) => {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-display font-bold">{r.v}%</span>
+                  <span className="text-xs font-stat font-bold">{r.v}%</span>
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground mt-1 font-mono">{r.lbl}</p>
