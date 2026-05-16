@@ -10,18 +10,22 @@ interface BrandLogoProps {
   alt?: string;
 }
 
+// Primary brand assets uploaded to /public:
+//   /logo.png       — full lockup (icon + wordmark + slogan "Where passion belongs")
+//   /Logo-icon.png  — icon-only (paddle + swoosh + pickleball)
+// Legacy SVG variants kept under /brand/logos/ for tone overrides.
 const SRC: Record<Variant, Record<Tone, string>> = {
   full: {
-    color: "/brand/logos/matchup-logo-master.svg",
+    color: "/logo.png",
     white: "/brand/logos/matchup-logo-white.svg",
     black: "/brand/logos/matchup-logo-black.svg",
     green: "/brand/logos/matchup-logo-green.svg",
   },
   icon: {
-    color: "/brand/logos/matchup-icon.svg",
+    color: "/Logo-icon.png",
     white: "/brand/logos/matchup-icon-white.svg",
     black: "/brand/logos/matchup-icon-black.svg",
-    green: "/brand/logos/matchup-icon.svg",
+    green: "/Logo-icon.png",
   },
   wordmark: {
     color: "/brand/logos/matchup-wordmark.svg",
