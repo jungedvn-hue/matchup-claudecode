@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useMatchRecords, type MatchRecord } from "@/hooks/useMatches";
+import BrandEmptyState from "@/components/BrandEmptyState";
 
 type FilterType = "all" | "won" | "lost";
 
@@ -95,9 +96,8 @@ const MatchHistoryPage = () => {
           {loading ? (
             <p className="text-xs text-muted-foreground py-8 text-center">…</p>
           ) : filtered.length === 0 ? (
-            <Card className="p-6 text-center shadow-card">
-              <Trophy className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-              <p className="text-xs text-muted-foreground">{t("history.empty")}</p>
+            <Card className="shadow-card">
+              <BrandEmptyState pillar="play" title={t("history.empty")} description={t("history.emptyDesc")} />
             </Card>
           ) : filtered.map((match, i) => (
             <motion.div key={match.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>

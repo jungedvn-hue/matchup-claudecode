@@ -5,6 +5,7 @@ import { ArrowLeft, Plus, Search, Trophy, Clock, CheckCircle2, Gavel, Trash2, Pl
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import BrandEmptyState from "@/components/BrandEmptyState";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
@@ -232,15 +233,16 @@ const TourManagerPage = () => {
         {/* List */}
         <div className="space-y-2.5">
           {list.length === 0 ? (
-            <div className="py-16 flex flex-col items-center gap-3 text-muted-foreground">
-              <Trophy className="h-10 w-10 opacity-20" />
-              <p className="text-sm">{t("tm.noTournaments")}</p>
-              {tab === "active" && (
+            <BrandEmptyState
+              pillar="compete"
+              title={t("tm.noTournaments")}
+              description={t("tm.noTournamentsDesc")}
+              action={tab === "active" ? (
                 <Button variant="outline" size="sm" className="rounded-xl" onClick={() => navigate("/tour-manager/create")}>
                   <Plus className="h-4 w-4 mr-1" /> {t("tm.createFirst")}
                 </Button>
-              )}
-            </div>
+              ) : undefined}
+            />
           ) : (
             list.map((tn, i) => (
               <motion.div key={tn.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useGroups, useMyGroups, VN_CITIES, type SkillLevel } from "@/hooks/useGroups";
 import { useAuth } from "@/context/AuthContext";
 import SkillBadge from "@/components/SkillBadge";
+import BrandEmptyState from "@/components/BrandEmptyState";
 import CreateGroupDialog from "@/components/CreateGroupDialog";
 
 const SKILL_FILTERS: SkillLevel[] = ["all", "beginner", "intermediate", "advanced", "pro"];
@@ -94,16 +95,17 @@ const GroupsPage = () => {
             <p className="text-sm">{t("common.loading")}</p>
           </div>
         ) : list.length === 0 ? (
-          <div className="py-20 flex flex-col items-center gap-3 text-muted-foreground">
-            <Users className="h-10 w-10 opacity-20" />
-            <p className="text-sm">{tab === "mine" ? t("groups.noMyGroups") : t("groups.noGroups")}</p>
-            {session && tab === "mine" && (
+          <BrandEmptyState
+            pillar="connect"
+            title={tab === "mine" ? t("groups.noMyGroups") : t("groups.noGroups")}
+            description={tab === "mine" ? t("groups.noMyGroupsDesc") : t("groups.noGroupsDesc")}
+            action={session && tab === "mine" ? (
               <button onClick={() => setCreateOpen(true)}
                 className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-semibold">
                 <Plus className="h-3.5 w-3.5" /> {t("groups.newGroup")}
               </button>
-            )}
-          </div>
+            ) : undefined}
+          />
         ) : list.map((group, i) => (
           <motion.div key={group.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
             <button className="w-full text-left" onClick={() => navigate(`/group/${group.id}`)}>

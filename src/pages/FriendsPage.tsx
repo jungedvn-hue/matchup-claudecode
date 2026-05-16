@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Users, UserPlus, UserCheck, Clock, Check, X, Loader2, Search, UserMinus } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import BrandEmptyState from "@/components/BrandEmptyState";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SkillBadge from "@/components/SkillBadge";
@@ -219,13 +220,16 @@ const FriendsPage = () => {
             <Loader2 className="h-6 w-6 animate-spin text-primary opacity-40" />
           </div>
         ) : activeCount === 0 ? (
-          <Card className="p-8 text-center text-muted-foreground shadow-card">
-            <Users className="h-10 w-10 mx-auto opacity-20 mb-2" />
-            <p className="text-sm">
-              {tab === "friends" ? t("friends.emptyFriends") :
-               tab === "incoming" ? t("friends.emptyIncoming") :
-               t("friends.emptyOutgoing")}
-            </p>
+          <Card className="shadow-card">
+            <BrandEmptyState
+              pillar="community"
+              title={tab === "friends" ? t("friends.emptyFriends") :
+                     tab === "incoming" ? t("friends.emptyIncoming") :
+                     t("friends.emptyOutgoing")}
+              description={tab === "friends" ? t("friends.emptyFriendsDesc") :
+                           tab === "incoming" ? t("friends.emptyIncomingDesc") :
+                           t("friends.emptyOutgoingDesc")}
+            />
           </Card>
         ) : (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
