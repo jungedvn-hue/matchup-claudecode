@@ -35,19 +35,13 @@ const SRC: Record<Variant, Record<Tone, string>> = {
   },
 };
 
-const BrandLogo = ({ variant = "full", tone = "color", className, alt = "MatchUp" }: BrandLogoProps) => {
-  // The official PNG assets ship with a white background. Using mix-blend-multiply
-  // makes that white tile blend into any light surface (only the artwork remains
-  // visible). For dark surfaces, pass tone="white" to get the SVG variant instead.
-  const blendsWhite = tone === "color" || tone === "green";
-  return (
-    <img
-      src={SRC[variant][tone]}
-      alt={alt}
-      className={cn("select-none", blendsWhite && "mix-blend-multiply", className)}
-      draggable={false}
-    />
-  );
-};
+const BrandLogo = ({ variant = "full", tone = "color", className, alt = "MatchUp" }: BrandLogoProps) => (
+  <img
+    src={SRC[variant][tone]}
+    alt={alt}
+    className={cn("select-none", className)}
+    draggable={false}
+  />
+);
 
 export default BrandLogo;
