@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS public.host_promo_codes (
 
 ALTER TABLE public.host_promo_codes ENABLE ROW LEVEL SECURITY;
 -- Authenticated users can attempt redemption (RPC validates); no broad SELECT exposed.
-CREATE POLICY "hpc_admin_all" ON public.host_promo_codes FOR ALL USING (public.is_master(auth.uid())) WITH CHECK (public.is_master(auth.uid()));
+CREATE POLICY "hpc_admin_all" ON public.host_promo_codes FOR ALL USING (public.has_role(auth.uid(), 'master'::public.app_role)) WITH CHECK (public.has_role(auth.uid(), 'master'::public.app_role));
 
 CREATE TABLE IF NOT EXISTS public.host_promo_redemptions (
   user_id      UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -307,7 +307,7 @@ DECLARE
   v_t            RECORD;
   v_event        RECORD;
   v_is_host      BOOLEAN;
-  v_is_master    BOOLEAN := public.is_master(v_caller);
+  v_is_master    BOOLEAN := public.has_role(v_caller, 'master'::public.app_role);
   v_deadline     TIMESTAMPTZ;
   v_new_credit   BIGINT;
 BEGIN
@@ -377,7 +377,7 @@ BEGIN
 
   SELECT * INTO v_event FROM public.group_events WHERE id = p_event_id;
   IF v_event.id IS NULL THEN RAISE EXCEPTION 'Event not found'; END IF;
-  IF v_event.created_by <> v_caller AND NOT public.is_master(v_caller) THEN
+  IF v_event.created_by <> v_caller AND NOT public.has_role(v_caller, 'master'::public.app_role) THEN
     RAISE EXCEPTION 'Not authorized';
   END IF;
 
