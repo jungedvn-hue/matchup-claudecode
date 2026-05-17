@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { useRefereeContribution } from "@/hooks/useReferee";
+import { useRefereeContribution, useRefereeTournamentHistory } from "@/hooks/useReferee";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -24,6 +24,7 @@ const RefereeProfilePage = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { data, loading, updateBio } = useRefereeContribution(userId);
+  const { items: history, loading: historyLoading } = useRefereeTournamentHistory(userId);
 
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; location: string | null } | null>(null);
   const [editing, setEditing] = useState(false);
@@ -138,8 +139,39 @@ const RefereeProfilePage = () => {
         {/* Total */}
         <Card className="p-4 shadow-card text-center bg-gradient-to-br from-blue-500/5 to-card">
           <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{t("ref.profile.totalOfficiated")}</p>
-          <p className="text-3xl font-display font-bold text-foreground tabular-nums mt-1">{totalMatches}</p>
+          <p className="text-3xl font-stat font-bold text-foreground tabular-nums mt-1">{totalMatches}</p>
         </Card>
+
+        {/* Tournaments served (R-A) */}
+        <div>
+          <h3 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1.5 mb-2 px-1">
+            <Trophy className="h-3 w-3" /> {t("ref.profile.tournamentsServed")} <span className="font-stat tabular-nums text-foreground">({data?.tournaments_count ?? 0})</span>
+          </h3>
+          {historyLoading ? (
+            <div className="py-6 flex justify-center"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground/40" /></div>
+          ) : history.length === 0 ? (
+            <Card className="p-4 shadow-card text-center">
+              <p className="text-[11px] text-muted-foreground">{t("ref.profile.noHistory")}</p>
+            </Card>
+          ) : (
+            <div className="space-y-1.5">
+              {history.map(h => (
+                <Card key={h.tournament_id} className="p-3 shadow-card flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold text-foreground truncate">{h.tournament_name ?? "—"}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {new Date(h.first_match_at).toLocaleDateString("vi-VN")} → {new Date(h.last_match_at).toLocaleDateString("vi-VN")}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-stat font-bold text-sm text-primary tabular-nums leading-none">{h.matches_count}</p>
+                    <p className="text-[9px] text-muted-foreground uppercase font-semibold tracking-wide mt-0.5">{t("ref.profile.matches")}</p>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -260,6 +260,19 @@ const TourManagerControlPage = () => {
 
     await syncMatchScore(matchId, finalA, finalB, "completed", winnerId, setScores);
 
+    // R-A: log referee track record (only when assigned referee has a linked userId)
+    if (match.refereeId && tournament) {
+      const refRecord = tournament.referees?.find((r) => r.id === match.refereeId);
+      if (refRecord?.userId) {
+        await supabase.rpc("fn_record_tournament_match_refereed", {
+          p_tournament_id:   tournament.id,
+          p_tournament_name: tournament.name,
+          p_referee_user_id: refRecord.userId,
+          p_host_user_id:    tournament.host_id ?? null,
+        });
+      }
+    }
+
     // If this is a bracket match, cascade winner into next round(s) and persist.
     // Use a targeted DB-first approach (read fresh bracket_rounds from DB, advance,
     // write back only changed fields) to avoid React-state staleness when multiple

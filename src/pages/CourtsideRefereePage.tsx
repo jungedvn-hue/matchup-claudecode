@@ -5,6 +5,7 @@ import {
   RotateCcw, Trophy, Gavel, Sun,
 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useTournaments } from "@/context/TournamentContext";
 import { validateScore, formatScoringRule, type ScoringConfig } from "@/lib/pickleballScoring";
 import { toast } from "sonner";
@@ -145,6 +146,18 @@ const CourtsideRefereePage = () => {
     }));
     if (!found) { toast.error("Match not found in tournament"); return; }
     updateTournament(tournament.id, updatedTournament);
+
+    // R-A: log referee track record
+    const refRecord = tournament.referees?.find((r) => r.id === match.refereeId);
+    if (refRecord?.userId) {
+      supabase.rpc("fn_record_tournament_match_refereed", {
+        p_tournament_id:   tournament.id,
+        p_tournament_name: tournament.name,
+        p_referee_user_id: refRecord.userId,
+        p_host_user_id:    tournament.host_id ?? null,
+      });
+    }
+
     toast.success(t("ref.courtside.finished"));
     setTimeout(() => navigate(`/referee?tournament=${tournament.id}`), 1500);
   };

@@ -60,6 +60,36 @@ export const useRefereeContribution = (userId?: string) => {
   return { data, loading, refetch: fetch, updateBio };
 };
 
+// ── useRefereeTournamentHistory ──────────────────────────────────────────────
+export interface RefereeTournamentRow {
+  tournament_id: string;
+  tournament_name: string | null;
+  host_user_id: string | null;
+  matches_count: number;
+  first_match_at: string;
+  last_match_at: string;
+}
+
+export const useRefereeTournamentHistory = (userId?: string) => {
+  const { user } = useAuth();
+  const target = userId ?? user?.id;
+  const [items, setItems] = useState<RefereeTournamentRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!target) { setItems([]); setLoading(false); return; }
+    setLoading(true);
+    const { data } = await sb.from("referee_tournament_history")
+      .select("*").eq("user_id", target)
+      .order("last_match_at", { ascending: false });
+    setItems((data as RefereeTournamentRow[]) ?? []);
+    setLoading(false);
+  }, [target]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { items, loading, refetch: fetch };
+};
+
 // ── useRefereeInvites (for current user as invitee or host) ─────────────────
 export const useRefereeInvites = (mode: "invitee" | "host" = "invitee") => {
   const { user } = useAuth();
