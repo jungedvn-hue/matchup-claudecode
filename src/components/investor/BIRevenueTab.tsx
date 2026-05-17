@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { InvestorBIData } from "@/hooks/useInvestorBI";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { Coins, Gift, MousePointerClick, ShoppingBag } from "lucide-react";
+import { Coins, Gift, MousePointerClick, ShoppingBag, Ticket, Receipt, Users } from "lucide-react";
 
 const fmt = (n: number) => new Intl.NumberFormat("en-US").format(n);
 const vnd = (n: number) => `${new Intl.NumberFormat("en-US").format(n)} ₫`;
@@ -60,6 +60,43 @@ const BIRevenueTab = ({ data }: { data: InvestorBIData }) => {
           </div>
           <p className="text-xl font-stat font-bold mt-1 text-primary">{vnd(data.estimatedGMV)}</p>
         </Card>
+      </div>
+
+      {/* Paid tickets — Phase 5 */}
+      <div>
+        <h3 className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+          {t("investorBI.revenue.ticketsSection")}
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          <Card className="p-3">
+            <div className="flex items-center gap-2">
+              <Ticket className="h-3.5 w-3.5 text-muted-foreground" />
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.revenue.ticketsSold30d")}</p>
+            </div>
+            <p className="text-xl font-stat font-bold mt-1">{fmt(data.ticketsSold30d)}</p>
+          </Card>
+          <Card className="p-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.revenue.payingHosts30d")}</p>
+            </div>
+            <p className="text-xl font-stat font-bold mt-1">{fmt(data.activePayingHosts30d)}</p>
+          </Card>
+          <Card className="p-3 border-primary/40 bg-primary/5">
+            <div className="flex items-center gap-2">
+              <Coins className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.revenue.ticketRevenue30d")}</p>
+            </div>
+            <p className="text-xl font-stat font-bold mt-1 text-primary">{fmt(data.ticketRevenue30d)}</p>
+          </Card>
+          <Card className="p-3 border-primary/40 bg-primary/5">
+            <div className="flex items-center gap-2">
+              <Receipt className="h-3.5 w-3.5 text-primary" />
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.revenue.platformFee30d")}</p>
+            </div>
+            <p className="text-xl font-stat font-bold mt-1 text-primary">{fmt(data.platformFeeRevenue30d)}</p>
+          </Card>
+        </div>
       </div>
 
       <Card className="p-3">

@@ -42,6 +42,10 @@ export interface InvestorBIData {
   affiliateClicks7d: number;
   estimatedGMV: number;
   coinTrend: BICoinDay[];            // last 30 days
+  ticketsSold30d: number;            // count of paid valid/used tickets in last 30d
+  ticketRevenue30d: number;          // gross coin volume from ticket sales
+  platformFeeRevenue30d: number;     // 5% fee captured (host credit consumed)
+  activePayingHosts30d: number;      // distinct hosts who sold ≥1 ticket
 
   generatedAt: number;
 }
@@ -71,18 +75,21 @@ export const useInvestorBI = () => {
         eventsRes, attendeesRes,
         coin30Res, coin7Res, coinGiftRes,
         clicks30Res, clicks7Res,
+        ticketsRes, hostFeesRes,
       ] = await Promise.all([
         supabase.from("profiles").select("user_id, created_at, city"),
         supabase.from("groups").select("id"),
         supabase.from("tournaments").select("id"),
         supabase.from("user_roles").select("user_id, role").is("revoked_at", null),
-        supabase.from("group_events").select("id, event_date, group_id").gte("event_date", since30),
+        supabase.from("group_events").select("id, event_date, group_id, created_by").gte("event_date", since30),
         supabase.from("group_event_attendees").select("event_id, user_id, status, created_at").gte("created_at", since30),
         supabase.from("coin_transactions").select("amount, created_at, type").gte("created_at", since30),
         supabase.from("coin_transactions").select("amount").gte("created_at", since7),
         supabase.from("coin_transactions").select("amount, type").gte("created_at", since30),
         supabase.from("affiliate_clicks").select("id, clicked_at").gte("clicked_at", since30),
         supabase.from("affiliate_clicks").select("id").gte("clicked_at", since7),
+        supabase.from("event_tickets").select("id, paid_amount, status, paid_at, event_id").gte("paid_at", since30),
+        supabase.from("host_credit_transactions").select("amount, kind, created_at").eq("kind", "fee").gte("created_at", since30),
       ]);
 
       const profiles = profilesRes.data ?? [];
@@ -244,6 +251,16 @@ export const useInvestorBI = () => {
       });
       const coinTrend: BICoinDay[] = Array.from(coinDayMap.entries()).map(([date, volume]) => ({ date, volume }));
 
+      // ── Tickets (paid)
+      const tickets30 = (ticketsRes.data ?? []) as Array<{ id: string; paid_amount: number | null; status: string; event_id: string }>;
+      const paidValid = tickets30.filter(t => Number(t.paid_amount ?? 0) > 0 && (t.status === "valid" || t.status === "used"));
+      const ticketsSold30d = paidValid.length;
+      const ticketRevenue30d = paidValid.reduce((s, t) => s + Number(t.paid_amount ?? 0), 0);
+      const hostFees30 = (hostFeesRes.data ?? []) as Array<{ amount: number | null }>;
+      const platformFeeRevenue30d = hostFees30.reduce((s, r) => s + Math.abs(Number(r.amount ?? 0)), 0);
+      const eventHostMap = new Map(((eventsRes.data ?? []) as any[]).map((e: any) => [e.id, e.created_by]));
+      const activePayingHosts30d = new Set(paidValid.map(t => eventHostMap.get(t.event_id)).filter(Boolean)).size;
+
       setData({
         totalUsers: profiles.length,
         totalGroups: groups.length,
@@ -259,6 +276,7 @@ export const useInvestorBI = () => {
         density,
         retentionD1, retentionD7, retentionD30,
         coinVolume7d, giftingVolume30d, affiliateClicks7d, estimatedGMV, coinTrend,
+        ticketsSold30d, ticketRevenue30d, platformFeeRevenue30d, activePayingHosts30d,
         generatedAt: Date.now(),
       });
     } catch (e) {
