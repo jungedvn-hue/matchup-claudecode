@@ -89,3 +89,44 @@ export const checkinTicket = async (token: string): Promise<CheckinResult> => {
   if (error) return { ok: false, error: "invalid" };
   return data as CheckinResult;
 };
+
+// ── Host view: tickets for one event (with buyer profile) ──────────────────
+export interface EventTicketWithBuyer extends EventTicket {
+  paid_amount: number;
+  paid_at: string | null;
+  refunded_at: string | null;
+  platform_fee: number;
+  buyer_name?: string;
+  buyer_avatar?: string | null;
+}
+
+export const useEventTickets = (eventId: string | undefined) => {
+  const [tickets, setTickets] = useState<EventTicketWithBuyer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!eventId) { setTickets([]); setLoading(false); return; }
+    setLoading(true);
+    const { data: rows } = await sb.from("event_tickets")
+      .select("*").eq("event_id", eventId)
+      .order("created_at", { ascending: false });
+    const list = (rows as EventTicketWithBuyer[]) ?? [];
+    if (list.length === 0) { setTickets([]); setLoading(false); return; }
+
+    const userIds = [...new Set(list.map(t => t.user_id))];
+    const { data: profiles } = await sb.from("profiles")
+      .select("id, display_name, avatar_url").in("id", userIds);
+    const pMap: Record<string, any> = {};
+    (profiles ?? []).forEach((p: any) => { pMap[p.id] = p; });
+
+    setTickets(list.map(t => ({
+      ...t,
+      buyer_name: pMap[t.user_id]?.display_name,
+      buyer_avatar: pMap[t.user_id]?.avatar_url,
+    })));
+    setLoading(false);
+  }, [eventId]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { tickets, loading, refetch: fetch };
+};

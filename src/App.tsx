@@ -22,6 +22,7 @@ import CreateTournamentPage from "./pages/CreateTournamentPage";
 import TournamentLivePage from "./pages/TournamentLivePage";
 import SettingsPage from "./pages/SettingsPage";
 import MyTicketsPage from "./pages/MyTicketsPage";
+import EventRevenuePage from "./pages/EventRevenuePage";
 import AssistantCheckInPage from "./pages/AssistantCheckInPage";
 import FavoritePartnersPage from "./pages/FavoritePartnersPage";
 import FriendsPage from "./pages/FriendsPage";
@@ -100,6 +101,7 @@ const AppShell = () => {
         <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/my-tickets" element={<MyTicketsPage />} />
+        <Route path="/event/:eventId/revenue" element={<ProtectedRoute><EventRevenuePage /></ProtectedRoute>} />
         <Route path="/assistant-checkin/:groupId" element={<ProtectedRoute><AssistantCheckInPage /></ProtectedRoute>} />
         <Route path="/favorite-partners" element={<FavoritePartnersPage />} />
         <Route path="/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />

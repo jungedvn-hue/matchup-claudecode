@@ -405,6 +405,14 @@ const GroupDetailPage = () => {
                             <ScanLine className="h-3 w-3" /> {t("checkin.openScanner")}
                           </button>
                         )}
+                        {isHost && ev.price_coins > 0 && (
+                          <button
+                            onClick={() => navigate(`/event/${ev.id}/revenue`)}
+                            className="flex-1 h-7 rounded-lg text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/15 transition-all flex items-center justify-center gap-1"
+                          >
+                            <Coins className="h-3 w-3" /> {t("event.revenue.shortBtn")}
+                          </button>
+                        )}
                       </div>
                       {isMember && (
                         <div className="flex gap-1.5">
