@@ -17,6 +17,8 @@ export interface GroupEvent {
   duration_minutes: number;
   max_attendees: number | null;
   attendee_count: number;
+  price_coins: number;
+  refund_deadline_hours: number;
   created_at: string;
   group_name?: string;
   group_emoji?: string;
@@ -102,6 +104,7 @@ export const useCreateEvent = () => {
   const create = async (input: {
     group_id: string; title: string; event_date: string;
     description?: string; location?: string; duration_minutes?: number; max_attendees?: number;
+    price_coins?: number; refund_deadline_hours?: number;
   }): Promise<{ data: GroupEvent | null; error: string | null }> => {
     if (!user) return { data: null, error: "Not authenticated" };
     const { data, error } = await sb.from("group_events").insert({
@@ -113,6 +116,8 @@ export const useCreateEvent = () => {
       event_date: input.event_date,
       duration_minutes: input.duration_minutes || 90,
       max_attendees: input.max_attendees || null,
+      price_coins: input.price_coins ?? 0,
+      refund_deadline_hours: input.refund_deadline_hours ?? 8,
     }).select().single();
     if (error) return { data: null, error: error.message };
     return { data: data as GroupEvent, error: null };

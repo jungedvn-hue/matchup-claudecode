@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Pencil as PencilIcon, Star } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Pencil as PencilIcon, Star, Coins } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -367,7 +367,7 @@ const GroupDetailPage = () => {
                   return (
                     <Card key={ev.id} className="p-3 shadow-card bg-gradient-to-br from-primary/5 via-card to-card">
                       <div className="flex items-start justify-between gap-3 mb-2">
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold text-foreground truncate">{ev.title}</p>
                           <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Clock className="h-3 w-3" /> {formatEventDate(ev.event_date)}
@@ -381,6 +381,11 @@ const GroupDetailPage = () => {
                             {ev.attendee_count}{ev.max_attendees ? `/${ev.max_attendees}` : ""} {t("events.going")}
                           </p>
                         </div>
+                        {ev.price_coins > 0 && (
+                          <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/15 text-primary border border-primary/25 font-stat font-bold text-xs tabular-nums">
+                            <Coins className="h-3 w-3" /> {ev.price_coins.toLocaleString("vi-VN")}
+                          </span>
+                        )}
                       </div>
                       {ev.description && (
                         <p className="text-[11px] text-muted-foreground mb-2">{ev.description}</p>

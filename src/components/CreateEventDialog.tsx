@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useCreateEvent } from "@/hooks/useGroupEvents";
+import EventPriceField from "@/components/EventPriceField";
 import { toast } from "sonner";
 
 interface Props {
@@ -27,11 +28,14 @@ const CreateEventDialog = ({ open, onOpenChange, groupId, onCreated }: Props) =>
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState(90);
   const [maxAttendees, setMaxAttendees] = useState<number | "">("");
+  const [priceCoins, setPriceCoins] = useState(0);
+  const [refundHours, setRefundHours] = useState(8);
   const [saving, setSaving] = useState(false);
 
   const reset = () => {
     setTitle(""); setDescription(""); setLocation("");
     setDate(""); setTime(""); setDuration(90); setMaxAttendees("");
+    setPriceCoins(0); setRefundHours(8);
   };
 
   const handleCreate = async () => {
@@ -49,6 +53,8 @@ const CreateEventDialog = ({ open, onOpenChange, groupId, onCreated }: Props) =>
       event_date: eventDate,
       duration_minutes: duration,
       max_attendees: maxAttendees === "" ? undefined : Number(maxAttendees),
+      price_coins: priceCoins,
+      refund_deadline_hours: refundHours,
     });
     setSaving(false);
     if (error) { toast.error(error); return; }
@@ -102,6 +108,13 @@ const CreateEventDialog = ({ open, onOpenChange, groupId, onCreated }: Props) =>
             <Label className="text-xs font-medium">{t("groups.descLabel")}</Label>
             <Textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} placeholder={t("events.descPh")} className="resize-none" />
           </div>
+
+          <EventPriceField
+            priceCoins={priceCoins}
+            onPriceChange={setPriceCoins}
+            refundHours={refundHours}
+            onRefundHoursChange={setRefundHours}
+          />
 
           <div className="flex gap-2 pt-1">
             <Button variant="outline" className="flex-1 rounded-xl" onClick={() => { reset(); onOpenChange(false); }} disabled={saving}>

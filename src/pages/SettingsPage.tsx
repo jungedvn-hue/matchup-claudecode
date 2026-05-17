@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft, Check, Globe, Clock, X, Shield, Sun, Moon, Monitor, Bell,
   User as UserIcon, FileText, HelpCircle, LogOut, Trash2, Key, Loader2,
-  Sparkles, Users, Trophy, Award, ShoppingBag, Rocket, Mail, ChevronRight,
+  Sparkles, Users, Trophy, Award, ShoppingBag, Rocket, Mail, ChevronRight, Wallet,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import type { AppRole } from "@/hooks/use-roles";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import ApplyRoleDialog from "@/components/ApplyRoleDialog";
+import HostCreditCard from "@/components/HostCreditCard";
 import { toast } from "sonner";
 
 type ApplicableRole = Exclude<AppRole, "master" | "player">;
@@ -295,6 +296,13 @@ const SettingsPage = () => {
             })}
           </div>
         </Section>
+
+        {/* ── Host platform credit (visible for hosts) ───────────────── */}
+        {(roles?.includes("host") || isMaster) && (
+          <Section icon={Wallet} title={t("hostCredit.section")}>
+            <HostCreditCard />
+          </Section>
+        )}
 
         {/* ── Master / Admin tools ───────────────────────────────────── */}
         {isMaster && (
