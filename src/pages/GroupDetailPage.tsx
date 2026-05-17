@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Pencil as PencilIcon, Star, Coins } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Pencil as PencilIcon, Star, Coins, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +16,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useGroupEvents, useRSVP, type RSVPStatus } from "@/hooks/useGroupEvents";
 import CreateEventDialog from "@/components/CreateEventDialog";
+import PurchaseTicketDialog from "@/components/PurchaseTicketDialog";
+import type { GroupEvent } from "@/hooks/useGroupEvents";
 import ShareGroupDialog from "@/components/ShareGroupDialog";
 import CreateGroupDialog from "@/components/CreateGroupDialog";
 import AssignAssistantDialog from "@/components/AssignAssistantDialog";
@@ -39,6 +41,7 @@ const GroupDetailPage = () => {
   const { rsvp, cancelRSVP } = useRSVP();
   const [acting, setActing] = useState(false);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [purchaseEvent, setPurchaseEvent] = useState<GroupEvent | null>(null);
   const [editGroupOpen, setEditGroupOpen] = useState(false);
   const [assignAssistantOpen, setAssignAssistantOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -414,7 +417,24 @@ const GroupDetailPage = () => {
                           </button>
                         )}
                       </div>
-                      {isMember && (
+                      {isMember && ev.price_coins > 0 ? (
+                        ev.my_ticket_status === "valid" || ev.my_ticket_status === "used" ? (
+                          <button
+                            onClick={() => navigate("/my-tickets")}
+                            className="w-full h-7 rounded-lg text-[11px] font-semibold bg-primary/15 text-primary ring-1 ring-primary/30 flex items-center justify-center gap-1"
+                          >
+                            <CheckCircle2 className="h-3 w-3" /> {t("buyTicket.owned")}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setPurchaseEvent(ev)}
+                            disabled={full}
+                            className="w-full h-7 rounded-lg text-[11px] font-bold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                          >
+                            <Coins className="h-3 w-3" /> {t("buyTicket.buyBtn")}
+                          </button>
+                        )
+                      ) : isMember ? (
                         <div className="flex gap-1.5">
                           {(["going", "maybe", "not_going"] as RSVPStatus[]).map(s => (
                             <button key={s}
@@ -431,7 +451,7 @@ const GroupDetailPage = () => {
                             </button>
                           ))}
                         </div>
-                      )}
+                      ) : null}
                     </Card>
                   );
                 })}
@@ -441,6 +461,19 @@ const GroupDetailPage = () => {
         )}
 
         <CreateEventDialog open={eventDialogOpen} onOpenChange={setEventDialogOpen} groupId={group.id} onCreated={refetchEvents} />
+
+        {purchaseEvent && (
+          <PurchaseTicketDialog
+            open={!!purchaseEvent}
+            onOpenChange={v => { if (!v) setPurchaseEvent(null); }}
+            eventId={purchaseEvent.id}
+            eventTitle={purchaseEvent.title}
+            eventDate={purchaseEvent.event_date}
+            priceCoins={purchaseEvent.price_coins}
+            refundHours={purchaseEvent.refund_deadline_hours}
+            onSuccess={refetchEvents}
+          />
+        )}
 
         {/* Pending approvals (host only) */}
         {isHost && pendingMembers.length > 0 && (

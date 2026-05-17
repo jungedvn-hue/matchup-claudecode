@@ -23,6 +23,7 @@ export interface GroupEvent {
   group_name?: string;
   group_emoji?: string;
   my_rsvp?: RSVPStatus | null;
+  my_ticket_status?: "valid" | "used" | "cancelled" | null;
 }
 
 // Events for one group
@@ -41,10 +42,17 @@ export const useGroupEvents = (groupId: string | undefined) => {
     let list = (data as GroupEvent[]) ?? [];
     if (user && list.length > 0) {
       const ids = list.map(e => e.id);
-      const { data: rsvps } = await sb.from("group_event_attendees")
-        .select("event_id,status").eq("user_id", user.id).in("event_id", ids);
-      const map = new Map((rsvps ?? []).map((r: any) => [r.event_id, r.status]));
-      list = list.map(e => ({ ...e, my_rsvp: map.get(e.id) ?? null }));
+      const [rsvpsRes, ticketsRes] = await Promise.all([
+        sb.from("group_event_attendees").select("event_id,status").eq("user_id", user.id).in("event_id", ids),
+        sb.from("event_tickets").select("event_id,status").eq("user_id", user.id).in("event_id", ids),
+      ]);
+      const rMap = new Map(((rsvpsRes.data ?? []) as any[]).map((r: any) => [r.event_id, r.status]));
+      const tMap = new Map(((ticketsRes.data ?? []) as any[]).map((t: any) => [t.event_id, t.status]));
+      list = list.map(e => ({
+        ...e,
+        my_rsvp: rMap.get(e.id) ?? null,
+        my_ticket_status: tMap.get(e.id) ?? null,
+      }));
     }
     setEvents(list);
     setLoading(false);

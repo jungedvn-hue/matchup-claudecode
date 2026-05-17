@@ -15,10 +15,15 @@ export interface EventTicket {
   status: TicketStatus;
   checked_in_at: string | null;
   created_at: string;
+  paid_amount: number;
+  paid_at: string | null;
+  refunded_at: string | null;
+  platform_fee: number;
   // hydrated:
   event_title?: string;
   event_date?: string;
   event_location?: string | null;
+  event_refund_deadline_hours?: number;
   group_name?: string;
   group_emoji?: string;
 }
@@ -43,7 +48,7 @@ export const useMyTickets = () => {
 
     const eventIds = [...new Set(list.map(t => t.event_id))];
     const { data: events } = await sb.from("group_events")
-      .select("id, title, event_date, location, group_id").in("id", eventIds);
+      .select("id, title, event_date, location, group_id, refund_deadline_hours").in("id", eventIds);
     const evMap: Record<string, any> = {};
     (events ?? []).forEach((e: any) => { evMap[e.id] = e; });
 
@@ -61,6 +66,7 @@ export const useMyTickets = () => {
         event_title: ev?.title,
         event_date: ev?.event_date,
         event_location: ev?.location,
+        event_refund_deadline_hours: ev?.refund_deadline_hours ?? 8,
         group_name: grp?.name,
         group_emoji: grp?.cover_emoji,
       };
