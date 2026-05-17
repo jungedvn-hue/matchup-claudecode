@@ -23,6 +23,7 @@ import TournamentLivePage from "./pages/TournamentLivePage";
 import SettingsPage from "./pages/SettingsPage";
 import MyTicketsPage from "./pages/MyTicketsPage";
 import EventRevenuePage from "./pages/EventRevenuePage";
+import AdminHostPromosPage from "./pages/AdminHostPromosPage";
 import AssistantCheckInPage from "./pages/AssistantCheckInPage";
 import FavoritePartnersPage from "./pages/FavoritePartnersPage";
 import FriendsPage from "./pages/FriendsPage";
@@ -132,6 +133,7 @@ const AppShell = () => {
         <Route path="/admin/tournaments" element={<RequireMaster><AdminTournamentsPage /></RequireMaster>} />
         <Route path="/admin/stats" element={<RequireMaster><AdminStatsPage /></RequireMaster>} />
         <Route path="/admin/coins" element={<RequireMaster><AdminCoinsPage /></RequireMaster>} />
+        <Route path="/admin/host-promos" element={<RequireMaster><AdminHostPromosPage /></RequireMaster>} />
         <Route path="/investor-bi" element={<RequireMaster><InvestorBIPage /></RequireMaster>} />
 
         <Route path="/verify" element={<VerificationPage />} />
