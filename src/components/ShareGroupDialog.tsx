@@ -1,8 +1,8 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Copy, Share2, Check, X } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { buildGroupUrl, buildEventUrl, shareOrCopy, copyToClipboard } from "@/lib/share";
-import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -12,6 +12,8 @@ interface Props {
   group: { id: string; name: string; cover_emoji?: string };
   event?: { id: string; title: string };
 }
+
+const QR_SIZE = 168;
 
 const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
   const { t } = useLanguage();
@@ -53,29 +55,29 @@ const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="p-0 gap-0 max-w-[360px] w-[calc(100vw-1.5rem)] rounded-2xl overflow-hidden border-0 shadow-2xl [&>button]:hidden"
+        className="p-0 gap-0 max-w-[340px] w-[calc(100vw-1.5rem)] rounded-2xl overflow-hidden border-0 shadow-2xl [&>button]:hidden"
       >
         {/* Top accent bar */}
         <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/60 to-primary" />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+        <div className="flex items-center justify-between gap-2 px-4 pt-3 pb-1">
           <div className="flex items-center gap-2 min-w-0">
             <Share2 className="h-4 w-4 text-primary shrink-0" />
             <h2 className="font-display font-bold text-sm text-foreground truncate">{t("share.title")}</h2>
           </div>
           <button
             onClick={() => onOpenChange(false)}
-            className="h-8 w-8 -mr-1.5 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
             aria-label={t("share.close")}
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="px-5 pb-5 space-y-4">
+        <div className="px-4 pb-4 space-y-3.5 overflow-hidden">
           {/* Identity row */}
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0">
               {group.cover_emoji ?? "🥎"}
             </div>
@@ -85,23 +87,26 @@ const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
             </div>
           </div>
 
-          {/* QR card */}
-          <div className="relative mx-auto w-fit">
-            {/* Brand corner brackets */}
-            <span className="absolute -top-1 -left-1 h-3 w-3 border-t-2 border-l-2 border-primary rounded-tl-md" />
-            <span className="absolute -top-1 -right-1 h-3 w-3 border-t-2 border-r-2 border-primary rounded-tr-md" />
-            <span className="absolute -bottom-1 -left-1 h-3 w-3 border-b-2 border-l-2 border-primary rounded-bl-md" />
-            <span className="absolute -bottom-1 -right-1 h-3 w-3 border-b-2 border-r-2 border-primary rounded-br-md" />
-            <div className="rounded-xl bg-white p-3 border border-border">
-              <QRCodeDisplay data={url} size={160} showText={false} />
-            </div>
+          {/* QR card — strict inline width */}
+          <div
+            className="bg-white rounded-xl border border-border p-3 mx-auto flex items-center justify-center"
+            style={{ width: QR_SIZE + 24, height: QR_SIZE + 24 }}
+          >
+            <QRCodeSVG
+              value={url}
+              size={QR_SIZE}
+              bgColor="#FFFFFF"
+              fgColor="#0F1F18"
+              level="M"
+              style={{ width: QR_SIZE, height: QR_SIZE, display: "block" }}
+            />
           </div>
 
           <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider font-semibold">
             {t("share.scanHint")}
           </p>
 
-          {/* URL row */}
+          {/* URL row = copy button */}
           <button
             onClick={handleCopy}
             className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary/60 border border-border hover:border-primary/40 hover:bg-secondary transition-colors text-left group"
