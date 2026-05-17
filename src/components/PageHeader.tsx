@@ -23,7 +23,7 @@ const PageHeader = ({ title, back, onBack, right, className, children }: Props) 
   return (
     <div className={cn("sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3", className)}>
       <div className="flex items-center gap-3">
-        {back && (
+        {(back || onBack) && (
           <button onClick={handleBack} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </button>

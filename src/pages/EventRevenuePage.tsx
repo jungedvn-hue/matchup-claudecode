@@ -88,7 +88,7 @@ const EventRevenuePage = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      <PageHeader title={t("event.revenue.title")} onBack={() => navigate(-1)} />
+      <PageHeader title={t("event.revenue.title")} back onBack={() => navigate(-1)} />
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-3">
         {event && (

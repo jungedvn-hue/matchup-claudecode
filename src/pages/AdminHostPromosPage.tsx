@@ -103,7 +103,7 @@ const AdminHostPromosPage = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      <PageHeader title={t("adminPromos.title")} onBack={() => history.back()} />
+      <PageHeader title={t("adminPromos.title")} back onBack={() => history.back()} />
 
       <div className="px-4 pt-4 max-w-2xl mx-auto space-y-3">
         <Button onClick={() => setCreateOpen(true)} className="w-full h-10 rounded-xl font-bold">
