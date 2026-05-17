@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useGroupEvents, useRSVP, type RSVPStatus } from "@/hooks/useGroupEvents";
 import CreateEventDialog from "@/components/CreateEventDialog";
+import EditEventDialog from "@/components/EditEventDialog";
 import PurchaseTicketDialog from "@/components/PurchaseTicketDialog";
 import type { GroupEvent } from "@/hooks/useGroupEvents";
 import ShareGroupDialog from "@/components/ShareGroupDialog";
@@ -42,6 +43,7 @@ const GroupDetailPage = () => {
   const [acting, setActing] = useState(false);
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [purchaseEvent, setPurchaseEvent] = useState<GroupEvent | null>(null);
+  const [editEvent, setEditEvent] = useState<GroupEvent | null>(null);
   const [editGroupOpen, setEditGroupOpen] = useState(false);
   const [assignAssistantOpen, setAssignAssistantOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -401,12 +403,20 @@ const GroupDetailPage = () => {
                           <Share2 className="h-3 w-3" /> {t("share.shareEvent")}
                         </button>
                         {isHost && (
-                          <button
-                            onClick={() => navigate(`/checkin/${ev.id}`)}
-                            className="flex-1 h-7 rounded-lg text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/15 transition-all flex items-center justify-center gap-1"
-                          >
-                            <ScanLine className="h-3 w-3" /> {t("checkin.openScanner")}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => setEditEvent(ev)}
+                              className="h-7 px-2 rounded-lg text-[11px] font-semibold bg-secondary/60 text-muted-foreground hover:text-foreground transition-all flex items-center justify-center gap-1"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => navigate(`/checkin/${ev.id}`)}
+                              className="flex-1 h-7 rounded-lg text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/15 transition-all flex items-center justify-center gap-1"
+                            >
+                              <ScanLine className="h-3 w-3" /> {t("checkin.openScanner")}
+                            </button>
+                          </>
                         )}
                         {isHost && ev.price_coins > 0 && (
                           <button
@@ -461,6 +471,16 @@ const GroupDetailPage = () => {
         )}
 
         <CreateEventDialog open={eventDialogOpen} onOpenChange={setEventDialogOpen} groupId={group.id} onCreated={refetchEvents} />
+
+        {editEvent && (
+          <EditEventDialog
+            open={!!editEvent}
+            onOpenChange={v => { if (!v) setEditEvent(null); }}
+            event={editEvent}
+            onSaved={refetchEvents}
+            onDeleted={refetchEvents}
+          />
+        )}
 
         {purchaseEvent && (
           <PurchaseTicketDialog

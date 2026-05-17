@@ -40,6 +40,18 @@ const MyTicketsPage = () => {
     return Date.now() < deadline;
   };
 
+  const refundCountdown = (tk: EventTicket): string | null => {
+    if (!refundOpen(tk) || !tk.event_date) return null;
+    const deadline = new Date(tk.event_date).getTime() - (tk.event_refund_deadline_hours ?? 8) * 3600 * 1000;
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) return null;
+    const h = Math.floor(remaining / 3_600_000);
+    const m = Math.floor((remaining % 3_600_000) / 60_000);
+    if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h`;
+    if (h >= 1) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
+
   const statusTone: Record<string, { label: string; cls: string }> = {
     valid:     { label: t("tickets.valid"),     cls: "bg-primary/10 text-primary dark:text-primary border-primary/20" },
     used:      { label: t("tickets.used"),      cls: "bg-secondary text-muted-foreground border-border" },
@@ -116,6 +128,7 @@ const MyTicketsPage = () => {
                         >
                           {refunding === tk.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Undo2 className="h-3 w-3" />}
                           {t("tickets.refundBtn")}
+                          <span className="text-[9px] opacity-70 font-stat tabular-nums">{refundCountdown(tk)}</span>
                         </button>
                       )}
                       {tk.status === "used" && tk.checked_in_at && (

@@ -133,6 +133,38 @@ export const useCreateEvent = () => {
   return { create };
 };
 
+// Update / delete event (host only — RLS enforces)
+export const useUpdateEvent = () => {
+  const update = async (
+    eventId: string,
+    input: Partial<{
+      title: string; description: string | null; location: string | null;
+      event_date: string; duration_minutes: number; max_attendees: number | null;
+      price_coins: number; refund_deadline_hours: number;
+    }>,
+  ): Promise<{ error?: string }> => {
+    const { error } = await sb.from("group_events").update(input).eq("id", eventId);
+    return error ? { error: error.message } : {};
+  };
+
+  const remove = async (eventId: string): Promise<{ error?: string }> => {
+    const { error } = await sb.from("group_events").delete().eq("id", eventId);
+    return error ? { error: error.message } : {};
+  };
+
+  return { update, remove };
+};
+
+// Has any paid sold ticket? (used to lock price edit)
+export const hasPaidTicket = async (eventId: string): Promise<boolean> => {
+  const { count } = await sb.from("event_tickets")
+    .select("id", { count: "exact", head: true })
+    .eq("event_id", eventId)
+    .gt("paid_amount", 0)
+    .in("status", ["valid", "used"]);
+  return (count ?? 0) > 0;
+};
+
 // RSVP helpers
 export const useRSVP = () => {
   const { user } = useAuth();
