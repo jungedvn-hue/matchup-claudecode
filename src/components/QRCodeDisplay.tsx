@@ -1,4 +1,4 @@
-import QRCode from "react-qr-code";
+import { QRCodeSVG } from "qrcode.react";
 
 interface QRCodeDisplayProps {
   data: string;
@@ -9,13 +9,12 @@ interface QRCodeDisplayProps {
 const QRCodeDisplay = ({ data, size = 140, showText = true }: QRCodeDisplayProps) => (
   <div className="flex flex-col items-center gap-2">
     <div className="p-3 bg-white rounded-xl shadow-card">
-      <QRCode
+      <QRCodeSVG
         value={data}
         size={size}
         bgColor="#FFFFFF"
         fgColor="#0F1F18"
         level="M"
-        style={{ height: "auto", maxWidth: "100%", width: size }}
       />
     </div>
     {showText && (
