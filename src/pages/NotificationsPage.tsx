@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Bell, Users, Megaphone, Calendar, Gift, UserPlus, Check, Coins } from "lucide-react";
+import { ArrowLeft, Bell, Users, Megaphone, Calendar, Gift, UserPlus, Check, Coins, Ticket, Undo2, Wallet } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useNotifications, type Notification } from "@/hooks/useNotifications";
 import { Card } from "@/components/ui/card";
@@ -16,6 +16,9 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string }> = {
   gift_received:      { icon: Gift,      color: "text-pink-500 bg-pink-500/10" },
   friend_request:     { icon: UserPlus,  color: "text-primary bg-primary/10" },
   friend_accepted:    { icon: Users,     color: "text-primary bg-primary/10" },
+  ticket_sold:        { icon: Ticket,    color: "text-primary bg-primary/10" },
+  ticket_refunded:    { icon: Undo2,     color: "text-amber-500 bg-amber-500/10" },
+  host_credit_low:    { icon: Wallet,    color: "text-amber-500 bg-amber-500/10" },
 };
 
 const formatTime = (iso: string) => {
