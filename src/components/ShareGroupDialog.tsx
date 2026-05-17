@@ -1,6 +1,5 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Copy, Share2, Check } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Copy, Share2, Check, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { buildGroupUrl, buildEventUrl, shareOrCopy, copyToClipboard } from "@/lib/share";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
@@ -10,7 +9,6 @@ import { toast } from "sonner";
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  // Either group or event share
   group: { id: string; name: string; cover_emoji?: string };
   event?: { id: string; title: string };
 }
@@ -36,7 +34,7 @@ const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
       setJustCopied(true);
       toast.success(t("share.copied"));
       setTimeout(() => setJustCopied(false), 1800);
-    } else {
+    } else if (r === "failed") {
       toast.error(t("share.failed"));
     }
   };
@@ -54,40 +52,73 @@ const ShareGroupDialog = ({ open, onOpenChange, group, event }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm w-[calc(100vw-2rem)] rounded-2xl overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="font-display text-center flex items-center justify-center gap-2">
-            <Share2 className="h-4 w-4 text-primary" /> {t("share.title")}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent
+        className="p-0 gap-0 max-w-[360px] w-[calc(100vw-1.5rem)] rounded-2xl overflow-hidden border-0 shadow-2xl [&>button]:hidden"
+      >
+        {/* Top accent bar */}
+        <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/60 to-primary" />
 
-        <div className="space-y-4 pt-1">
-          <div className="flex flex-col items-center gap-1.5">
-            <div className="text-3xl">{group.cover_emoji ?? "🥎"}</div>
-            <p className="text-base font-display font-bold text-foreground text-center">{headline}</p>
-            <p className="text-[11px] text-muted-foreground text-center">{subtitle}</p>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Share2 className="h-4 w-4 text-primary shrink-0" />
+            <h2 className="font-display font-bold text-sm text-foreground truncate">{t("share.title")}</h2>
+          </div>
+          <button
+            onClick={() => onOpenChange(false)}
+            className="h-8 w-8 -mr-1.5 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+            aria-label={t("share.close")}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="px-5 pb-5 space-y-4">
+          {/* Identity row */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0">
+              {group.cover_emoji ?? "🥎"}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-display font-bold text-foreground truncate">{headline}</p>
+              <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+            </div>
           </div>
 
-          <div className="flex justify-center">
-            <QRCodeDisplay data={url} size={180} showText={false} />
+          {/* QR card */}
+          <div className="relative mx-auto w-fit">
+            {/* Brand corner brackets */}
+            <span className="absolute -top-1 -left-1 h-3 w-3 border-t-2 border-l-2 border-primary rounded-tl-md" />
+            <span className="absolute -top-1 -right-1 h-3 w-3 border-t-2 border-r-2 border-primary rounded-tr-md" />
+            <span className="absolute -bottom-1 -left-1 h-3 w-3 border-b-2 border-l-2 border-primary rounded-bl-md" />
+            <span className="absolute -bottom-1 -right-1 h-3 w-3 border-b-2 border-r-2 border-primary rounded-br-md" />
+            <div className="rounded-xl bg-white p-3 border border-border">
+              <QRCodeDisplay data={url} size={160} showText={false} />
+            </div>
           </div>
-          <p className="text-[10px] text-muted-foreground text-center">{t("share.scanHint")}</p>
 
-          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-secondary/60 w-full overflow-hidden">
-            <p className="flex-1 min-w-0 text-[11px] font-mono text-foreground/80 truncate">{url}</p>
-            <button onClick={handleCopy} className="h-7 w-7 shrink-0 rounded-lg bg-card flex items-center justify-center text-muted-foreground hover:text-foreground" aria-label={t("share.copyLink")}>
-              {justCopied ? <Check className="h-3.5 w-3.5 text-primary" /> : <Copy className="h-3.5 w-3.5" />}
-            </button>
-          </div>
+          <p className="text-[10px] text-muted-foreground text-center uppercase tracking-wider font-semibold">
+            {t("share.scanHint")}
+          </p>
 
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 rounded-xl" onClick={() => onOpenChange(false)}>
-              {t("share.close")}
-            </Button>
-            <Button className="flex-1 rounded-xl font-bold" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-1.5" /> {t("share.shareVia")}
-            </Button>
-          </div>
+          {/* URL row */}
+          <button
+            onClick={handleCopy}
+            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary/60 border border-border hover:border-primary/40 hover:bg-secondary transition-colors text-left group"
+          >
+            <span className="flex-1 min-w-0 text-[11px] font-mono text-foreground/70 truncate">{url}</span>
+            <span className="h-6 w-6 shrink-0 rounded-md bg-card border border-border flex items-center justify-center text-muted-foreground group-hover:text-primary group-hover:border-primary/40 transition-colors">
+              {justCopied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
+            </span>
+          </button>
+
+          {/* Primary CTA */}
+          <button
+            onClick={handleShare}
+            className="w-full h-10 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-[0_2px_8px_-2px_hsl(var(--primary)/0.4)]"
+          >
+            <Share2 className="h-4 w-4" /> {t("share.shareVia")}
+          </button>
         </div>
       </DialogContent>
     </Dialog>
