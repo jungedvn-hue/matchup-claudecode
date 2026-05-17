@@ -6,7 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { useRefereeContribution, useRefereeTournamentHistory } from "@/hooks/useReferee";
+import { useRefereeContribution, useRefereeTournamentHistory, useRefereeRatings, useCanRateReferee } from "@/hooks/useReferee";
+import RateRefereeDialog from "@/components/RateRefereeDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -23,8 +24,11 @@ const RefereeProfilePage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { data, loading, updateBio } = useRefereeContribution(userId);
+  const { data, loading, updateBio, refetch: refetchContrib } = useRefereeContribution(userId);
   const { items: history, loading: historyLoading } = useRefereeTournamentHistory(userId);
+  const { items: ratings, refetch: refetchRatings } = useRefereeRatings(userId, 5);
+  const { eligible: canRate, hostedTournaments } = useCanRateReferee(userId);
+  const [rateOpen, setRateOpen] = useState(false);
 
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; location: string | null } | null>(null);
   const [editing, setEditing] = useState(false);
@@ -96,6 +100,14 @@ const RefereeProfilePage = () => {
                   <Edit className="h-3.5 w-3.5" />
                 </button>
               )}
+              {!isOwn && canRate && (
+                <button
+                  onClick={() => setRateOpen(true)}
+                  className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-[11px] font-bold flex items-center gap-1 hover:bg-primary/90"
+                >
+                  <Star className="h-3.5 w-3.5" /> {t("rateRef.btn")}
+                </button>
+              )}
             </div>
 
             {editing && (
@@ -142,6 +154,46 @@ const RefereeProfilePage = () => {
           <p className="text-3xl font-stat font-bold text-foreground tabular-nums mt-1">{totalMatches}</p>
         </Card>
 
+        {/* Ratings (R-B) */}
+        {(ratings.length > 0 || (data?.rating_count ?? 0) > 0) && (
+          <div>
+            <h3 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1.5 mb-2 px-1">
+              <Star className="h-3 w-3" /> {t("rateRef.recentRatings")} <span className="font-stat tabular-nums text-foreground">({data?.rating_count ?? 0})</span>
+              {data?.rating_avg != null && (
+                <span className="ml-auto inline-flex items-center gap-1 font-stat font-bold text-amber-500 tabular-nums">
+                  <Star className="h-3 w-3 fill-amber-500" /> {data.rating_avg.toFixed(2)}
+                </span>
+              )}
+            </h3>
+            <div className="space-y-1.5">
+              {ratings.map(r => (
+                <Card key={r.id} className="p-3 shadow-card">
+                  <div className="flex items-start gap-2.5">
+                    <Avatar className="h-7 w-7">
+                      {r.rater_avatar && <AvatarImage src={r.rater_avatar} />}
+                      <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
+                        {r.rater_name?.[0]?.toUpperCase() ?? "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-bold text-foreground truncate">{r.rater_name ?? "—"}</p>
+                        <span className="inline-flex items-center gap-0.5 font-stat font-bold text-amber-500 text-[11px] tabular-nums">
+                          {Array.from({ length: r.stars }).map((_, i) => (
+                            <Star key={i} className="h-2.5 w-2.5 fill-amber-500" />
+                          ))}
+                        </span>
+                        <span className="ml-auto text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString("vi-VN")}</span>
+                      </div>
+                      {r.comment && <p className="text-[11px] text-foreground/80 mt-1 leading-relaxed">{r.comment}</p>}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Tournaments served (R-A) */}
         <div>
           <h3 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1.5 mb-2 px-1">
@@ -173,6 +225,17 @@ const RefereeProfilePage = () => {
           )}
         </div>
       </div>
+
+      {userId && (
+        <RateRefereeDialog
+          open={rateOpen}
+          onOpenChange={setRateOpen}
+          refereeUserId={userId}
+          refereeName={profile?.display_name ?? "—"}
+          hostedTournaments={hostedTournaments}
+          onSubmitted={() => { refetchContrib(); refetchRatings(); }}
+        />
+      )}
     </div>
   );
 };

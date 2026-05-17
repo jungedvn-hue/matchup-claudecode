@@ -149,6 +149,85 @@ export const useCreateRefereeInvite = () => {
   };
 };
 
+// ── Ratings ──────────────────────────────────────────────────────────────────
+export interface RefereeRating {
+  id: string;
+  referee_user_id: string;
+  rater_user_id: string;
+  tournament_id: string | null;
+  stars: number;
+  comment: string | null;
+  created_at: string;
+  rater_name?: string;
+  rater_avatar?: string | null;
+}
+
+export const useRefereeRatings = (refereeUserId?: string, limit = 10) => {
+  const [items, setItems] = useState<RefereeRating[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!refereeUserId) { setItems([]); setLoading(false); return; }
+    setLoading(true);
+    const { data } = await sb.from("referee_ratings")
+      .select("*").eq("referee_user_id", refereeUserId)
+      .order("created_at", { ascending: false }).limit(limit);
+    const rows = (data as RefereeRating[]) ?? [];
+    if (rows.length > 0) {
+      const ids = [...new Set(rows.map(r => r.rater_user_id))];
+      const { data: profiles } = await sb.from("profiles")
+        .select("id, display_name, avatar_url").in("id", ids);
+      const pMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+      rows.forEach(r => {
+        const p: any = pMap.get(r.rater_user_id);
+        r.rater_name = p?.display_name;
+        r.rater_avatar = p?.avatar_url;
+      });
+    }
+    setItems(rows);
+    setLoading(false);
+  }, [refereeUserId, limit]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { items, loading, refetch: fetch };
+};
+
+export const rateReferee = async (
+  refereeUserId: string, tournamentId: string | null, stars: number, comment?: string,
+): Promise<{ id?: string; error?: string }> => {
+  const { data, error } = await sb.rpc("fn_rate_referee", {
+    p_referee_user_id: refereeUserId,
+    p_tournament_id:   tournamentId,
+    p_stars:           stars,
+    p_comment:         comment ?? null,
+  });
+  if (error) return { error: error.message };
+  return { id: data as string };
+};
+
+// Can the current user rate this referee? True if they hosted any tournament the referee served.
+export const useCanRateReferee = (refereeUserId?: string) => {
+  const { user } = useAuth();
+  const [eligible, setEligible] = useState(false);
+  const [hostedTournaments, setHostedTournaments] = useState<RefereeTournamentRow[]>([]);
+
+  useEffect(() => {
+    if (!user || !refereeUserId || user.id === refereeUserId) { setEligible(false); return; }
+    sb.from("referee_tournament_history")
+      .select("tournament_id, tournament_name, host_user_id, matches_count, first_match_at, last_match_at")
+      .eq("user_id", refereeUserId)
+      .eq("host_user_id", user.id)
+      .order("last_match_at", { ascending: false })
+      .then(({ data }: any) => {
+        const list = (data as RefereeTournamentRow[]) ?? [];
+        setHostedTournaments(list);
+        setEligible(list.length > 0);
+      });
+  }, [user, refereeUserId]);
+
+  return { eligible, hostedTournaments };
+};
+
 // ── Browse certified referees ────────────────────────────────────────────────
 export interface RefereeProfile extends RefereeContribution {
   display_name: string | null;
