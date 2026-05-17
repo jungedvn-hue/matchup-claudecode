@@ -208,6 +208,12 @@ const RefereeDashboardPage = () => {
             <Gavel className="h-5 w-5 text-primary shrink-0" />
             <span className="truncate">{t("ref.title")}</span>
           </h1>
+          {(roles.includes("host") || isMaster) && (
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 shrink-0" onClick={() => navigate("/referees")}>
+              <ShieldCheck className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("refBrowse.short")}</span>
+            </Button>
+          )}
           <Button size="sm" className="h-9 gap-1.5 shrink-0" onClick={() => setShowJoinRef(true)}>
             <Gavel className="h-4 w-4" />
             <span className="hidden sm:inline">{t("tm.joinReferee")}</span>

@@ -63,6 +63,7 @@ import AdminStatsPage from "./pages/AdminStatsPage";
 import AdminCoinsPage from "./pages/AdminCoinsPage";
 import InvestorBIPage from "./pages/InvestorBIPage";
 import RefereeProfilePage from "./pages/RefereeProfilePage";
+import RefereesBrowsePage from "./pages/RefereesBrowsePage";
 import CourtsideRefereePage from "./pages/CourtsideRefereePage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
@@ -125,6 +126,7 @@ const AppShell = () => {
         <Route path="/tour-manager/:tournamentId" element={<ProtectedRoute><FeatureGate role="host"><TourManagerControlPage /></FeatureGate></ProtectedRoute>} />
         <Route path="/referee" element={<ProtectedRoute><RefereeDashboardPage /></ProtectedRoute>} />
         <Route path="/referee/:userId" element={<RefereeProfilePage />} />
+        <Route path="/referees" element={<RefereesBrowsePage />} />
         <Route path="/courtside/:tournamentId/:matchId" element={<ProtectedRoute><CourtsideRefereePage /></ProtectedRoute>} />
         <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
         

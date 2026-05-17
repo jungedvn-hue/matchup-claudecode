@@ -21,6 +21,7 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string }> = {
   ticket_buyer_cancelled: { icon: Undo2,  color: "text-amber-500 bg-amber-500/10" },
   host_credit_low:        { icon: Wallet, color: "text-amber-500 bg-amber-500/10" },
   referee_rated:          { icon: Star,   color: "text-amber-500 bg-amber-500/10" },
+  referee_invite_received:{ icon: Gift,   color: "text-primary bg-primary/10" },
 };
 
 const formatTime = (iso: string) => {

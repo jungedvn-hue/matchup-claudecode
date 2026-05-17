@@ -133,6 +133,20 @@ const generateCode = () => {
   return s;
 };
 
+// Invite a referee (from their MatchUp profile) into one of my tournaments.
+// Atomic: creates referee_invites row + appends pending slot to tournament.referees JSONB.
+export const inviteRefereeFromProfile = async (
+  tournamentId: string, refereeUserId: string, message?: string,
+): Promise<{ inviteId?: string; error?: string }> => {
+  const { data, error } = await sb.rpc("fn_invite_referee", {
+    p_tournament_id: tournamentId,
+    p_referee_user_id: refereeUserId,
+    p_message: message ?? null,
+  });
+  if (error) return { error: error.message };
+  return { inviteId: data as string };
+};
+
 export const useCreateRefereeInvite = () => {
   const { user } = useAuth();
   return async (input: { tournamentId: string; email: string; message?: string }) => {
