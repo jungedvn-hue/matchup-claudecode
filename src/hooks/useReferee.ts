@@ -376,3 +376,53 @@ export const recordRefereeEarning = async (
   });
   return { id: data as string | null, error };
 };
+
+// ── Blocked dates (availability calendar) ────────────────────────────────────
+export interface RefereeBlockedDate {
+  id: string;
+  user_id: string;
+  blocked_date: string; // YYYY-MM-DD
+  note: string | null;
+  created_at: string;
+}
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+export const useRefereeBlockedDates = (userId?: string) => {
+  const { user } = useAuth();
+  const target = userId ?? user?.id;
+  const [items, setItems] = useState<RefereeBlockedDate[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!target) { setItems([]); setLoading(false); return; }
+    setLoading(true);
+    const { data } = await sb.from("referee_blocked_dates")
+      .select("*").eq("user_id", target)
+      .gte("blocked_date", todayISO())
+      .order("blocked_date", { ascending: true });
+    setItems((data as RefereeBlockedDate[]) ?? []);
+    setLoading(false);
+  }, [target]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  const addBlockedDate = async (date: string, note?: string | null) => {
+    if (!user) return { error: "Not authenticated" };
+    const { error } = await sb.from("referee_blocked_dates").insert({
+      user_id: user.id, blocked_date: date, note: note ?? null,
+    });
+    if (!error) await fetch();
+    return { error };
+  };
+
+  const removeBlockedDate = async (date: string) => {
+    if (!user) return { error: "Not authenticated" };
+    const { error } = await sb.from("referee_blocked_dates")
+      .delete().eq("user_id", user.id).eq("blocked_date", date);
+    if (!error) await fetch();
+    return { error };
+  };
+
+  return { items, loading, refetch: fetch, addBlockedDate, removeBlockedDate };
+};

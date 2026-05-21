@@ -10,6 +10,7 @@ import { useRefereeContribution, useRefereeTournamentHistory, useRefereeRatings,
 import RateRefereeDialog from "@/components/RateRefereeDialog";
 import RefereeBadgeStrip from "@/components/RefereeBadgeStrip";
 import PayRefereeDialog from "@/components/PayRefereeDialog";
+import RefereeAvailabilityCalendar from "@/components/RefereeAvailabilityCalendar";
 import { useRoles } from "@/hooks/use-roles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -312,6 +313,9 @@ const RefereeProfilePage = () => {
             <p className="text-xs text-foreground/85 leading-relaxed">{data.availability_note}</p>
           </Card>
         )}
+
+        {/* Availability calendar — blocked dates */}
+        {userId && <RefereeAvailabilityCalendar userId={userId} isOwn={isOwn} />}
 
         {/* Earnings (R-F) — owner only */}
         {isOwn && (
