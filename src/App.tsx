@@ -24,6 +24,10 @@ import SettingsPage from "./pages/SettingsPage";
 import MyTicketsPage from "./pages/MyTicketsPage";
 import EventRevenuePage from "./pages/EventRevenuePage";
 import AdminHostPromosPage from "./pages/AdminHostPromosPage";
+import AdminRefereeCertificationsPage from "./pages/AdminRefereeCertificationsPage";
+import RefereeLeaderboardPage from "./pages/RefereeLeaderboardPage";
+import RefereeInvitesPage from "./pages/RefereeInvitesPage";
+import RefereeSchedulePage from "./pages/RefereeSchedulePage";
 import AssistantCheckInPage from "./pages/AssistantCheckInPage";
 import FavoritePartnersPage from "./pages/FavoritePartnersPage";
 import FriendsPage from "./pages/FriendsPage";
@@ -127,6 +131,9 @@ const AppShell = () => {
         <Route path="/referee" element={<ProtectedRoute><RefereeDashboardPage /></ProtectedRoute>} />
         <Route path="/referee/:userId" element={<RefereeProfilePage />} />
         <Route path="/referees" element={<RefereesBrowsePage />} />
+        <Route path="/referees/leaderboard" element={<RefereeLeaderboardPage />} />
+        <Route path="/referee/invites" element={<RefereeInvitesPage />} />
+        <Route path="/referee/schedule" element={<RefereeSchedulePage />} />
         <Route path="/courtside/:tournamentId/:matchId" element={<ProtectedRoute><CourtsideRefereePage /></ProtectedRoute>} />
         <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
         
@@ -136,6 +143,7 @@ const AppShell = () => {
         <Route path="/admin/stats" element={<RequireMaster><AdminStatsPage /></RequireMaster>} />
         <Route path="/admin/coins" element={<RequireMaster><AdminCoinsPage /></RequireMaster>} />
         <Route path="/admin/host-promos" element={<RequireMaster><AdminHostPromosPage /></RequireMaster>} />
+        <Route path="/admin/referee-certifications" element={<RequireMaster><AdminRefereeCertificationsPage /></RequireMaster>} />
         <Route path="/investor-bi" element={<RequireMaster><InvestorBIPage /></RequireMaster>} />
 
         <Route path="/verify" element={<VerificationPage />} />

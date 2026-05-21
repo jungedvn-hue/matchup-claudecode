@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { InvestorBIData } from "@/hooks/useInvestorBI";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { Coins, Gift, MousePointerClick, ShoppingBag, Ticket, Receipt, Users } from "lucide-react";
+import { Coins, Gift, MousePointerClick, ShoppingBag, Ticket, Receipt, Users, Gavel, Star } from "lucide-react";
 
 const fmt = (n: number) => new Intl.NumberFormat("en-US").format(n);
 const vnd = (n: number) => `${new Intl.NumberFormat("en-US").format(n)} ₫`;
@@ -95,6 +95,42 @@ const BIRevenueTab = ({ data }: { data: InvestorBIData }) => {
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.revenue.platformFee30d")}</p>
             </div>
             <p className="text-xl font-stat font-bold mt-1 text-primary">{fmt(data.platformFeeRevenue30d)}</p>
+          </Card>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <h3 className="text-xs font-display font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Gavel className="h-3 w-3" /> {t("investorBI.refMarket.title")}
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
+          <Card className="p-3">
+            <div className="flex items-center gap-2">
+              <Gavel className="h-3.5 w-3.5 text-muted-foreground" />
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.refMarket.activeRefs30d")}</p>
+            </div>
+            <p className="text-xl font-stat font-bold mt-1">{fmt(data.activeReferees30d)}</p>
+          </Card>
+          <Card className="p-3">
+            <div className="flex items-center gap-2">
+              <Ticket className="h-3.5 w-3.5 text-muted-foreground" />
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.refMarket.matches30d")}</p>
+            </div>
+            <p className="text-xl font-stat font-bold mt-1">{fmt(data.tournamentMatchesOfficiated30d)}</p>
+          </Card>
+          <Card className="p-3">
+            <div className="flex items-center gap-2">
+              <Star className="h-3.5 w-3.5 text-amber-500" />
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.refMarket.avgRating")}</p>
+            </div>
+            <p className="text-xl font-stat font-bold mt-1 text-amber-500">{data.avgRefereeRating > 0 ? data.avgRefereeRating.toFixed(2) : "—"}</p>
+          </Card>
+          <Card className="p-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-3.5 w-3.5 text-muted-foreground" />
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{t("investorBI.refMarket.payingHosts30d")}</p>
+            </div>
+            <p className="text-xl font-stat font-bold mt-1">{fmt(data.payingHostsForReferees30d)}</p>
           </Card>
         </div>
       </div>

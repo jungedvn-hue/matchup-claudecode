@@ -15,6 +15,25 @@ export interface RefereeContribution {
   certification_level: "community" | "regional" | "national";
   preferred_locations: string[] | null;
   bio: string | null;
+  sports: string[] | null;
+  formats: string[] | null;
+  languages: string[] | null;
+  rate_per_match_coins: number | null;
+  rate_per_day_coins: number | null;
+  availability_note: string | null;
+  total_earned_coins: number;
+  repeat_hosts_count: number;
+}
+
+export interface RefereeProfileUpdate {
+  bio?: string | null;
+  preferred_locations?: string[] | null;
+  sports?: string[] | null;
+  formats?: string[] | null;
+  languages?: string[] | null;
+  rate_per_match_coins?: number | null;
+  rate_per_day_coins?: number | null;
+  availability_note?: string | null;
 }
 
 export interface RefereeInvite {
@@ -57,7 +76,16 @@ export const useRefereeContribution = (userId?: string) => {
     return { error };
   };
 
-  return { data, loading, refetch: fetch, updateBio };
+  const updateProfile = async (patch: RefereeProfileUpdate) => {
+    if (!user) return { error: "Not authenticated" };
+    const { error } = await sb.from("referee_contributions").upsert({
+      user_id: user.id, ...patch,
+    }, { onConflict: "user_id" });
+    if (!error) await fetch();
+    return { error };
+  };
+
+  return { data, loading, refetch: fetch, updateBio, updateProfile };
 };
 
 // ── useRefereeTournamentHistory ──────────────────────────────────────────────
@@ -292,4 +320,59 @@ export const useRefereeBrowse = (search: string) => {
   }, [search]);
 
   return { results, loading };
+};
+
+// ── Earnings (R-F) ──────────────────────────────────────────────────────────
+export interface RefereeEarningRow {
+  id: string;
+  tournament_id: string;
+  host_user_id: string;
+  amount_coins: number;
+  note: string | null;
+  recorded_at: string;
+  tournament_name?: string | null;
+  host_name?: string | null;
+}
+
+export const useRefereeEarnings = (userId?: string) => {
+  const [items, setItems] = useState<RefereeEarningRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!userId) { setItems([]); setLoading(false); return; }
+    setLoading(true);
+    const { data, error } = await sb.from("referee_earnings")
+      .select("*").eq("user_id", userId).order("recorded_at", { ascending: false });
+    if (error || !data) { setItems([]); setLoading(false); return; }
+    const rows = data as RefereeEarningRow[];
+    const hostIds = Array.from(new Set(rows.map(r => r.host_user_id)));
+    const tourIds = Array.from(new Set(rows.map(r => r.tournament_id)));
+    const [{ data: profiles }, { data: tours }] = await Promise.all([
+      hostIds.length ? sb.from("profiles").select("user_id, display_name").in("user_id", hostIds) : Promise.resolve({ data: [] }),
+      tourIds.length ? sb.from("tournaments").select("id, name").in("id", tourIds) : Promise.resolve({ data: [] }),
+    ]);
+    const pMap = new Map<string, string | null>((profiles ?? []).map((p: any) => [p.user_id, p.display_name]));
+    const tMap = new Map<string, string | null>((tours ?? []).map((t: any) => [t.id, t.name]));
+    setItems(rows.map(r => ({ ...r, host_name: pMap.get(r.host_user_id) ?? null, tournament_name: tMap.get(r.tournament_id) ?? null })));
+    setLoading(false);
+  }, [userId]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { items, loading, refetch: fetch };
+};
+
+export const recordRefereeEarning = async (
+  tournamentId: string,
+  refereeUserId: string,
+  amountCoins: number,
+  note: string | null,
+) => {
+  const { data, error } = await sb.rpc("fn_record_referee_earning", {
+    p_tournament_id: tournamentId,
+    p_referee_user_id: refereeUserId,
+    p_amount_coins: amountCoins,
+    p_note: note,
+  });
+  return { id: data as string | null, error };
 };

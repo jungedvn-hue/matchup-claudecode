@@ -47,6 +47,12 @@ export interface InvestorBIData {
   platformFeeRevenue30d: number;     // 5% fee captured (host credit consumed)
   activePayingHosts30d: number;      // distinct hosts who sold ≥1 ticket
 
+  // Referee market (R-G)
+  activeReferees30d: number;             // distinct referees with ≥1 officiated match in 30d
+  tournamentMatchesOfficiated30d: number; // count of officiated matches in 30d
+  avgRefereeRating: number;              // mean rating_avg across rated referees
+  payingHostsForReferees30d: number;     // distinct hosts who paid ≥1 referee in 30d
+
   generatedAt: number;
 }
 
@@ -90,6 +96,12 @@ export const useInvestorBI = () => {
         supabase.from("affiliate_clicks").select("id").gte("clicked_at", since7),
         supabase.from("event_tickets").select("id, paid_amount, status, paid_at, event_id").gte("paid_at", since30),
         supabase.from("host_credit_transactions").select("amount, kind, created_at").eq("kind", "fee").gte("created_at", since30),
+      ]);
+
+      const [refHistRes, refContribRes, refEarnRes] = await Promise.all([
+        supabase.from("referee_tournament_history").select("user_id, matches_count, last_match_at").gte("last_match_at", since30),
+        supabase.from("referee_contributions").select("rating_avg, rating_count"),
+        supabase.from("referee_earnings").select("host_user_id, recorded_at").gte("recorded_at", since30),
       ]);
 
       const profiles = profilesRes.data ?? [];
@@ -261,6 +273,16 @@ export const useInvestorBI = () => {
       const eventHostMap = new Map(((eventsRes.data ?? []) as any[]).map((e: any) => [e.id, e.created_by]));
       const activePayingHosts30d = new Set(paidValid.map(t => eventHostMap.get(t.event_id)).filter(Boolean)).size;
 
+      // ── Referee market (R-G)
+      const refHist = (refHistRes.data ?? []) as Array<{ user_id: string; matches_count: number; last_match_at: string }>;
+      const activeReferees30d = new Set(refHist.map(r => r.user_id)).size;
+      const tournamentMatchesOfficiated30d = refHist.reduce((s, r) => s + Number(r.matches_count ?? 0), 0);
+      const refContribs = (refContribRes.data ?? []) as Array<{ rating_avg: number | null; rating_count: number }>;
+      const rated = refContribs.filter(r => (r.rating_count ?? 0) > 0 && r.rating_avg != null);
+      const avgRefereeRating = rated.length > 0 ? rated.reduce((s, r) => s + Number(r.rating_avg ?? 0), 0) / rated.length : 0;
+      const refEarn = (refEarnRes.data ?? []) as Array<{ host_user_id: string }>;
+      const payingHostsForReferees30d = new Set(refEarn.map(r => r.host_user_id)).size;
+
       setData({
         totalUsers: profiles.length,
         totalGroups: groups.length,
@@ -277,6 +299,7 @@ export const useInvestorBI = () => {
         retentionD1, retentionD7, retentionD30,
         coinVolume7d, giftingVolume30d, affiliateClicks7d, estimatedGMV, coinTrend,
         ticketsSold30d, ticketRevenue30d, platformFeeRevenue30d, activePayingHosts30d,
+        activeReferees30d, tournamentMatchesOfficiated30d, avgRefereeRating, payingHostsForReferees30d,
         generatedAt: Date.now(),
       });
     } catch (e) {

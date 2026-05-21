@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Search, Loader2, Gavel, Star, Trophy, ShieldCheck, MapPin } from "lucide-react";
+import { Search, Loader2, Gavel, Star, Trophy, ShieldCheck, MapPin, Coins } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,12 @@ const RefereesBrowsePage = () => {
   return (
     <div className="min-h-screen pb-20">
       <PageHeader title={t("refBrowse.title")} back>
+        <button
+          onClick={() => navigate("/referees/leaderboard")}
+          className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
+        >
+          <Trophy className="h-3 w-3" /> {t("refLB.title")}
+        </button>
         <div className="mt-3 relative">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -80,7 +86,19 @@ const RefereesBrowsePage = () => {
                           <MapPin className="h-3 w-3" />{r.location}
                         </span>
                       )}
+                      {r.rate_per_match_coins != null && (
+                        <span className="inline-flex items-center gap-0.5 font-stat tabular-nums text-primary">
+                          <Coins className="h-3 w-3" />{r.rate_per_match_coins}/{t("ref.profile.matchShort")}
+                        </span>
+                      )}
                     </div>
+                    {(r.sports?.length ?? 0) > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {r.sports!.slice(0, 3).map(s => (
+                          <span key={s} className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold uppercase tracking-wide">{s}</span>
+                        ))}
+                      </div>
+                    )}
                   </button>
 
                   {isHost && user?.id !== r.user_id && (
