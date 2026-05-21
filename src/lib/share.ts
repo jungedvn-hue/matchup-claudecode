@@ -4,6 +4,9 @@ export const buildGroupUrl = (groupId: string) =>
 export const buildEventUrl = (groupId: string, eventId: string) =>
   `${window.location.origin}/group/${groupId}?event=${eventId}`;
 
+export const buildRefereeUrl = (userId: string) =>
+  `${window.location.origin}/referee/${userId}`;
+
 export type ShareOutcome = "shared" | "copied" | "failed";
 
 export const shareOrCopy = async (payload: {

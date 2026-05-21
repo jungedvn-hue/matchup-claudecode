@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gavel, Star, MapPin, Trophy, Activity, Loader2, Edit, Coins, Calendar, Globe2, CalendarClock, Inbox } from "lucide-react";
+import { ArrowLeft, Gavel, Star, MapPin, Trophy, Activity, Loader2, Edit, Coins, Calendar, Globe2, CalendarClock, Inbox, Share2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -11,6 +11,7 @@ import RateRefereeDialog from "@/components/RateRefereeDialog";
 import RefereeBadgeStrip from "@/components/RefereeBadgeStrip";
 import PayRefereeDialog from "@/components/PayRefereeDialog";
 import RefereeAvailabilityCalendar from "@/components/RefereeAvailabilityCalendar";
+import RefereeShareCardDialog from "@/components/RefereeShareCardDialog";
 import { useRoles } from "@/hooks/use-roles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -37,6 +38,7 @@ const RefereeProfilePage = () => {
   const viewerIsHost = viewerRoles.includes("host") || viewerRoles.includes("master");
   const [rateOpen, setRateOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; location: string | null } | null>(null);
   const [isVerifiedReferee, setIsVerifiedReferee] = useState(false);
@@ -205,6 +207,16 @@ const RefereeProfilePage = () => {
             )}
           </Card>
         </motion.div>
+
+        {/* Share card */}
+        {data && (
+          <button
+            onClick={() => setShareOpen(true)}
+            className="w-full rounded-xl bg-card border border-border p-3 flex items-center justify-center gap-2 hover:border-primary/30 transition-colors text-sm font-bold text-foreground"
+          >
+            <Share2 className="h-4 w-4 text-primary" /> {t("refShare.cta")}
+          </button>
+        )}
 
         {/* Owner quick actions */}
         {isOwn && (
@@ -439,6 +451,25 @@ const RefereeProfilePage = () => {
           refereeUserId={userId}
           refereeName={profile?.display_name ?? "—"}
           onRecorded={() => { refetchContrib(); refetchEarnings(); }}
+        />
+      )}
+
+      {userId && data && (
+        <RefereeShareCardDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          data={{
+            userId,
+            name: profile?.display_name ?? "—",
+            avatarUrl: profile?.avatar_url ?? null,
+            location: profile?.location ?? null,
+            matchesOfficiated: data.matches_officiated ?? 0,
+            tournamentsCount: data.tournaments_count ?? 0,
+            ratingAvg: data.rating_avg,
+            ratingCount: data.rating_count ?? 0,
+            certificationLevel: data.certification_level ?? "community",
+            sports: data.sports,
+          }}
         />
       )}
 
