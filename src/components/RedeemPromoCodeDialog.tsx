@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { redeemHostPromoCode } from "@/hooks/useHostCredit";
-import { formatCoin } from "@/hooks/useCoin";
+import { formatPoint } from "@/hooks/usePoints";
 import { toast } from "sonner";
 
 interface Props {
@@ -26,7 +26,7 @@ const RedeemPromoCodeDialog = ({ open, onOpenChange, onSuccess }: Props) => {
     const { newBalance, error } = await redeemHostPromoCode(trimmed);
     setSaving(false);
     if (error) { toast.error(t("hostCredit.promo.invalid")); return; }
-    toast.success(t("hostCredit.promo.success", { balance: formatCoin(newBalance ?? 0) }));
+    toast.success(t("hostCredit.promo.success", { balance: formatPoint(newBalance ?? 0) }));
     setCode("");
     onSuccess?.();
     onOpenChange(false);

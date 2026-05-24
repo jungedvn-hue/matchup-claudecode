@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Gift, Coins, Loader2, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useGiftCatalog, useSendGift, useCoinBalance, formatCoin, type Gift as GiftType } from "@/hooks/useCoin";
+import { useGiftCatalog, useSendGift, usePointBalance, formatPoint, type Gift as GiftType } from "@/hooks/usePoints";
 import { toast } from "sonner";
 
 interface Props {
@@ -21,7 +21,7 @@ const GiftPickerDialog = ({ open, onOpenChange, receiverId, receiverName, contex
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { gifts, loading } = useGiftCatalog();
-  const { balance, refetch: refetchBalance } = useCoinBalance();
+  const { balance, refetch: refetchBalance } = usePointBalance();
   const sendGift = useSendGift();
   const [selected, setSelected] = useState<GiftType | null>(null);
   const [message, setMessage] = useState("");
@@ -59,7 +59,7 @@ const GiftPickerDialog = ({ open, onOpenChange, receiverId, receiverName, contex
           <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-500/10">
             <div className="flex items-center gap-1.5">
               <Coins className="h-3.5 w-3.5 text-amber-500" />
-              <span className="text-xs font-semibold text-foreground">{formatCoin(balance?.balance ?? 0)}</span>
+              <span className="text-xs font-semibold text-foreground">{formatPoint(balance?.balance ?? 0)}</span>
               <span className="text-[10px] text-muted-foreground">{t("wallet.coins")}</span>
             </div>
             <button onClick={() => navigate("/wallet/topup")} className="text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
@@ -90,7 +90,7 @@ const GiftPickerDialog = ({ open, onOpenChange, receiverId, receiverName, contex
                     <div className="text-2xl">{g.emoji}</div>
                     <div className="flex items-center justify-center gap-0.5 mt-1">
                       <Coins className="h-2.5 w-2.5 text-amber-500" />
-                      <span className="text-[10px] font-bold text-foreground tabular-nums">{formatCoin(g.coin_cost)}</span>
+                      <span className="text-[10px] font-bold text-foreground tabular-nums">{formatPoint(g.coin_cost)}</span>
                     </div>
                   </motion.button>
                 );
@@ -118,7 +118,7 @@ const GiftPickerDialog = ({ open, onOpenChange, receiverId, receiverName, contex
               className="flex-1 h-10 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
-              {selected ? `${formatCoin(selected.coin_cost)}` : t("gift.send")}
+              {selected ? `${formatPoint(selected.coin_cost)}` : t("gift.send")}
             </button>
           </div>
         </div>

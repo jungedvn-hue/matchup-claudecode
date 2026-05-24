@@ -5,7 +5,7 @@ import { ArrowLeft, Coins, Sparkles, Loader2, CheckCircle2, XCircle, Clock, Buil
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useCoinPackages, useCreatePayment, usePaymentOrderStatus, formatCoin, formatVnd, type PaymentOrder } from "@/hooks/useCoin";
+import { usePointPackages, useCreatePayment, usePaymentOrderStatus, formatPoint, formatVnd, type PaymentOrder } from "@/hooks/usePoints";
 import { toast } from "sonner";
 
 const PaymentModal = ({ order, onClose, onSuccess }: { order: PaymentOrder; onClose: () => void; onSuccess: () => void }) => {
@@ -21,7 +21,7 @@ const PaymentModal = ({ order, onClose, onSuccess }: { order: PaymentOrder; onCl
             <CheckCircle2 className="h-8 w-8 text-primary" />
           </motion.div>
           <h3 className="text-lg font-display font-bold text-foreground">{t("topup.success")}</h3>
-          <p className="text-sm text-muted-foreground mt-1">+{formatCoin(current.coins_to_credit)} {t("wallet.coins")}</p>
+          <p className="text-sm text-muted-foreground mt-1">+{formatPoint(current.coins_to_credit)} {t("wallet.coins")}</p>
           <button onClick={onSuccess} className="mt-5 w-full h-11 rounded-xl bg-primary text-primary-foreground font-bold">
             {t("topup.viewWallet")}
           </button>
@@ -57,7 +57,7 @@ const PaymentModal = ({ order, onClose, onSuccess }: { order: PaymentOrder; onCl
       <div className="space-y-4 pt-1">
         <div className="text-center">
           <p className="text-2xl font-display font-bold text-foreground">{formatVnd(current.amount_vnd)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{t("topup.willCredit")} {formatCoin(current.coins_to_credit)} {t("wallet.coins")}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t("topup.willCredit")} {formatPoint(current.coins_to_credit)} {t("wallet.coins")}</p>
         </div>
 
         {current.qr_code_url ? (
@@ -92,7 +92,7 @@ const PaymentModal = ({ order, onClose, onSuccess }: { order: PaymentOrder; onCl
 const TopupPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { packages, loading } = useCoinPackages();
+  const { packages, loading } = usePointPackages();
   const createPayment = useCreatePayment();
   const [creatingId, setCreatingId] = useState<string | null>(null);
   const [activeOrder, setActiveOrder] = useState<PaymentOrder | null>(null);
@@ -151,12 +151,12 @@ const TopupPage = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-base font-display font-bold text-foreground tabular-nums">
-                          {formatCoin(totalCoins)}
+                          {formatPoint(totalCoins)}
                         </p>
                         <p className="text-xs font-semibold text-muted-foreground">{t("wallet.coins")}</p>
                         {pkg.bonus_coins > 0 && (
                           <span className="ml-1 px-1.5 py-0.5 rounded bg-primary/10 text-primary dark:text-primary text-[9px] font-bold flex items-center gap-0.5">
-                            <Sparkles className="h-2.5 w-2.5" /> +{formatCoin(pkg.bonus_coins)}
+                            <Sparkles className="h-2.5 w-2.5" /> +{formatPoint(pkg.bonus_coins)}
                           </span>
                         )}
                       </div>

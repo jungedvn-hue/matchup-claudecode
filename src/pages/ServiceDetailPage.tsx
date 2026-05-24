@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useCoinBalance, formatCoin, formatVnd, COIN_TO_VND } from "@/hooks/useCoin";
+import { usePointBalance, formatPoint, formatVnd, POINT_TO_VND } from "@/hooks/usePoints";
 import type { Product, Store } from "@/hooks/useStores";
 import { logAffiliateClick, AFFILIATE_SOURCES } from "@/hooks/useStores";
 import { ExternalLink } from "lucide-react";
@@ -25,7 +25,7 @@ const ServiceDetailPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { balance, refetch: refetchBalance } = useCoinBalance();
+  const { balance, refetch: refetchBalance } = usePointBalance();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [store, setStore] = useState<Store | null>(null);
@@ -70,7 +70,7 @@ const ServiceDetailPage = () => {
   const isService = SERVICE_CATEGORIES.includes(product.category);
   const isOwner = user?.id === store.owner_user_id;
   const hasPrice = product.price && product.price > 0;
-  const unitCoins = hasPrice ? Math.ceil(product.price! / COIN_TO_VND) : 0;
+  const unitCoins = hasPrice ? Math.ceil(product.price! / POINT_TO_VND) : 0;
   const totalCoins = unitCoins * qty;
   const canAfford = (balance?.balance ?? 0) >= totalCoins;
   const images = (product.images && product.images.length > 0) ? product.images : [];
@@ -159,7 +159,7 @@ const ServiceDetailPage = () => {
             <div className="flex items-baseline gap-3 mt-2 flex-wrap">
               <p className="text-2xl font-display font-bold text-foreground">{formatVnd(product.price!)}</p>
               <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                <Coins className="h-3.5 w-3.5" /> {formatCoin(unitCoins)} {t("wallet.coins")}
+                <Coins className="h-3.5 w-3.5" /> {formatPoint(unitCoins)} {t("wallet.coins")}
               </p>
             </div>
           ) : product.price_display ? (
@@ -277,7 +277,7 @@ const ServiceDetailPage = () => {
                 <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">{t("service.totalPay")}</p>
                 <div className="flex items-baseline gap-1.5">
                   <Coins className="h-4 w-4 text-amber-500" />
-                  <p className="text-lg font-display font-bold tabular-nums text-foreground">{formatCoin(totalCoins)}</p>
+                  <p className="text-lg font-display font-bold tabular-nums text-foreground">{formatPoint(totalCoins)}</p>
                   <p className="text-[10px] text-muted-foreground">{t("wallet.coins")}</p>
                 </div>
               </div>

@@ -115,7 +115,7 @@ const EditProfilePage = () => {
     <div className="pb-20 min-h-screen">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/profile")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
+          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
           </button>
           <h1 className="text-lg font-display font-bold text-foreground">{t("editProfile.title")}</h1>

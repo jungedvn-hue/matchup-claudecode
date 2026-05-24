@@ -112,7 +112,7 @@ const TournamentLivePage = () => {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/tournaments")} className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
+          <button onClick={() => navigate(-1)} className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center">
             <ArrowLeft className="h-4 w-4 text-foreground" />
           </button>
           <div className="flex-1">

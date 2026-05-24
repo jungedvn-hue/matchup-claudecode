@@ -5,7 +5,7 @@ import {
   ArrowLeft, Package, Calendar, Star, MessageSquare, Plus, Pencil,
   ChevronRight, Store, Loader2, Coins, TrendingUp, ShoppingBag,
 } from "lucide-react";
-import { formatCoin } from "@/hooks/useCoin";
+import { formatPoint } from "@/hooks/usePoints";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -103,7 +103,7 @@ const StoreDashboardPage = () => {
             <div className="mt-2 flex items-end justify-between gap-3">
               <div>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-3xl font-stat font-bold text-foreground tabular-nums">{formatCoin(totalEarnedCoins)}</p>
+                  <p className="text-3xl font-stat font-bold text-foreground tabular-nums">{formatPoint(totalEarnedCoins)}</p>
                   <p className="text-xs font-semibold text-muted-foreground">{t("wallet.coins")}</p>
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -195,7 +195,7 @@ const StoreDashboardPage = () => {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-sm font-display font-bold text-primary dark:text-primary tabular-nums flex items-center gap-1 justify-end">
-                      <Coins className="h-3 w-3 text-amber-500" /> +{formatCoin(b.total_coins ?? 0)}
+                      <Coins className="h-3 w-3 text-amber-500" /> +{formatPoint(b.total_coins ?? 0)}
                     </p>
                   </div>
                 </Card>

@@ -3,7 +3,7 @@ import { Wallet, Plus, Gift, ArrowUpRight, ArrowDownRight, Loader2 } from "lucid
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useHostCredit } from "@/hooks/useHostCredit";
-import { formatCoin } from "@/hooks/useCoin";
+import { formatPoint } from "@/hooks/usePoints";
 import TopUpHostCreditDialog from "./TopUpHostCreditDialog";
 import RedeemPromoCodeDialog from "./RedeemPromoCodeDialog";
 
@@ -41,7 +41,7 @@ const HostCreditCard = () => {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/40" />
             ) : (
               <p className="font-stat font-bold text-3xl text-foreground tabular-nums leading-none">
-                {formatCoin(balance?.balance ?? 0)}
+                {formatPoint(balance?.balance ?? 0)}
               </p>
             )}
             <p className="text-[10px] text-muted-foreground mt-1.5 uppercase font-semibold tracking-wide">
@@ -53,13 +53,13 @@ const HostCreditCard = () => {
             <div className="flex gap-3 text-right">
               <div>
                 <p className="font-stat text-xs font-bold text-primary tabular-nums leading-none flex items-center gap-0.5 justify-end">
-                  <ArrowUpRight className="h-3 w-3" />{formatCoin(balance.lifetime_topped_up)}
+                  <ArrowUpRight className="h-3 w-3" />{formatPoint(balance.lifetime_topped_up)}
                 </p>
                 <p className="text-[9px] text-muted-foreground mt-1 uppercase font-semibold">{t("hostCredit.card.toppedUp")}</p>
               </div>
               <div>
                 <p className="font-stat text-xs font-bold text-muted-foreground tabular-nums leading-none flex items-center gap-0.5 justify-end">
-                  <ArrowDownRight className="h-3 w-3" />{formatCoin(balance.lifetime_consumed)}
+                  <ArrowDownRight className="h-3 w-3" />{formatPoint(balance.lifetime_consumed)}
                 </p>
                 <p className="text-[9px] text-muted-foreground mt-1 uppercase font-semibold">{t("hostCredit.card.consumed")}</p>
               </div>

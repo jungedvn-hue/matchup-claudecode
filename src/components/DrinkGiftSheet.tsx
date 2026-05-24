@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useDrinkMenu, useGiftDrink, type MenuItem } from "@/hooks/useDrinkMenu";
-import { useCoinBalance } from "@/hooks/useCoin";
+import { usePointBalance } from "@/hooks/usePoints";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ const DrinkGiftSheet = ({ open, onOpenChange, groupId, toUserId, toUserName, onS
   const { t, language } = useLanguage();
   const { items, loading } = useDrinkMenu(open ? groupId : undefined);
   const { sendDrinkGift } = useGiftDrink();
-  const { balance, refetch: refetchBalance } = useCoinBalance();
+  const { balance, refetch: refetchBalance } = usePointBalance();
 
   const [step, setStep] = useState<"pick" | "tip" | "confirm">("pick");
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);

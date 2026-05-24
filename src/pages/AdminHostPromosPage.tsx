@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCoin } from "@/hooks/useCoin";
+import { formatPoint } from "@/hooks/usePoints";
 import BrandEmptyState from "@/components/BrandEmptyState";
 import { toast } from "sonner";
 
@@ -148,7 +148,7 @@ const AdminHostPromosPage = () => {
 
                     <div className="grid grid-cols-3 gap-2 mt-2 text-center">
                       <div>
-                        <p className="font-stat font-bold text-sm text-foreground tabular-nums leading-none">{formatCoin(c.credit_amount)}</p>
+                        <p className="font-stat font-bold text-sm text-foreground tabular-nums leading-none">{formatPoint(c.credit_amount)}</p>
                         <p className="text-[9px] text-muted-foreground uppercase font-semibold mt-1">{t("adminPromos.credit")}</p>
                       </div>
                       <div>

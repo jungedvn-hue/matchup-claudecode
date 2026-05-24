@@ -9,7 +9,7 @@ import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useMyTickets, type EventTicket } from "@/hooks/useTickets";
 import { refundEventTicket } from "@/hooks/useHostCredit";
-import { formatCoin } from "@/hooks/useCoin";
+import { formatPoint } from "@/hooks/usePoints";
 import { toast } from "sonner";
 
 const fmtDate = (iso?: string | null) => {
@@ -25,12 +25,12 @@ const MyTicketsPage = () => {
   const [refunding, setRefunding] = useState<string | null>(null);
 
   const handleRefund = async (tk: EventTicket) => {
-    if (!confirm(t("tickets.refundConfirm", { amount: formatCoin(tk.paid_amount) }))) return;
+    if (!confirm(t("tickets.refundConfirm", { amount: formatPoint(tk.paid_amount) }))) return;
     setRefunding(tk.id);
     const { error } = await refundEventTicket(tk.id);
     setRefunding(null);
     if (error) { toast.error(error); return; }
-    toast.success(t("tickets.refundDone", { amount: formatCoin(tk.paid_amount) }));
+    toast.success(t("tickets.refundDone", { amount: formatPoint(tk.paid_amount) }));
     await refetch();
   };
 
@@ -107,7 +107,7 @@ const MyTicketsPage = () => {
                     {tk.paid_amount > 0 && (
                       <div className="flex items-center gap-1.5 mt-1.5">
                         <span className="inline-flex items-center gap-1 text-[10px] font-stat font-bold text-primary tabular-nums px-1.5 py-0.5 rounded bg-primary/10">
-                          <Coins className="h-2.5 w-2.5" /> {formatCoin(tk.paid_amount)}
+                          <Coins className="h-2.5 w-2.5" /> {formatPoint(tk.paid_amount)}
                         </span>
                         {tk.status === "cancelled" && tk.refunded_at && (
                           <span className="text-[10px] text-muted-foreground">· {t("tickets.refundedOn", { date: fmtDate(tk.refunded_at) })}</span>

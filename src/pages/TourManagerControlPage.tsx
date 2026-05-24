@@ -592,7 +592,7 @@ const TourManagerControlPage = () => {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="flex items-center gap-2 mb-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/tour-manager")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">

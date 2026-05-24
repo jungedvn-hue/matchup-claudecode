@@ -52,7 +52,7 @@ const StoreBookingsPage = () => {
     <div className="pb-24 min-h-screen">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
-          <button onClick={() => navigate("/my-store")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center hover:bg-secondary/70 transition-colors">
+          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center hover:bg-secondary/70 transition-colors">
             <ArrowLeft className="h-4 w-4 text-foreground" />
           </button>
           <h1 className="text-base font-display font-bold text-foreground">{t("store.booking.title")}</h1>

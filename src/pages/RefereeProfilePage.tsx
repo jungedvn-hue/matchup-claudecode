@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { useRefereeContribution, useRefereeTournamentHistory, useRefereeRatings, useCanRateReferee, useRefereeEarnings } from "@/hooks/useReferee";
+import { useRefereeContribution, useRefereeTournamentHistory, useRefereeRatings, useCanRateReferee, useRefereeEarnings, useRefereeAttendance } from "@/hooks/useReferee";
 import RateRefereeDialog from "@/components/RateRefereeDialog";
 import RefereeBadgeStrip from "@/components/RefereeBadgeStrip";
 import PayRefereeDialog from "@/components/PayRefereeDialog";
@@ -24,8 +24,11 @@ const CERT_NAMES: Record<string, string> = {
   national: "National",
 };
 
-const RefereeProfilePage = () => {
-  const { userId } = useParams<{ userId: string }>();
+interface Props { userIdOverride?: string; embedded?: boolean }
+
+const RefereeProfilePage = ({ userIdOverride, embedded }: Props = {}) => {
+  const params = useParams<{ userId: string }>();
+  const userId = userIdOverride ?? params.userId;
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -34,6 +37,8 @@ const RefereeProfilePage = () => {
   const { items: ratings, refetch: refetchRatings } = useRefereeRatings(userId, 5);
   const { eligible: canRate, hostedTournaments } = useCanRateReferee(userId);
   const { items: earnings, loading: earningsLoading, refetch: refetchEarnings } = useRefereeEarnings(user?.id === userId ? userId : undefined);
+  const { items: attendance } = useRefereeAttendance(user?.id === userId ? userId : undefined);
+  const attMap = new Map(attendance.map(a => [a.tournament_id, a]));
   const viewerRoles = useRoles();
   const viewerIsHost = viewerRoles.includes("host") || viewerRoles.includes("master");
   const [rateOpen, setRateOpen] = useState(false);
@@ -110,19 +115,21 @@ const RefereeProfilePage = () => {
   };
 
   return (
-    <div className="pb-20 min-h-screen">
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
-        <div className="flex items-center gap-3 max-w-2xl mx-auto">
-          <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
-            <Gavel className="h-5 w-5 text-blue-500" /> {t("ref.profile.title")}
-          </h1>
+    <div className={embedded ? "" : "pb-20 min-h-screen"}>
+      {!embedded && (
+        <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
+          <div className="flex items-center gap-3 max-w-2xl mx-auto">
+            <button onClick={() => navigate(-1)} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
+              <Gavel className="h-5 w-5 text-blue-500" /> {t("ref.profile.title")}
+            </h1>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="px-4 pt-4 max-w-2xl mx-auto space-y-4">
+      <div className={embedded ? "space-y-4" : "px-4 pt-4 max-w-2xl mx-auto space-y-4"}>
         {/* Hero card */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="p-5 shadow-card bg-gradient-to-br from-blue-500/10 via-card to-card border-blue-500/20">
@@ -216,26 +223,6 @@ const RefereeProfilePage = () => {
           >
             <Share2 className="h-4 w-4 text-primary" /> {t("refShare.cta")}
           </button>
-        )}
-
-        {/* Owner quick actions */}
-        {isOwn && (
-          <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => navigate("/referee/invites")} className="rounded-xl bg-card border border-border p-3 flex items-center gap-2 hover:border-primary/30 transition-colors text-left">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><Inbox className="h-4 w-4" /></div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground">{t("refInvites.title")}</p>
-                <p className="text-[10px] text-muted-foreground">{t("refInvites.navDesc")}</p>
-              </div>
-            </button>
-            <button onClick={() => navigate("/referee/schedule")} className="rounded-xl bg-card border border-border p-3 flex items-center gap-2 hover:border-primary/30 transition-colors text-left">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><CalendarClock className="h-4 w-4" /></div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground">{t("refSchedule.title")}</p>
-                <p className="text-[10px] text-muted-foreground">{t("refSchedule.navDesc")}</p>
-              </div>
-            </button>
-          </div>
         )}
 
         {/* Stats */}
@@ -351,16 +338,41 @@ const RefereeProfilePage = () => {
               <p className="text-[11px] text-center text-muted-foreground py-2">{t("ref.profile.noEarnings")}</p>
             ) : (
               <div className="space-y-1.5">
-                {earnings.slice(0, 5).map(e => (
-                  <div key={e.id} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-2.5">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-foreground truncate">{e.tournament_name ?? "—"}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{e.host_name ?? "—"} · {new Date(e.recorded_at).toLocaleDateString("vi-VN")}</p>
-                      {e.note && <p className="text-[10px] text-foreground/70 mt-0.5 truncate">{e.note}</p>}
+                {earnings.slice(0, 5).map(e => {
+                  const att = attMap.get(e.tournament_id);
+                  const fmtT = (s: string | null) => s ? new Date(s).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "";
+                  return (
+                    <div key={e.id} className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-2.5">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-foreground truncate">{e.tournament_name ?? "—"}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{e.host_name ?? "—"} · {new Date(e.recorded_at).toLocaleDateString("vi-VN")}</p>
+                        {att && (att.check_in_at || att.check_out_at) && (
+                          <p className="text-[10px] text-primary/80 mt-0.5">
+                            <CalendarClock className="h-2.5 w-2.5 inline mr-1" />
+                            {fmtT(att.check_in_at)}{att.check_out_at ? ` – ${fmtT(att.check_out_at)}` : ""}
+                          </p>
+                        )}
+                        {e.note && <p className="text-[10px] text-foreground/70 mt-0.5 truncate">{e.note}</p>}
+                      </div>
+                      <p className="font-stat font-bold text-sm text-amber-600 dark:text-amber-400 tabular-nums shrink-0">+{e.amount_coins}</p>
                     </div>
-                    <p className="font-stat font-bold text-sm text-amber-600 dark:text-amber-400 tabular-nums shrink-0">+{e.amount_coins}</p>
-                  </div>
-                ))}
+                  );
+                })}
+                {/* Attendance-only entries (no earning recorded) */}
+                {attendance.filter(a => !earnings.some(e => e.tournament_id === a.tournament_id) && a.check_in_at).slice(0, 5).map(a => {
+                  const fmtT = (s: string | null) => s ? new Date(s).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "";
+                  return (
+                    <div key={a.id} className="flex items-center justify-between gap-2 rounded-lg border border-dashed border-border bg-card/50 p-2.5">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-foreground truncate">{new Date(a.check_in_at!).toLocaleDateString("vi-VN")}</p>
+                        <p className="text-[10px] text-primary/80 mt-0.5">
+                          <CalendarClock className="h-2.5 w-2.5 inline mr-1" />
+                          {fmtT(a.check_in_at)}{a.check_out_at ? ` – ${fmtT(a.check_out_at)}` : ` · ${t("ref.attendance.ongoing")}`}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </Card>

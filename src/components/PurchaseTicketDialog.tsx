@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useCoinBalance, formatCoin } from "@/hooks/useCoin";
+import { usePointBalance, formatPoint } from "@/hooks/usePoints";
 import { purchaseEventTicket } from "@/hooks/useHostCredit";
 import { toast } from "sonner";
 
@@ -22,7 +22,7 @@ interface Props {
 const PurchaseTicketDialog = ({ open, onOpenChange, eventId, eventTitle, eventDate, priceCoins, refundHours, onSuccess }: Props) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { balance: wallet, refetch: refetchWallet } = useCoinBalance();
+  const { balance: wallet, refetch: refetchWallet } = usePointBalance();
   const [saving, setSaving] = useState(false);
 
   const walletBalance = wallet?.balance ?? 0;
@@ -71,20 +71,20 @@ const PurchaseTicketDialog = ({ open, onOpenChange, eventId, eventTitle, eventDa
               <Coins className="h-4 w-4" />
               <span className="text-[10px] uppercase font-bold tracking-wider">{t("buyTicket.price")}</span>
             </div>
-            <p className="font-stat font-bold text-3xl text-primary tabular-nums mt-1.5 leading-none">{formatCoin(priceCoins)}</p>
+            <p className="font-stat font-bold text-3xl text-primary tabular-nums mt-1.5 leading-none">{formatPoint(priceCoins)}</p>
           </div>
 
           {/* Wallet before/after */}
           <div className="rounded-xl bg-secondary/40 p-3 flex items-center justify-between">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("buyTicket.walletNow")}</p>
-              <p className="font-stat font-bold text-base text-foreground tabular-nums mt-0.5">{formatCoin(walletBalance)}</p>
+              <p className="font-stat font-bold text-base text-foreground tabular-nums mt-0.5">{formatPoint(walletBalance)}</p>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="text-right">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("buyTicket.afterPurchase")}</p>
               <p className={`font-stat font-bold text-base tabular-nums mt-0.5 ${insufficient ? "text-destructive" : "text-foreground"}`}>
-                {formatCoin(Math.max(0, after))}
+                {formatPoint(Math.max(0, after))}
               </p>
             </div>
           </div>

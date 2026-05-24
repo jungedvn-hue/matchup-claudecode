@@ -5,22 +5,22 @@ import { useAuth } from "@/context/AuthContext";
 const sb = supabase as unknown as { from: (t: string) => any; rpc: (fn: string, args?: any) => any; functions: { invoke: (name: string, opts?: any) => any } };
 
 // 1 coin = 100 VND
-export const COIN_TO_VND = 100;
-export const formatCoin = (n: number | bigint) => Number(n).toLocaleString("vi-VN");
+export const POINT_TO_VND = 100;
+export const formatPoint = (n: number | bigint) => Number(n).toLocaleString("vi-VN");
 export const formatVnd = (n: number | bigint) => `${Number(n).toLocaleString("vi-VN")}đ`;
 
-export type CoinTxType = "purchase" | "gift_sent" | "gift_received" | "spend" | "refund" | "admin_grant";
+export type PointTxType = "purchase" | "gift_sent" | "gift_received" | "spend" | "refund" | "admin_grant";
 
-export interface CoinBalance {
+export interface PointBalance {
   user_id: string;
   balance: number;
   lifetime_earned: number;
   lifetime_spent: number;
 }
 
-export interface CoinTransaction {
+export interface PointTransaction {
   id: string;
-  type: CoinTxType;
+  type: PointTxType;
   amount: number;
   balance_after: number;
   ref_type: string | null;
@@ -29,7 +29,7 @@ export interface CoinTransaction {
   created_at: string;
 }
 
-export interface CoinPackage {
+export interface PointPackage {
   id: string;
   name: string;
   coin_amount: number;
@@ -68,16 +68,16 @@ export interface PaymentOrder {
 }
 
 // ── Balance ──────────────────────────────────────────────────────────────────
-export const useCoinBalance = () => {
+export const usePointBalance = () => {
   const { user } = useAuth();
-  const [balance, setBalance] = useState<CoinBalance | null>(null);
+  const [balance, setBalance] = useState<PointBalance | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
     if (!user) { setBalance(null); setLoading(false); return; }
     setLoading(true);
     const { data } = await sb.from("coin_balances").select("*").eq("user_id", user.id).maybeSingle();
-    setBalance((data as CoinBalance) ?? { user_id: user.id, balance: 0, lifetime_earned: 0, lifetime_spent: 0 });
+    setBalance((data as PointBalance) ?? { user_id: user.id, balance: 0, lifetime_earned: 0, lifetime_spent: 0 });
     setLoading(false);
   }, [user]);
 
@@ -86,9 +86,9 @@ export const useCoinBalance = () => {
 };
 
 // ── Transactions ─────────────────────────────────────────────────────────────
-export const useCoinTransactions = (limit = 50) => {
+export const usePointTransactions = (limit = 50) => {
   const { user } = useAuth();
-  const [items, setItems] = useState<CoinTransaction[]>([]);
+  const [items, setItems] = useState<PointTransaction[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
@@ -98,7 +98,7 @@ export const useCoinTransactions = (limit = 50) => {
       .select("*").eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(limit);
-    setItems((data as CoinTransaction[]) ?? []);
+    setItems((data as PointTransaction[]) ?? []);
     setLoading(false);
   }, [user, limit]);
 
@@ -107,8 +107,8 @@ export const useCoinTransactions = (limit = 50) => {
 };
 
 // ── Packages ─────────────────────────────────────────────────────────────────
-export const useCoinPackages = () => {
-  const [packages, setPackages] = useState<CoinPackage[]>([]);
+export const usePointPackages = () => {
+  const [packages, setPackages] = useState<PointPackage[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -117,7 +117,7 @@ export const useCoinPackages = () => {
       const { data } = await sb.from("coin_packages")
         .select("*").eq("is_active", true)
         .order("sort_order", { ascending: true });
-      if (!cancelled) { setPackages((data as CoinPackage[]) ?? []); setLoading(false); }
+      if (!cancelled) { setPackages((data as PointPackage[]) ?? []); setLoading(false); }
     })();
     return () => { cancelled = true; };
   }, []);

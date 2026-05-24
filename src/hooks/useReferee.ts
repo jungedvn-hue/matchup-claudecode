@@ -426,3 +426,53 @@ export const useRefereeBlockedDates = (userId?: string) => {
 
   return { items, loading, refetch: fetch, addBlockedDate, removeBlockedDate };
 };
+
+// ── Attendance (check-in / check-out per tournament) ─────────────────────────
+export interface RefereeAttendance {
+  id: string;
+  tournament_id: string;
+  user_id: string;
+  check_in_at: string | null;
+  check_out_at: string | null;
+  created_at: string;
+}
+
+export const useRefereeAttendance = (userId?: string) => {
+  const { user } = useAuth();
+  const target = userId ?? user?.id;
+  const [items, setItems] = useState<RefereeAttendance[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    if (!target) { setItems([]); setLoading(false); return; }
+    setLoading(true);
+    const { data } = await sb.from("referee_attendance")
+      .select("*").eq("user_id", target)
+      .order("check_in_at", { ascending: false, nullsFirst: false });
+    setItems((data as RefereeAttendance[]) ?? []);
+    setLoading(false);
+  }, [target]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+
+  const checkIn = async (tournamentId: string) => {
+    if (!user) return { error: "Not authenticated" };
+    const { error } = await sb.from("referee_attendance").upsert(
+      { tournament_id: tournamentId, user_id: user.id, check_in_at: new Date().toISOString() },
+      { onConflict: "tournament_id,user_id" },
+    );
+    if (!error) await fetch();
+    return { error };
+  };
+
+  const checkOut = async (tournamentId: string) => {
+    if (!user) return { error: "Not authenticated" };
+    const { error } = await sb.from("referee_attendance")
+      .update({ check_out_at: new Date().toISOString() })
+      .eq("tournament_id", tournamentId).eq("user_id", user.id);
+    if (!error) await fetch();
+    return { error };
+  };
+
+  return { items, loading, refetch: fetch, checkIn, checkOut };
+};

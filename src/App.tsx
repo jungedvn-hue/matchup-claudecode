@@ -25,9 +25,7 @@ import MyTicketsPage from "./pages/MyTicketsPage";
 import EventRevenuePage from "./pages/EventRevenuePage";
 import AdminHostPromosPage from "./pages/AdminHostPromosPage";
 import AdminRefereeCertificationsPage from "./pages/AdminRefereeCertificationsPage";
-import RefereeLeaderboardPage from "./pages/RefereeLeaderboardPage";
-import RefereeInvitesPage from "./pages/RefereeInvitesPage";
-import RefereeSchedulePage from "./pages/RefereeSchedulePage";
+import RefereeHub from "./pages/referee-hub/RefereeHub";
 import AssistantCheckInPage from "./pages/AssistantCheckInPage";
 import FavoritePartnersPage from "./pages/FavoritePartnersPage";
 import FriendsPage from "./pages/FriendsPage";
@@ -36,10 +34,8 @@ import MatchHistoryPage from "./pages/MatchHistoryPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import CreateEventPage from "./pages/CreateEventPage";
-import TourManagerPage from "./pages/TourManagerPage";
 import TourManagerCreatePage from "./pages/TourManagerCreatePage";
 import TourManagerControlPage from "./pages/TourManagerControlPage";
-import RefereeDashboardPage from "./pages/RefereeDashboardPage";
 import MyMatchesPage from "./pages/MyMatchesPage";
 import VerificationPage from "./pages/VerificationPage";
 import ArenaPage from "./pages/ArenaPage";
@@ -52,6 +48,8 @@ import StoreBookingsPage from "./pages/StoreBookingsPage";
 import StoreProfilePage from "./pages/StoreProfilePage";
 import StoreEditPage from "./pages/StoreEditPage";
 import HealthHub from "./pages/health-hub/HealthHub";
+import ToolsPage from "./pages/tools/ToolsPage";
+import BudgetCalculatorPage from "./pages/tools/BudgetCalculatorPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 
@@ -64,10 +62,9 @@ import AdminApplicationsPage from "./pages/AdminApplicationsPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminTournamentsPage from "./pages/AdminTournamentsPage";
 import AdminStatsPage from "./pages/AdminStatsPage";
-import AdminCoinsPage from "./pages/AdminCoinsPage";
+import AdminPointsPage from "./pages/AdminPointsPage";
 import InvestorBIPage from "./pages/InvestorBIPage";
 import RefereeProfilePage from "./pages/RefereeProfilePage";
-import RefereesBrowsePage from "./pages/RefereesBrowsePage";
 import CourtsideRefereePage from "./pages/CourtsideRefereePage";
 import { Button } from "@/components/ui/button";
 import AuthPage from "./pages/AuthPage";
@@ -125,15 +122,13 @@ const AppShell = () => {
         <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/create-event" element={<CreateEventPage />} />
         
-        <Route path="/tour-manager" element={<ProtectedRoute><FeatureGate role="host"><TourManagerPage /></FeatureGate></ProtectedRoute>} />
+        <Route path="/tour-manager" element={<Navigate to="/tournaments?mine=1" replace />} />
         <Route path="/tour-manager/create" element={<ProtectedRoute><FeatureGate role="host"><TourManagerCreatePage /></FeatureGate></ProtectedRoute>} />
         <Route path="/tour-manager/:tournamentId" element={<ProtectedRoute><FeatureGate role="host"><TourManagerControlPage /></FeatureGate></ProtectedRoute>} />
-        <Route path="/referee" element={<ProtectedRoute><RefereeDashboardPage /></ProtectedRoute>} />
+        <Route path="/referee" element={<ProtectedRoute><RefereeHub /></ProtectedRoute>} />
         <Route path="/referee/:userId" element={<RefereeProfilePage />} />
-        <Route path="/referees" element={<RefereesBrowsePage />} />
-        <Route path="/referees/leaderboard" element={<RefereeLeaderboardPage />} />
-        <Route path="/referee/invites" element={<RefereeInvitesPage />} />
-        <Route path="/referee/schedule" element={<RefereeSchedulePage />} />
+        <Route path="/referees" element={<Navigate to="/discover?cat=referees" replace />} />
+        <Route path="/referees/leaderboard" element={<Navigate to="/discover?cat=referees&sort=matches" replace />} />
         <Route path="/courtside/:tournamentId/:matchId" element={<ProtectedRoute><CourtsideRefereePage /></ProtectedRoute>} />
         <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
         
@@ -141,7 +136,7 @@ const AppShell = () => {
         <Route path="/admin/users" element={<RequireMaster><AdminUsersPage /></RequireMaster>} />
         <Route path="/admin/tournaments" element={<RequireMaster><AdminTournamentsPage /></RequireMaster>} />
         <Route path="/admin/stats" element={<RequireMaster><AdminStatsPage /></RequireMaster>} />
-        <Route path="/admin/coins" element={<RequireMaster><AdminCoinsPage /></RequireMaster>} />
+        <Route path="/admin/coins" element={<RequireMaster><AdminPointsPage /></RequireMaster>} />
         <Route path="/admin/host-promos" element={<RequireMaster><AdminHostPromosPage /></RequireMaster>} />
         <Route path="/admin/referee-certifications" element={<RequireMaster><AdminRefereeCertificationsPage /></RequireMaster>} />
         <Route path="/investor-bi" element={<RequireMaster><InvestorBIPage /></RequireMaster>} />
@@ -149,6 +144,8 @@ const AppShell = () => {
         <Route path="/verify" element={<VerificationPage />} />
         <Route path="/marketplace/service/:serviceId" element={<ServiceDetailPage />} />
         <Route path="/health" element={<HealthHub />} />
+        <Route path="/tools" element={<ToolsPage />} />
+        <Route path="/tools/budget" element={<BudgetCalculatorPage />} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>

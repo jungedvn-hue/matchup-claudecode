@@ -1,11 +1,11 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Trophy, ShoppingBag, User, Award } from "lucide-react";
+import { Home, Trophy, ShoppingBag, User, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 const NAV_ITEMS = [
   { to: "/", icon: Home, labelKey: "nav.home" },
-  { to: "/tour-manager", icon: Award, labelKey: "nav.tourManager" },
+  { to: "/health", icon: Activity, labelKey: "nav.health" },
   { to: "/tournaments", icon: Trophy, labelKey: "nav.tourneys" },
   { to: "/marketplace", icon: ShoppingBag, labelKey: "nav.market" },
   { to: "/profile", icon: User, labelKey: "nav.profile" },

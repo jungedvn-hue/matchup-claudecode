@@ -1,11 +1,16 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trophy, Calendar, MapPin, Users, Search, Loader2, ChevronRight } from "lucide-react";
+import { Plus, Trophy, Calendar, MapPin, Users, Search, Loader2, ChevronRight, Settings, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useTournaments } from "@/context/TournamentContext";
+import { useAuth } from "@/context/AuthContext";
 import { useRoles, hasRole } from "@/hooks/use-roles";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getTournamentProgress } from "@/lib/tournament/engine";
 
 type StatusTab = "active" | "draft" | "completed";
@@ -13,12 +18,21 @@ type StatusTab = "active" | "draft" | "completed";
 const TournamentsPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { tournaments, loading } = useTournaments();
+  const { tournaments, loading, deleteTournament } = useTournaments();
+  const { user } = useAuth();
   const roles = useRoles();
   const isHost = hasRole(roles, "host");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const mineOnly = searchParams.get("mine") === "1";
 
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<StatusTab>("active");
+
+  const setMineOnly = (v: boolean) => {
+    const next = new URLSearchParams(searchParams);
+    if (v) next.set("mine", "1"); else next.delete("mine");
+    setSearchParams(next, { replace: true });
+  };
 
   const tabs: { key: StatusTab; label: string }[] = [
     { key: "active", label: t("tournaments.active") },
@@ -26,14 +40,19 @@ const TournamentsPage = () => {
     { key: "completed", label: t("tournaments.past") },
   ];
 
+  const scoped = useMemo(
+    () => mineOnly ? tournaments.filter(t => t.host_id === user?.id) : tournaments,
+    [tournaments, mineOnly, user],
+  );
+
   const counts = useMemo(() => ({
-    active: tournaments.filter(t => t.status === "active").length,
-    draft: tournaments.filter(t => t.status === "draft").length,
-    completed: tournaments.filter(t => t.status === "completed").length,
-  }), [tournaments]);
+    active: scoped.filter(t => t.status === "active").length,
+    draft: scoped.filter(t => t.status === "draft").length,
+    completed: scoped.filter(t => t.status === "completed").length,
+  }), [scoped]);
 
   const filtered = useMemo(() =>
-    tournaments.filter(to => {
+    scoped.filter(to => {
       if (to.status !== tab) return false;
       if (!search) return true;
       return (
@@ -41,11 +60,10 @@ const TournamentsPage = () => {
         to.location.toLowerCase().includes(search.toLowerCase())
       );
     }),
-  [tournaments, tab, search]);
+  [scoped, tab, search]);
 
   return (
     <div className="pb-20 min-h-screen">
-      {/* Header */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
@@ -72,6 +90,27 @@ const TournamentsPage = () => {
           />
         </div>
 
+        {isHost && (
+          <div className="max-w-2xl mx-auto flex gap-1.5">
+            <button
+              onClick={() => setMineOnly(false)}
+              className={`flex-1 h-8 text-[11px] font-medium rounded-lg transition-colors ${
+                !mineOnly ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t("tournaments.scope.all")}
+            </button>
+            <button
+              onClick={() => setMineOnly(true)}
+              className={`flex-1 h-8 text-[11px] font-medium rounded-lg transition-colors ${
+                mineOnly ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t("tournaments.scope.mine")}
+            </button>
+          </div>
+        )}
+
         <div className="max-w-2xl mx-auto flex gap-1 bg-secondary/60 rounded-xl p-0.5">
           {tabs.map(({ key, label }) => (
             <button
@@ -84,10 +123,7 @@ const TournamentsPage = () => {
               {label}
               {counts[key] > 0 && (
                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                  tab === key
-                    ? key === "active" ? "bg-primary/15 text-primary dark:text-primary"
-                    : "bg-primary/10 text-primary"
-                    : "bg-secondary text-muted-foreground"
+                  tab === key ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"
                 }`}>
                   {counts[key]}
                 </span>
@@ -125,7 +161,8 @@ const TournamentsPage = () => {
             const progress = getTournamentProgress(allMatches);
             const isActive = to.status === "active";
             const isCompleted = to.status === "completed";
-            const entryCount = to.categories.reduce((s, c) => s + (c.participants?.length ?? 0), 0);
+            const isMine = to.host_id === user?.id;
+            const entryCount = to.categories.reduce((s, c) => s + (c.entries?.length ?? 0), 0);
 
             return (
               <motion.div
@@ -134,70 +171,101 @@ const TournamentsPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                <button
-                  className="w-full text-left"
-                  onClick={() => navigate(`/tournament-live/${to.id}`)}
-                >
-                  <Card className={`overflow-hidden shadow-card hover:border-primary/30 transition-all ${
-                    isActive ? "bg-gradient-to-br from-primary/5 via-card to-card" :
-                    isCompleted ? "bg-gradient-to-br from-muted/30 via-card to-card opacity-80" :
-                    "bg-gradient-to-br from-primary/5 via-card to-card"
-                  }`}>
-                    <div className="p-4 space-y-3">
-                      {/* Title row */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm font-display font-bold text-card-foreground truncate">{to.name}</h3>
-                            {isActive && (
-                              <span className="text-[9px] font-bold text-primary dark:text-primary bg-primary/10 px-1.5 py-0.5 rounded-full animate-pulse shrink-0">
-                                LIVE
-                              </span>
-                            )}
-                            {isCompleted && (
-                              <span className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">
-                                {t("tm.status.completed")}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded mt-1 inline-block">
-                            {t(`tm.format.${to.format}`)}
-                          </span>
+                <Card className={`overflow-hidden shadow-card hover:border-primary/30 transition-all ${
+                  isActive ? "bg-gradient-to-br from-primary/5 via-card to-card" :
+                  isCompleted ? "bg-gradient-to-br from-muted/30 via-card to-card opacity-80" :
+                  "bg-gradient-to-br from-amber-500/5 via-card to-card"
+                }`}>
+                  <button
+                    className="w-full text-left p-4 space-y-3"
+                    onClick={() => navigate(isMine ? `/tour-manager/${to.id}` : `/tournament-live/${to.id}`)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-sm font-display font-bold text-card-foreground truncate">{to.name}</h3>
+                          {isActive && (
+                            <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full animate-pulse shrink-0">LIVE</span>
+                          )}
+                          {isCompleted && (
+                            <span className="text-[9px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full shrink-0">
+                              {t("tm.status.completed")}
+                            </span>
+                          )}
+                          {isMine && (
+                            <span className="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5 shrink-0">
+                              <Settings className="h-2.5 w-2.5" /> {t("tournaments.scope.mine")}
+                            </span>
+                          )}
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                      </div>
-
-                      {/* Meta row */}
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> {to.date}
-                        </span>
-                        {to.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> {to.location}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {entryCount > 0 ? `${entryCount} ${t("tm.players")}` : `${to.categories.length} ${t("tm.categories")}`}
+                        <span className="text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 rounded mt-1 inline-block">
+                          {t(`tm.format.${to.format}`)}
                         </span>
                       </div>
-
-                      {/* Progress bar (active only) */}
-                      {isActive && progress.total > 0 && (
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px]">
-                            <span className="text-muted-foreground">{progress.completed}/{progress.total} {t("home.matchesDone")}</span>
-                            <span className="font-semibold text-primary dark:text-primary">{progress.pct}%</span>
-                          </div>
-                          <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress.pct}%` }} />
-                          </div>
-                        </div>
-                      )}
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                     </div>
-                  </Card>
-                </button>
+
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" /> {to.date}
+                      </span>
+                      {to.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" /> {to.location}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {entryCount > 0 ? `${entryCount} ${t("tm.players")}` : `${to.categories.length} ${t("tm.categories")}`}
+                      </span>
+                    </div>
+
+                    {isActive && progress.total > 0 && (
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px]">
+                          <span className="text-muted-foreground">{progress.completed}/{progress.total} {t("home.matchesDone")}</span>
+                          <span className="font-semibold text-primary">{progress.pct}%</span>
+                        </div>
+                        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress.pct}%` }} />
+                        </div>
+                      </div>
+                    )}
+                  </button>
+
+                  {isMine && (
+                    <div className="px-4 pb-3 pt-1 flex items-center gap-2 border-t border-border/40">
+                      <button
+                        onClick={() => navigate(`/tour-manager/${to.id}`)}
+                        className="flex-1 h-8 rounded-lg bg-primary/10 text-primary text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/15 transition-colors"
+                      >
+                        <Settings className="h-3.5 w-3.5" /> {t("tournaments.manage")}
+                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center justify-center">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t("common.confirm")}</AlertDialogTitle>
+                            <AlertDialogDescription>{t("tm.deleteConfirmDesc")}</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteTournament(to.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {t("common.delete")}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
+                </Card>
               </motion.div>
             );
           })

@@ -3,10 +3,10 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Plus, Coins, TrendingUp, TrendingDown, Gift, Award, ShoppingBag, Sparkles, Loader2, RefreshCcw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useCoinBalance, useCoinTransactions, formatCoin, type CoinTxType } from "@/hooks/useCoin";
+import { usePointBalance, usePointTransactions, formatPoint, type PointTxType } from "@/hooks/usePoints";
 import PageHeader from "@/components/PageHeader";
 
-const txIconFor = (type: CoinTxType) => {
+const txIconFor = (type: PointTxType) => {
   switch (type) {
     case "purchase": return { icon: Plus, tone: "primary" };
     case "gift_received": return { icon: Gift, tone: "pink" };
@@ -28,8 +28,8 @@ const toneClass = (tone: string) =>
 const WalletPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { balance, loading: balLoading } = useCoinBalance();
-  const { items: txs, loading: txLoading } = useCoinTransactions(50);
+  const { balance, loading: balLoading } = usePointBalance();
+  const { items: txs, loading: txLoading } = usePointTransactions(50);
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -51,7 +51,7 @@ const WalletPage = () => {
                 <Loader2 className="h-7 w-7 animate-spin text-amber-500/40" />
               ) : (
                 <>
-                  <p className="text-4xl font-stat font-bold text-foreground tabular-nums">{formatCoin(balance?.balance ?? 0)}</p>
+                  <p className="text-4xl font-stat font-bold text-foreground tabular-nums">{formatPoint(balance?.balance ?? 0)}</p>
                   <p className="text-sm font-semibold text-muted-foreground">{t("wallet.coins")}</p>
                 </>
               )}
@@ -72,13 +72,13 @@ const WalletPage = () => {
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <TrendingUp className="h-3 w-3 text-primary" /> {t("wallet.lifetimeEarned")}
               </div>
-              <p className="mt-1 text-lg font-stat font-bold text-foreground tabular-nums">{formatCoin(balance.lifetime_earned)}</p>
+              <p className="mt-1 text-lg font-stat font-bold text-foreground tabular-nums">{formatPoint(balance.lifetime_earned)}</p>
             </Card>
             <Card className="p-3 shadow-card">
               <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 <TrendingDown className="h-3 w-3 text-rose-500" /> {t("wallet.lifetimeSpent")}
               </div>
-              <p className="mt-1 text-lg font-stat font-bold text-foreground tabular-nums">{formatCoin(balance.lifetime_spent)}</p>
+              <p className="mt-1 text-lg font-stat font-bold text-foreground tabular-nums">{formatPoint(balance.lifetime_spent)}</p>
             </Card>
           </div>
         )}
@@ -113,9 +113,9 @@ const WalletPage = () => {
                     </div>
                     <div className="text-right shrink-0">
                       <p className={`text-sm font-stat font-bold tabular-nums ${isCredit ? "text-primary dark:text-primary" : "text-rose-500"}`}>
-                        {isCredit ? "+" : ""}{formatCoin(tx.amount)}
+                        {isCredit ? "+" : ""}{formatPoint(tx.amount)}
                       </p>
-                      <p className="text-[9px] text-muted-foreground font-stat tabular-nums">{formatCoin(tx.balance_after)}</p>
+                      <p className="text-[9px] text-muted-foreground font-stat tabular-nums">{formatPoint(tx.balance_after)}</p>
                     </div>
                   </Card>
                 );

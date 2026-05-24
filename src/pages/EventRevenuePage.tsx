@@ -11,7 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useEventTickets } from "@/hooks/useTickets";
 import { refundEventTicket, cancelPaidEvent } from "@/hooks/useHostCredit";
-import { formatCoin } from "@/hooks/useCoin";
+import { formatPoint } from "@/hooks/usePoints";
 import BrandEmptyState from "@/components/BrandEmptyState";
 import { toast } from "sonner";
 
@@ -95,7 +95,7 @@ const EventRevenuePage = () => {
           <Card className="p-3 shadow-card">
             <p className="text-sm font-display font-bold text-foreground">{event.title}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">
-              {new Date(event.event_date).toLocaleString("vi-VN")} · {t("event.price.coinLabel")}: <span className="font-stat font-bold tabular-nums">{formatCoin(event.price_coins)}</span>
+              {new Date(event.event_date).toLocaleString("vi-VN")} · {t("event.price.coinLabel")}: <span className="font-stat font-bold tabular-nums">{formatPoint(event.price_coins)}</span>
             </p>
           </Card>
         )}
@@ -121,9 +121,9 @@ const EventRevenuePage = () => {
               <Coins className="h-3 w-3" />
               <p className="text-[10px] uppercase font-semibold tracking-wide">{t("event.revenue.netRevenue")}</p>
             </div>
-            <p className="font-stat font-bold text-2xl text-primary tabular-nums mt-1 leading-none">{formatCoin(stats.netCoins)}</p>
+            <p className="font-stat font-bold text-2xl text-primary tabular-nums mt-1 leading-none">{formatPoint(stats.netCoins)}</p>
             <p className="text-[10px] text-muted-foreground mt-1">
-              {t("event.revenue.feeTotal")}: <span className="font-stat tabular-nums">{formatCoin(stats.feeCoins)}</span>
+              {t("event.revenue.feeTotal")}: <span className="font-stat tabular-nums">{formatPoint(stats.feeCoins)}</span>
             </p>
           </Card>
           <Card className="p-3 shadow-card">
@@ -131,7 +131,7 @@ const EventRevenuePage = () => {
               <Receipt className="h-3 w-3" />
               <p className="text-[10px] uppercase font-semibold tracking-wide">{t("event.revenue.refundedAmount")}</p>
             </div>
-            <p className="font-stat font-bold text-2xl text-foreground tabular-nums mt-1 leading-none">{formatCoin(stats.refundedCoins)}</p>
+            <p className="font-stat font-bold text-2xl text-foreground tabular-nums mt-1 leading-none">{formatPoint(stats.refundedCoins)}</p>
           </Card>
         </div>
 
@@ -185,7 +185,7 @@ const EventRevenuePage = () => {
                         </div>
                         <div className="text-right">
                           <p className={`font-stat font-bold text-sm tabular-nums leading-none ${isCancelled ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                            {formatCoin(tk.paid_amount)}
+                            {formatPoint(tk.paid_amount)}
                           </p>
                           {isValid && !isUsed && (
                             <button

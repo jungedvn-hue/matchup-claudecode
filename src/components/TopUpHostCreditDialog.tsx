@@ -3,7 +3,7 @@ import { Loader2, Wallet, ArrowRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useCoinBalance, formatCoin } from "@/hooks/useCoin";
+import { usePointBalance, formatPoint } from "@/hooks/usePoints";
 import { topupHostCredit } from "@/hooks/useHostCredit";
 import { toast } from "sonner";
 
@@ -17,7 +17,7 @@ interface Props {
 
 const TopUpHostCreditDialog = ({ open, onOpenChange, onSuccess }: Props) => {
   const { t } = useLanguage();
-  const { balance: wallet, refetch: refetchWallet } = useCoinBalance();
+  const { balance: wallet, refetch: refetchWallet } = usePointBalance();
   const [amount, setAmount] = useState(1000);
   const [saving, setSaving] = useState(false);
 
@@ -30,7 +30,7 @@ const TopUpHostCreditDialog = ({ open, onOpenChange, onSuccess }: Props) => {
     const { error } = await topupHostCredit(amount);
     setSaving(false);
     if (error) { toast.error(error); return; }
-    toast.success(t("hostCredit.topup.success", { amount: formatCoin(amount) }));
+    toast.success(t("hostCredit.topup.success", { amount: formatPoint(amount) }));
     await refetchWallet();
     onSuccess?.();
     onOpenChange(false);
@@ -51,13 +51,13 @@ const TopUpHostCreditDialog = ({ open, onOpenChange, onSuccess }: Props) => {
           <div className="rounded-xl bg-secondary/40 p-3 flex items-center justify-between">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("hostCredit.topup.walletBalance")}</p>
-              <p className="font-stat font-bold text-base text-foreground tabular-nums mt-0.5">{formatCoin(walletBalance)}</p>
+              <p className="font-stat font-bold text-base text-foreground tabular-nums mt-0.5">{formatPoint(walletBalance)}</p>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
             <div className="text-right">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("hostCredit.topup.afterTopup")}</p>
               <p className={`font-stat font-bold text-base tabular-nums mt-0.5 ${insufficient ? "text-destructive" : "text-primary"}`}>
-                {formatCoin(Math.max(0, walletBalance - amount))}
+                {formatPoint(Math.max(0, walletBalance - amount))}
               </p>
             </div>
           </div>
@@ -73,7 +73,7 @@ const TopUpHostCreditDialog = ({ open, onOpenChange, onSuccess }: Props) => {
                     : "bg-secondary text-foreground hover:bg-secondary/80"
                 }`}
               >
-                {formatCoin(p)}
+                {formatPoint(p)}
               </button>
             ))}
           </div>

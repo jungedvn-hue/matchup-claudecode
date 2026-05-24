@@ -2,7 +2,7 @@ import { Coins, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { formatCoin } from "@/hooks/useCoin";
+import { formatPoint } from "@/hooks/usePoints";
 
 interface Props {
   priceCoins: number;
@@ -51,7 +51,7 @@ const EventPriceField = ({ priceCoins, onPriceChange, refundHours, onRefundHours
         <p className="text-[10.5px] text-muted-foreground leading-relaxed">
           {isPaid ? (
             <>
-              {t("event.price.feePreview", { fee: formatCoin(fee) })}
+              {t("event.price.feePreview", { fee: formatPoint(fee) })}
               <br />
               {t("event.price.refundHint", { hours: refundHours })}
             </>

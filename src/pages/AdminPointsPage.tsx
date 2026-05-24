@@ -5,7 +5,7 @@ import { ArrowLeft, Coins, Loader2, Search, Send, Sparkles, User } from "lucide-
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCoin } from "@/hooks/useCoin";
+import { formatPoint } from "@/hooks/usePoints";
 import { toast } from "sonner";
 
 const sb = supabase as unknown as { from: (t: string) => any; rpc: (fn: string, args?: any) => any };
@@ -22,7 +22,7 @@ interface RecentGrant {
 
 const QUICK_AMOUNTS = [100, 500, 1000, 5000, 10000];
 
-const AdminCoinsPage = () => {
+const AdminPointsPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [email, setEmail] = useState("");
@@ -70,7 +70,7 @@ const AdminCoinsPage = () => {
     setGranting(false);
     if (error) { toast.error(error.message); return; }
     if (data) {
-      toast.success(t("adminCoins.granted", { amount: formatCoin(Number(amount)), email: cleanEmail }));
+      toast.success(t("adminCoins.granted", { amount: formatPoint(Number(amount)), email: cleanEmail }));
       setEmail(""); setAmount(""); setReason("");
       fetchRecent();
     }
@@ -130,7 +130,7 @@ const AdminCoinsPage = () => {
                   {QUICK_AMOUNTS.map(n => (
                     <button key={n} onClick={() => setAmount(n)}
                       className="h-7 px-2.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[11px] font-bold tabular-nums transition-all">
-                      +{formatCoin(n)}
+                      +{formatPoint(n)}
                     </button>
                   ))}
                 </div>
@@ -179,7 +179,7 @@ const AdminCoinsPage = () => {
                     <p className="text-[11px] text-muted-foreground truncate">{g.description ?? t("adminCoins.noReason")}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-display font-bold text-primary dark:text-primary tabular-nums">+{formatCoin(g.amount)}</p>
+                    <p className="text-sm font-display font-bold text-primary dark:text-primary tabular-nums">+{formatPoint(g.amount)}</p>
                     <p className="text-[9px] text-muted-foreground">{formatDate(g.created_at)}</p>
                   </div>
                 </Card>
@@ -192,4 +192,4 @@ const AdminCoinsPage = () => {
   );
 };
 
-export default AdminCoinsPage;
+export default AdminPointsPage;
