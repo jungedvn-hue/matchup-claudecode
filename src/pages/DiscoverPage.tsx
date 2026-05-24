@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/i18n/LanguageContext";
 import RefereesTab from "./discover/components/RefereesTab";
+import CourtsTab from "./discover/components/CourtsTab";
 
 const VALID_CATS = ["groups", "courts", "coaches", "tournaments", "players", "referees"] as const;
 type Cat = (typeof VALID_CATS)[number];
@@ -70,8 +71,8 @@ const DiscoverPage = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="groups" className="mt-4"><GroupsTab /></TabsContent>
-        <TabsContent value="courts" className="mt-4"><ComingSoon label={t("discover.comingSoon")} /></TabsContent>
+        <TabsContent value="groups" className="mt-4"><ComingSoon label={t("discover.comingSoon")} /></TabsContent>
+        <TabsContent value="courts" className="mt-4"><CourtsTab /></TabsContent>
         <TabsContent value="coaches" className="mt-4"><ComingSoon label={t("discover.comingSoon")} /></TabsContent>
         <TabsContent value="tournaments" className="mt-4"><ComingSoon label={t("discover.comingSoon")} /></TabsContent>
         <TabsContent value="players" className="mt-4"><ComingSoon label={t("discover.comingSoon")} /></TabsContent>

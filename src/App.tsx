@@ -50,6 +50,8 @@ import StoreEditPage from "./pages/StoreEditPage";
 import HealthHub from "./pages/health-hub/HealthHub";
 import ToolsPage from "./pages/tools/ToolsPage";
 import BudgetCalculatorPage from "./pages/tools/BudgetCalculatorPage";
+import MyVenuesPage from "./pages/my-venues/MyVenuesPage";
+import VenueProfilePage from "./pages/VenueProfilePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 
@@ -146,6 +148,8 @@ const AppShell = () => {
         <Route path="/health" element={<HealthHub />} />
         <Route path="/tools" element={<ToolsPage />} />
         <Route path="/tools/budget" element={<BudgetCalculatorPage />} />
+        <Route path="/my-venues" element={<ProtectedRoute><MyVenuesPage /></ProtectedRoute>} />
+        <Route path="/venue/:venueId" element={<VenueProfilePage />} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>

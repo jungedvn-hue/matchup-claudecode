@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Trophy, Calculator, ScanLine, Award, Receipt, Calendar,
-  Map, DollarSign, BarChart3, TrendingUp, Activity, Gavel,
+  Map, DollarSign, BarChart3, TrendingUp, Activity, Gavel, Building2,
 } from "lucide-react";
 
 export type ToolCategory = "organize" | "finance" | "facility" | "player";
@@ -100,6 +100,17 @@ export const TOOLS: Tool[] = [
   },
 
   // ── Vận hành sân (court_owner) ──────────────────────────────────────────
+  {
+    id: "my-venues",
+    category: "facility",
+    roles: ["court_owner"],
+    icon: Building2,
+    labelKey: "tools.myVenues.label",
+    descKey: "tools.myVenues.desc",
+    route: "/my-venues",
+    status: "available",
+    priority: 95,
+  },
   {
     id: "court-schedule",
     category: "facility",

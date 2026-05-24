@@ -198,6 +198,25 @@ const OnboardingPage = () => {
         status: "active",
       }, { onConflict: "owner_user_id" });
     }
+
+    // Court Owner: persist venue to dedicated table so it appears in /my-venues.
+    // Onboarding amenities are stored as display labels — map to canonical ids.
+    if (selectedRoles.includes("court_owner") && venueName.trim()) {
+      const sb = supabase as unknown as { from: (t: string) => any };
+      const amenityIdMap: Record<string, string> = {
+        "Lighting": "lighting", "Parking": "parking", "Restrooms": "restrooms",
+        "Pro Shop": "proshop", "Food & Drink": "food", "WiFi": "wifi",
+      };
+      const amenityIds = amenities.map(a => amenityIdMap[a] ?? a.toLowerCase());
+      await sb.from("venues").insert({
+        owner_user_id: user.id,
+        name: venueName.trim(),
+        court_count: Math.max(1, parseInt(courtCount) || 1),
+        amenities: amenityIds,
+        location: location || null,
+        status: "active",
+      });
+    }
   };
 
   const goNext = async () => {
