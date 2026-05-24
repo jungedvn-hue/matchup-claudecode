@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy, Target, Settings, BarChart3, ChevronDown, Radio } from "lucide-react";
 import { LivestreamEditor } from "@/components/tournament/LivestreamSection";
+import VenuePicker from "@/components/VenuePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,6 +51,7 @@ const TourManagerCreatePage = () => {
   const [name, setName] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [location, setLocation] = useState("");
+  const [venueId, setVenueId] = useState<string | null>(null);
   const [format, setFormat] = useState<TournamentFormat>("round_robin");
   const [pointsPerGame, setPointsPerGame] = useState(11);
   const [winByTwo, setWinByTwo] = useState(true);
@@ -159,6 +161,7 @@ const TourManagerCreatePage = () => {
       name,
       date,
       location,
+      venue_id: venueId,
       format,
       pointsPerGame,
       winByTwo,
@@ -224,6 +227,18 @@ const TourManagerCreatePage = () => {
               <div className="grid grid-cols-2 gap-2.5">
                 <Field label={t("tm.date")} required>
                   <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10" />
+                </Field>
+                <Field label={t("venuePicker.label")}>
+                  <VenuePicker
+                    value={venueId}
+                    onChange={({ venue_id, venue }) => {
+                      setVenueId(venue_id);
+                      if (venue) {
+                        if (!location) setLocation([venue.location, venue.address].filter(Boolean).join(" · ") || venue.name);
+                        if (venue.court_count > 0) setCourts(venue.court_count);
+                      }
+                    }}
+                  />
                 </Field>
                 <Field label={t("tm.location")} required>
                   <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("tm.locationPh")} className="h-10" />

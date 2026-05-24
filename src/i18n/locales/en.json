@@ -2061,5 +2061,16 @@
   "venue.activity.groups": "groups",
   "venue.activity.events": "events",
   "venue.activity.tournaments": "tournaments",
-  "venue.activity.upcoming": "upcoming events"
+  "venue.activity.upcoming": "upcoming events",
+  "venuePicker.label": "Venue",
+  "venuePicker.placeholder": "Select a venue (optional)",
+  "venuePicker.searchPh": "Search venues...",
+  "venuePicker.empty": "No venues found. Create one in My Venues.",
+  "venuePicker.mine": "My venues",
+  "venuePicker.others": "Public venues",
+  "venuePicker.createNew": "Add new venue",
+  "venuePicker.hint": "Pick a venue to auto-fill location and link activity.",
+  "venue.field.mapUrl": "Google Maps link",
+  "venue.field.mapUrlHint": "Paste a maps.google.com URL so visitors can navigate to your venue.",
+  "venue.viewOnMap": "View on Google Maps"
 }

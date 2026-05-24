@@ -22,6 +22,7 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
   const [location, setLocation] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [mapUrl, setMapUrl] = useState("");
   const [status, setStatus] = useState<VenueStatus>("active");
   const [saving, setSaving] = useState(false);
 
@@ -33,6 +34,7 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
     setLocation(venue?.location ?? "");
     setAddress(venue?.address ?? "");
     setPhone(venue?.contact_phone ?? "");
+    setMapUrl(venue?.map_url ?? "");
     setStatus(venue?.status ?? "active");
   }, [open, venue]);
 
@@ -49,6 +51,7 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
       location: location.trim() || null,
       address: address.trim() || null,
       contact_phone: phone.trim() || null,
+      map_url: mapUrl.trim() || null,
       status,
     });
     setSaving(false);
@@ -91,6 +94,12 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
           <div className="space-y-1">
             <Label className="text-[11px] text-muted-foreground">{t("venue.field.phone")}</Label>
             <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="0901234567" className="tabular-nums" />
+          </div>
+
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("venue.field.mapUrl")}</Label>
+            <Input value={mapUrl} onChange={e => setMapUrl(e.target.value)} placeholder="https://maps.google.com/..." type="url" />
+            <p className="text-[10px] text-muted-foreground">{t("venue.field.mapUrlHint")}</p>
           </div>
 
           <div className="space-y-1.5">

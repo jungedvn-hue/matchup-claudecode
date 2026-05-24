@@ -2061,5 +2061,16 @@
   "venue.activity.groups": "nhóm",
   "venue.activity.events": "sự kiện",
   "venue.activity.tournaments": "giải đấu",
-  "venue.activity.upcoming": "sự kiện sắp tới"
+  "venue.activity.upcoming": "sự kiện sắp tới",
+  "venuePicker.label": "Sân",
+  "venuePicker.placeholder": "Chọn sân (tùy chọn)",
+  "venuePicker.searchPh": "Tìm sân...",
+  "venuePicker.empty": "Chưa có sân nào. Tạo mới tại Sân của tôi.",
+  "venuePicker.mine": "Sân của tôi",
+  "venuePicker.others": "Sân công khai",
+  "venuePicker.createNew": "Thêm sân mới",
+  "venuePicker.hint": "Chọn sân để tự động điền địa chỉ và liên kết hoạt động.",
+  "venue.field.mapUrl": "Liên kết Google Maps",
+  "venue.field.mapUrlHint": "Dán URL từ maps.google.com để khách có thể dẫn đường tới sân.",
+  "venue.viewOnMap": "Xem trên Google Maps"
 }

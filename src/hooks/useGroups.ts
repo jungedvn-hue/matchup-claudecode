@@ -21,6 +21,7 @@ export interface Group {
   is_open: boolean;
   max_members: number | null;
   member_count: number;
+  venue_id: string | null;
   created_at: string;
 }
 
@@ -183,6 +184,7 @@ export const useCreateGroup = () => {
     skill_level?: SkillLevel;
     is_open?: boolean;
     max_members?: number;
+    venue_id?: string | null;
   }): Promise<{ data: Group | null; error: string | null }> => {
     if (!user) return { data: null, error: "Not authenticated" };
     const { data, error } = await sb.from("groups").insert({
@@ -196,6 +198,7 @@ export const useCreateGroup = () => {
       skill_level: input.skill_level || "all",
       is_open: input.is_open ?? true,
       max_members: input.max_members || null,
+      venue_id: input.venue_id ?? null,
     }).select().single();
     if (error) return { data: null, error: error.message };
 
@@ -235,6 +238,7 @@ export const useUpdateGroup = () => {
       cover_emoji?: string;
       skill_level?: SkillLevel;
       is_open?: boolean;
+      venue_id?: string | null;
     }
   ): Promise<{ error: string | null }> => {
     if (!user) return { error: "Not authenticated" };
@@ -247,6 +251,7 @@ export const useUpdateGroup = () => {
       cover_emoji: input.cover_emoji || "🥎",
       skill_level: input.skill_level || "all",
       is_open: input.is_open ?? true,
+      ...(input.venue_id !== undefined ? { venue_id: input.venue_id } : {}),
     }).eq("id", groupId).eq("host_user_id", user.id);
     return { error: error?.message ?? null };
   };

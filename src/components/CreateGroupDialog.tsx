@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import VenuePicker from "@/components/VenuePicker";
 
 const EMOJIS = ["🥎", "🎾", "🏸", "⚡", "🔥", "🏆", "🌟", "💪", "🎯", "🏅"];
 const SKILLS: SkillLevel[] = ["all", "beginner", "intermediate", "advanced", "pro"];
@@ -43,6 +44,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
   const [emoji, setEmoji] = useState("🥎");
   const [skill, setSkill] = useState<SkillLevel>("all");
   const [isOpen, setIsOpen] = useState(true);
+  const [venueId, setVenueId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [createdGroup, setCreatedGroup] = useState<{ id: string; name: string; cover_emoji: string } | null>(null);
 
@@ -56,17 +58,18 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
       setEmoji(editGroup.cover_emoji);
       setSkill(editGroup.skill_level);
       setIsOpen(editGroup.is_open);
+      setVenueId(editGroup.venue_id ?? null);
     }
   }, [editGroup, open]);
 
-  const reset = () => { setName(""); setDescription(""); setLocation(""); setCity(""); setMapUrl(""); setEmoji("🥎"); setSkill("all"); setIsOpen(true); };
+  const reset = () => { setName(""); setDescription(""); setLocation(""); setCity(""); setMapUrl(""); setEmoji("🥎"); setSkill("all"); setIsOpen(true); setVenueId(null); };
 
   const handleSave = async () => {
     if (!name.trim()) return;
     setSaving(true);
 
     if (isEditing && editGroup) {
-      const { error } = await updateGroup(editGroup.id, { name: name.trim(), description: description || undefined, location: location || undefined, city: city || undefined, map_url: mapUrl || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen });
+      const { error } = await updateGroup(editGroup.id, { name: name.trim(), description: description || undefined, location: location || undefined, city: city || undefined, map_url: mapUrl || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen, venue_id: venueId });
       setSaving(false);
       if (error) { toast.error(error); return; }
       toast.success(t("groups.updated"));
@@ -75,7 +78,7 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
       return;
     }
 
-    const { data, error } = await createGroup({ name: name.trim(), description: description || undefined, location: location || undefined, city: city || undefined, map_url: mapUrl || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen });
+    const { data, error } = await createGroup({ name: name.trim(), description: description || undefined, location: location || undefined, city: city || undefined, map_url: mapUrl || undefined, cover_emoji: emoji, skill_level: skill, is_open: isOpen, venue_id: venueId });
     setSaving(false);
     if (error) { toast.error(error); return; }
     toast.success(t("groups.created"));
@@ -140,6 +143,21 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
           <div className="space-y-1.5">
             <Label className="text-xs font-medium">{t("groups.city")}</Label>
             <CitySelect value={city} onChange={setCity} placeholder={t("groups.cityPh")} searchPh={t("groups.citySearchPh")} emptyText={t("groups.cityNoResult")} />
+          </div>
+
+          {/* Venue */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">{t("venuePicker.label")}</Label>
+            <VenuePicker
+              value={venueId}
+              onChange={({ venue_id, venue }) => {
+                setVenueId(venue_id);
+                if (venue && !location) {
+                  setLocation([venue.location, venue.address].filter(Boolean).join(" · "));
+                }
+              }}
+            />
+            <p className="text-[10px] text-muted-foreground">{t("venuePicker.hint")}</p>
           </div>
 
           {/* Location */}

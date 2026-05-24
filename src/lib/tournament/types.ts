@@ -123,6 +123,7 @@ export interface Tournament {
   status: "draft" | "active" | "completed";
   createdAt: string;
   host_id?: string;
+  venue_id?: string | null;
   livestreamUrls?: LivestreamLink[];
 }
 

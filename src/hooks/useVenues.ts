@@ -17,6 +17,7 @@ export interface Venue {
   latitude: number | null;
   longitude: number | null;
   contact_phone: string | null;
+  map_url: string | null;
   operating_hours: Record<string, unknown> | null;
   pricing: Record<string, unknown> | null;
   status: VenueStatus;

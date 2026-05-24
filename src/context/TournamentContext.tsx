@@ -273,6 +273,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           status: t.status,
           ranking_priority: t.rankingPriority,
           host_id: user?.id,
+          venue_id: t.venue_id ?? null,
           referees: t.referees || [],
           courts: t.courts || [],
           livestream_urls: t.livestreamUrls || []
@@ -334,6 +335,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           name: t.name,
           status: t.status,
           location: t.location,
+          venue_id: t.venue_id ?? null,
           referees: t.referees || [],
           courts: t.courts || [],
           livestream_urls: t.livestreamUrls || []

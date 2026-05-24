@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Building2, MapPin, Phone, Loader2, Edit, Share2, Users, Calendar, Trophy, CalendarClock } from "lucide-react";
+import { ArrowLeft, Building2, MapPin, Phone, Loader2, Edit, Share2, Users, Calendar, Trophy, CalendarClock, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -96,7 +96,7 @@ const VenueProfilePage = () => {
         </motion.div>
 
         {/* Contact + Location */}
-        {(venue.location || venue.address || venue.contact_phone) && (
+        {(venue.location || venue.address || venue.contact_phone || venue.map_url) && (
           <Card className="p-4 shadow-card space-y-2.5">
             <h3 className="text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground">
               {t("venue.section.info")}
@@ -109,6 +109,16 @@ const VenueProfilePage = () => {
                   {venue.address && <p className="text-muted-foreground text-[11px] mt-0.5">{venue.address}</p>}
                 </div>
               </div>
+            )}
+            {venue.map_url && (
+              <a
+                href={venue.map_url}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2.5 hover:text-primary transition-colors"
+              >
+                <ExternalLink className="h-4 w-4 text-primary/70 shrink-0" />
+                <span className="text-sm font-medium text-primary">{t("venue.viewOnMap")}</span>
+              </a>
             )}
             {venue.contact_phone && (
               <a href={`tel:${venue.contact_phone}`} className="flex items-center gap-2.5 hover:text-primary transition-colors">
