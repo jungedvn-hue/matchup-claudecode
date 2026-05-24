@@ -6,6 +6,17 @@ const sb = supabase as unknown as { from: (t: string) => any; rpc: (fn: string, 
 
 export type VenueStatus = "active" | "inactive" | "pending_verification";
 
+export type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export const DAY_KEYS: DayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+export type DayHours = { open: string; close: string } | null; // null = closed
+export type OperatingHours = Partial<Record<DayKey, DayHours>>;
+
+export interface VenuePricing {
+  weekday_hour?: number | null;
+  weekend_hour?: number | null;
+  full_day?: number | null;
+}
+
 export interface Venue {
   id: string;
   owner_user_id: string;
@@ -18,8 +29,12 @@ export interface Venue {
   longitude: number | null;
   contact_phone: string | null;
   map_url: string | null;
-  operating_hours: Record<string, unknown> | null;
-  pricing: Record<string, unknown> | null;
+  bank_name: string | null;
+  bank_account_number: string | null;
+  bank_account_holder: string | null;
+  photos: string[];
+  operating_hours: OperatingHours | null;
+  pricing: VenuePricing | null;
   status: VenueStatus;
   created_at: string;
   updated_at: string;

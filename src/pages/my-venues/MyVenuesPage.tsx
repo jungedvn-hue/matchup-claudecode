@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Building2, Plus, MapPin, Phone, Edit, Trash2, Loader2, Calendar, Trophy, Users } from "lucide-react";
+import { ArrowLeft, Building2, Plus, MapPin, Phone, Edit, Trash2, Loader2, Calendar, Trophy, Users, ExternalLink, CalendarCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -99,7 +99,12 @@ const MyVenuesPage = () => {
           items.map((v, i) => (
             <motion.div key={v.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
               <Card className="p-4 shadow-card space-y-3">
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-3">
+                  {v.photos && v.photos.length > 0 && (
+                    <div className="h-14 w-14 rounded-xl overflow-hidden bg-secondary shrink-0">
+                      <img src={v.photos[0]} alt={v.name} className="w-full h-full object-cover" />
+                    </div>
+                  )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-display font-bold text-foreground truncate">{v.name}</h3>
@@ -143,10 +148,24 @@ const MyVenuesPage = () => {
 
                 <div className="flex items-center gap-2 pt-1 border-t border-border/60">
                   <button
-                    onClick={() => setEditing(v)}
-                    className="flex-1 h-8 rounded-lg bg-primary/10 text-primary text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/15 transition-colors"
+                    onClick={() => navigate(`/my-venues/${v.id}/bookings`)}
+                    className="flex-1 h-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/90 transition-colors"
                   >
-                    <Edit className="h-3.5 w-3.5" /> {t("venue.edit")}
+                    <CalendarCheck className="h-3.5 w-3.5" /> {t("venue.bookings")}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/venue/${v.id}`)}
+                    className="h-8 w-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center"
+                    title={t("venue.viewPublic")}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setEditing(v)}
+                    className="h-8 w-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center"
+                    title={t("venue.edit")}
+                  >
+                    <Edit className="h-3.5 w-3.5" />
                   </button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>

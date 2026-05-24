@@ -47,9 +47,15 @@ const CourtsTab = () => {
                 className="p-3 shadow-card hover:border-primary/30 transition-all cursor-pointer"
               >
                 <div className="flex items-start gap-3">
-                  <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Building2 className="h-5 w-5" />
-                  </div>
+                  {v.photos && v.photos.length > 0 ? (
+                    <div className="h-12 w-12 rounded-xl overflow-hidden bg-secondary shrink-0">
+                      <img src={v.photos[0]} alt={v.name} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Building2 className="h-5 w-5" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-display font-bold text-foreground truncate">{v.name}</p>
                     <p className="text-[11px] text-muted-foreground tabular-nums mt-0.5">

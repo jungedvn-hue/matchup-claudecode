@@ -52,6 +52,8 @@ import ToolsPage from "./pages/tools/ToolsPage";
 import BudgetCalculatorPage from "./pages/tools/BudgetCalculatorPage";
 import MyVenuesPage from "./pages/my-venues/MyVenuesPage";
 import VenueProfilePage from "./pages/VenueProfilePage";
+import VenueBookingsPage from "./pages/my-venues/VenueBookingsPage";
+import MyBookingsPage from "./pages/MyBookingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
 
@@ -64,6 +66,7 @@ import AdminApplicationsPage from "./pages/AdminApplicationsPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminTournamentsPage from "./pages/AdminTournamentsPage";
 import AdminStatsPage from "./pages/AdminStatsPage";
+import AdminPlatformSettingsPage from "./pages/AdminPlatformSettingsPage";
 import AdminPointsPage from "./pages/AdminPointsPage";
 import InvestorBIPage from "./pages/InvestorBIPage";
 import RefereeProfilePage from "./pages/RefereeProfilePage";
@@ -138,6 +141,7 @@ const AppShell = () => {
         <Route path="/admin/users" element={<RequireMaster><AdminUsersPage /></RequireMaster>} />
         <Route path="/admin/tournaments" element={<RequireMaster><AdminTournamentsPage /></RequireMaster>} />
         <Route path="/admin/stats" element={<RequireMaster><AdminStatsPage /></RequireMaster>} />
+        <Route path="/admin/settings" element={<RequireMaster><AdminPlatformSettingsPage /></RequireMaster>} />
         <Route path="/admin/coins" element={<RequireMaster><AdminPointsPage /></RequireMaster>} />
         <Route path="/admin/host-promos" element={<RequireMaster><AdminHostPromosPage /></RequireMaster>} />
         <Route path="/admin/referee-certifications" element={<RequireMaster><AdminRefereeCertificationsPage /></RequireMaster>} />
@@ -150,6 +154,8 @@ const AppShell = () => {
         <Route path="/tools/budget" element={<BudgetCalculatorPage />} />
         <Route path="/my-venues" element={<ProtectedRoute><MyVenuesPage /></ProtectedRoute>} />
         <Route path="/venue/:venueId" element={<VenueProfilePage />} />
+        <Route path="/my-venues/:venueId/bookings" element={<ProtectedRoute><VenueBookingsPage /></ProtectedRoute>} />
+        <Route path="/my-bookings" element={<ProtectedRoute><MyBookingsPage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>

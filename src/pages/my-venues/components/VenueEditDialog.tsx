@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { AMENITY_OPTIONS, type Venue, type VenueInput, type VenueStatus } from "@/hooks/useVenues";
+import { AMENITY_OPTIONS, DAY_KEYS, type DayKey, type OperatingHours, type Venue, type VenueInput, type VenuePricing, type VenueStatus } from "@/hooks/useVenues";
+import ImageUpload from "@/components/ImageUpload";
 
 interface Props {
   open: boolean;
@@ -23,6 +24,12 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [mapUrl, setMapUrl] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [bankAcc, setBankAcc] = useState("");
+  const [bankHolder, setBankHolder] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [hours, setHours] = useState<OperatingHours>({});
+  const [pricing, setPricing] = useState<VenuePricing>({});
   const [status, setStatus] = useState<VenueStatus>("active");
   const [saving, setSaving] = useState(false);
 
@@ -35,6 +42,12 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
     setAddress(venue?.address ?? "");
     setPhone(venue?.contact_phone ?? "");
     setMapUrl(venue?.map_url ?? "");
+    setBankName(venue?.bank_name ?? "");
+    setBankAcc(venue?.bank_account_number ?? "");
+    setBankHolder(venue?.bank_account_holder ?? "");
+    setPhotos(venue?.photos ?? []);
+    setHours((venue?.operating_hours as OperatingHours) ?? {});
+    setPricing((venue?.pricing as VenuePricing) ?? {});
     setStatus(venue?.status ?? "active");
   }, [open, venue]);
 
@@ -52,6 +65,12 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
       address: address.trim() || null,
       contact_phone: phone.trim() || null,
       map_url: mapUrl.trim() || null,
+      bank_name: bankName.trim().toUpperCase() || null,
+      bank_account_number: bankAcc.trim() || null,
+      bank_account_holder: bankHolder.trim().toUpperCase() || null,
+      photos,
+      operating_hours: Object.keys(hours).length ? hours : null,
+      pricing: (pricing.weekday_hour || pricing.weekend_hour || pricing.full_day) ? pricing : null,
       status,
     });
     setSaving(false);
@@ -100,6 +119,110 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
             <Label className="text-[11px] text-muted-foreground">{t("venue.field.mapUrl")}</Label>
             <Input value={mapUrl} onChange={e => setMapUrl(e.target.value)} placeholder="https://maps.google.com/..." type="url" />
             <p className="text-[10px] text-muted-foreground">{t("venue.field.mapUrlHint")}</p>
+          </div>
+
+          <ImageUpload
+            mode="multi"
+            value={photos}
+            onChange={setPhotos}
+            max={6}
+            bucket="venue-photos"
+            label={t("venue.field.photos")}
+          />
+
+          <div className="space-y-1.5">
+            <Label className="text-[11px] text-muted-foreground">{t("venue.field.hours")}</Label>
+            <div className="rounded-lg border border-border bg-card divide-y divide-border/60">
+              {DAY_KEYS.map(d => {
+                const v = hours[d];
+                const closed = v === null;
+                const open = v ? v.open : "07:00";
+                const close = v ? v.close : "22:00";
+                const setDay = (next: typeof v) => setHours(prev => ({ ...prev, [d]: next }));
+                return (
+                  <div key={d} className="flex items-center gap-2 px-2.5 py-1.5">
+                    <span className="text-[11px] font-semibold uppercase w-9 text-foreground">{t(`venue.day.${d}`)}</span>
+                    <button
+                      type="button"
+                      onClick={() => setDay(closed ? { open, close } : null)}
+                      className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
+                        closed ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      {closed ? t("venue.hours.closed") : t("venue.hours.open")}
+                    </button>
+                    {!closed && (
+                      <>
+                        <Input
+                          type="time" value={open}
+                          onChange={e => setDay({ open: e.target.value, close })}
+                          className="h-7 flex-1 tabular-nums"
+                        />
+                        <span className="text-muted-foreground">–</span>
+                        <Input
+                          type="time" value={close}
+                          onChange={e => setDay({ open, close: e.target.value })}
+                          className="h-7 flex-1 tabular-nums"
+                        />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[11px] text-muted-foreground">{t("venue.field.pricing")} (VND)</Label>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[10px] text-muted-foreground">{t("venue.pricing.weekday")}</Label>
+                <Input
+                  type="number" min={0}
+                  value={pricing.weekday_hour ?? ""}
+                  onChange={e => setPricing(p => ({ ...p, weekday_hour: e.target.value ? +e.target.value : null }))}
+                  className="h-9 tabular-nums" placeholder="100000"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] text-muted-foreground">{t("venue.pricing.weekend")}</Label>
+                <Input
+                  type="number" min={0}
+                  value={pricing.weekend_hour ?? ""}
+                  onChange={e => setPricing(p => ({ ...p, weekend_hour: e.target.value ? +e.target.value : null }))}
+                  className="h-9 tabular-nums" placeholder="150000"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] text-muted-foreground">{t("venue.pricing.fullDay")}</Label>
+                <Input
+                  type="number" min={0}
+                  value={pricing.full_day ?? ""}
+                  onChange={e => setPricing(p => ({ ...p, full_day: e.target.value ? +e.target.value : null }))}
+                  className="h-9 tabular-nums" placeholder="1500000"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">{t("venue.pricing.hint")}</p>
+          </div>
+
+          <div className="space-y-1.5 rounded-lg border border-border bg-secondary/30 p-3">
+            <Label className="text-[11px] font-semibold text-foreground">{t("venue.bank.section")}</Label>
+            <p className="text-[10px] text-muted-foreground -mt-1">{t("venue.bank.hint")}</p>
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <div className="space-y-1">
+                <Label className="text-[10px] text-muted-foreground">{t("venue.bank.name")}</Label>
+                <Input value={bankName} onChange={e => setBankName(e.target.value)} placeholder="VCB" className="h-9 uppercase tracking-wide" maxLength={10} />
+              </div>
+              <div className="col-span-2 space-y-1">
+                <Label className="text-[10px] text-muted-foreground">{t("venue.bank.account")}</Label>
+                <Input value={bankAcc} onChange={e => setBankAcc(e.target.value.replace(/[^0-9]/g, ""))} placeholder="1234567890" className="h-9 tabular-nums" />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] text-muted-foreground">{t("venue.bank.holder")}</Label>
+              <Input value={bankHolder} onChange={e => setBankHolder(e.target.value)} placeholder="NGUYEN VAN A" className="h-9 uppercase" />
+            </div>
           </div>
 
           <div className="space-y-1.5">

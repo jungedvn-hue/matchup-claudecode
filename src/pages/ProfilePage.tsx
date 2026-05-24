@@ -207,6 +207,7 @@ const ProfilePage = () => {
             { label: t("nav.health"), path: "/health", icon: <Activity className="h-4 w-4" /> },
             { label: t("wallet.title"), path: "/wallet", icon: <Coins className="h-4 w-4 text-amber-500" /> },
             { label: t("profile.myTickets"), path: "/my-tickets", icon: <Ticket className="h-4 w-4" /> },
+            { label: t("profile.myBookings"), path: "/my-bookings", icon: <Activity className="h-4 w-4" /> },
             { label: t("friends.title"), path: "/friends", icon: <Users className="h-4 w-4" />, badge: pendingFriends },
             { label: t("profile.favoritePartners"), path: "/favorite-partners", icon: <Heart className="h-4 w-4" /> },
             { label: t("profile.matchHistory"), path: "/match-history", icon: <History className="h-4 w-4" /> },

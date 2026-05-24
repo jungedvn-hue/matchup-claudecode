@@ -16,6 +16,7 @@ interface SingleProps {
   label?: string;
   className?: string;
   aspect?: "square" | "wide";
+  bucket?: string;
 }
 
 interface MultiProps {
@@ -25,6 +26,7 @@ interface MultiProps {
   max?: number;
   label?: string;
   className?: string;
+  bucket?: string;
 }
 
 type Props = SingleProps | MultiProps;
@@ -37,6 +39,7 @@ const ImageUpload = (props: Props) => {
   const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const bucket = props.bucket ?? "store-assets";
 
   const uploadFile = async (file: File): Promise<string | null> => {
     if (!user) { toast.error(t("upload.signInFirst")); return null; }
@@ -46,12 +49,12 @@ const ImageUpload = (props: Props) => {
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const path = `${user.id}/${fileName}`;
 
-    const { error } = await sb.storage.from("store-assets").upload(path, file, {
+    const { error } = await sb.storage.from(bucket).upload(path, file, {
       cacheControl: "3600", upsert: false, contentType: file.type,
     });
     if (error) { toast.error(error.message); return null; }
 
-    const { data } = sb.storage.from("store-assets").getPublicUrl(path);
+    const { data } = sb.storage.from(bucket).getPublicUrl(path);
     return data.publicUrl;
   };
 
