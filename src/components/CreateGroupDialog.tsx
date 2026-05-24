@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import ShareGroupDialog from "@/components/ShareGroupDialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -108,46 +108,45 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
       group={createdGroup ?? { id: "", name: "", cover_emoji: "🥎" }}
     />
     <Dialog open={open} onOpenChange={v => { if (!v && !isEditing) reset(); onOpenChange(v); }}>
-      <DialogContent className="max-w-sm rounded-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display">{isEditing ? t("groups.editGroup") : t("groups.newGroup")}</DialogTitle>
+          <DialogTitle>{isEditing ? t("groups.editGroup") : t("groups.newGroup")}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 pt-1">
-          {/* Emoji picker */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">{t("groups.emoji")}</Label>
-            <div className="flex gap-2 flex-wrap">
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("groups.emoji")}</Label>
+            <div className="flex gap-1.5 flex-wrap">
               {EMOJIS.map(e => (
-                <button key={e} onClick={() => setEmoji(e)}
-                  className={`h-9 w-9 rounded-lg text-xl flex items-center justify-center transition-all ${emoji === e ? "bg-primary/15 ring-2 ring-primary" : "bg-secondary hover:bg-secondary/70"}`}>
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => setEmoji(e)}
+                  className={`h-9 w-9 rounded-lg text-xl flex items-center justify-center transition-all ${emoji === e ? "bg-primary/15 ring-2 ring-primary" : "bg-secondary hover:bg-secondary/70"}`}
+                >
                   {e}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Name */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">{t("groups.nameLabel")} <span className="text-destructive">*</span></Label>
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("groups.nameLabel")} *</Label>
             <Input value={name} onChange={e => setName(e.target.value)} placeholder={t("groups.namePh")} />
           </div>
 
-          {/* Description */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">{t("groups.descLabel")}</Label>
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("groups.descLabel")}</Label>
             <Textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} placeholder={t("groups.descPh")} className="resize-none" />
           </div>
 
-          {/* City — searchable combobox */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">{t("groups.city")}</Label>
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("groups.city")}</Label>
             <CitySelect value={city} onChange={setCity} placeholder={t("groups.cityPh")} searchPh={t("groups.citySearchPh")} emptyText={t("groups.cityNoResult")} />
           </div>
 
-          {/* Venue */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">{t("venuePicker.label")}</Label>
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("venuePicker.label")}</Label>
             <VenuePicker
               value={venueId}
               onChange={({ venue_id, venue }) => {
@@ -160,54 +159,59 @@ const CreateGroupDialog = ({ open, onOpenChange, onCreated, editGroup, onUpdated
             <p className="text-[10px] text-muted-foreground">{t("venuePicker.hint")}</p>
           </div>
 
-          {/* Location */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">{t("store.address")}</Label>
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("store.address")}</Label>
             <Input value={location} onChange={e => setLocation(e.target.value)} placeholder={t("groups.locationPh")} />
           </div>
 
-          {/* Google Maps link */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">{t("groups.mapUrl")}</Label>
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("groups.mapUrl")}</Label>
             <Input value={mapUrl} onChange={e => setMapUrl(e.target.value)} placeholder="https://maps.google.com/..." type="url" />
             <p className="text-[10px] text-muted-foreground">{t("groups.mapUrlHint")}</p>
           </div>
 
-          {/* Skill */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">{t("groups.skillLabel")}</Label>
+          <div className="space-y-1">
+            <Label className="text-[11px] text-muted-foreground">{t("groups.skillLabel")}</Label>
             <div className="flex gap-1.5 flex-wrap">
               {SKILLS.map(s => (
-                <button key={s} onClick={() => setSkill(s)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${skill === s ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"}`}>
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSkill(s)}
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                    skill === s ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
+                  }`}
+                >
                   {s === "all" ? t("common.all") : t(`skill.${s}`)}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Open/Closed */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/50">
-            <div>
-              <p className="text-xs font-semibold text-foreground">{isOpen ? t("groups.openJoin") : t("groups.approvalJoin")}</p>
-              <p className="text-[10px] text-muted-foreground">{isOpen ? t("groups.openJoinDesc") : t("groups.approvalJoinDesc")}</p>
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-foreground">{isOpen ? t("groups.openJoin") : t("groups.approvalJoin")}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{isOpen ? t("groups.openJoinDesc") : t("groups.approvalJoinDesc")}</p>
             </div>
-            <button onClick={() => setIsOpen(v => !v)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${isOpen ? "bg-primary" : "bg-secondary"}`}>
+            <button
+              type="button"
+              onClick={() => setIsOpen(v => !v)}
+              className={`relative h-6 w-11 rounded-full transition-colors shrink-0 ${isOpen ? "bg-primary" : "bg-secondary"}`}
+            >
               <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isOpen ? "translate-x-5" : "translate-x-0"}`} />
             </button>
           </div>
-
-          <div className="flex gap-2 pt-1">
-            <Button variant="outline" className="flex-1 rounded-xl" onClick={() => { if (!isEditing) reset(); onOpenChange(false); }} disabled={saving}>
-              {t("common.cancel")}
-            </Button>
-            <Button className="flex-1 rounded-xl font-bold" onClick={handleSave} disabled={saving || !name.trim()}>
-              {saving && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-              {isEditing ? t("common.save") : t("groups.create")}
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => { if (!isEditing) reset(); onOpenChange(false); }} disabled={saving}>
+            {t("common.cancel")}
+          </Button>
+          <Button onClick={handleSave} disabled={saving || !name.trim()}>
+            {saving && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+            {isEditing ? t("common.save") : t("groups.create")}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
     </>
