@@ -1,0 +1,69 @@
+{
+  "app": { "name": "MatchUp Quản trị" },
+  "auth": {
+    "login_title": "Đăng nhập quản trị",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "sign_in": "Đăng nhập",
+    "signing_in": "Đang đăng nhập…",
+    "logout": "Đăng xuất",
+    "not_admin": "Tài khoản không có quyền quản trị. Liên hệ super_admin.",
+    "wrong_credentials": "Email hoặc mật khẩu không đúng.",
+    "mfa_required": "Yêu cầu xác thực hai bước",
+    "mfa_enroll_title": "Đăng ký ứng dụng xác thực",
+    "mfa_enroll_help": "Quét QR bằng Google Authenticator / Authy rồi nhập mã 6 số.",
+    "mfa_verify_title": "Nhập mã xác thực",
+    "mfa_code": "Mã 6 số",
+    "mfa_verify": "Xác thực",
+    "mfa_enroll": "Đăng ký"
+  },
+  "nav": {
+    "operate": "Vận hành",
+    "business": "Nghiệp vụ",
+    "money": "Tài chính",
+    "platform": "Nền tảng",
+    "dashboard": "Tổng quan",
+    "users": "Người dùng",
+    "venues": "Sân/CLB",
+    "bookings": "Đặt sân",
+    "tournaments": "Giải đấu",
+    "groups": "Nhóm",
+    "marketplace": "Marketplace",
+    "events": "Sự kiện",
+    "referees": "Trọng tài",
+    "health": "Health Hub",
+    "payments": "Thanh toán",
+    "refunds": "Hoàn tiền",
+    "disputes": "Tranh chấp",
+    "reconciliation": "Đối soát",
+    "reports": "Báo cáo vi phạm",
+    "broadcasts": "Gửi thông báo",
+    "banners": "Banner",
+    "flags": "Feature flags",
+    "impersonate": "Mạo nhận",
+    "audit": "Audit log",
+    "settings": "Cài đặt"
+  },
+  "dashboard": {
+    "title": "Tổng quan",
+    "coming_soon": "Các widget metrics sẽ có ở sprint tới."
+  },
+  "users": {
+    "title": "Người dùng",
+    "search_placeholder": "Tìm tên, SĐT, email…",
+    "email": "Email",
+    "phone": "Số điện thoại",
+    "joined": "Tham gia",
+    "actions": "Thao tác",
+    "reveal": "Hiện",
+    "loading": "Đang tải…",
+    "empty": "Không có người dùng.",
+    "prev": "Trước",
+    "next": "Sau",
+    "page": "Trang {{n}}"
+  },
+  "common": {
+    "language": "Ngôn ngữ",
+    "logout": "Đăng xuất"
+  }
+}

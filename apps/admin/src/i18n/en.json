@@ -1,0 +1,69 @@
+{
+  "app": { "name": "MatchUp Admin" },
+  "auth": {
+    "login_title": "Sign in to admin",
+    "email": "Email",
+    "password": "Password",
+    "sign_in": "Sign in",
+    "signing_in": "Signing in…",
+    "logout": "Sign out",
+    "not_admin": "Your account is not an admin. Contact super_admin.",
+    "wrong_credentials": "Incorrect email or password.",
+    "mfa_required": "Two-factor authentication required",
+    "mfa_enroll_title": "Enroll TOTP authenticator",
+    "mfa_enroll_help": "Scan the QR with Google Authenticator / Authy and enter the 6-digit code.",
+    "mfa_verify_title": "Enter verification code",
+    "mfa_code": "6-digit code",
+    "mfa_verify": "Verify",
+    "mfa_enroll": "Enroll"
+  },
+  "nav": {
+    "operate": "Operate",
+    "business": "Business",
+    "money": "Money",
+    "platform": "Platform",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "venues": "Venues",
+    "bookings": "Bookings",
+    "tournaments": "Tournaments",
+    "groups": "Groups",
+    "marketplace": "Marketplace",
+    "events": "Events",
+    "referees": "Referees",
+    "health": "Health Hub",
+    "payments": "Payments",
+    "refunds": "Refunds",
+    "disputes": "Disputes",
+    "reconciliation": "Reconciliation",
+    "reports": "Reports",
+    "broadcasts": "Broadcasts",
+    "banners": "Banners",
+    "flags": "Feature flags",
+    "impersonate": "Impersonate",
+    "audit": "Audit log",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "coming_soon": "Metrics widgets coming in next sprint."
+  },
+  "users": {
+    "title": "Users",
+    "search_placeholder": "Search name, phone, email…",
+    "email": "Email",
+    "phone": "Phone",
+    "joined": "Joined",
+    "actions": "Actions",
+    "reveal": "Reveal",
+    "loading": "Loading…",
+    "empty": "No users found.",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {{n}}"
+  },
+  "common": {
+    "language": "Language",
+    "logout": "Sign out"
+  }
+}
