@@ -24,6 +24,7 @@ export default function UserDetailPage() {
     queryKey: ["user-detail", id],
     queryFn: () => getUser(id),
     enabled: !!id,
+    retry: false,
   });
   const { data: activeSuspension } = useQuery({
     queryKey: ["user-active-suspension", id],

@@ -39,22 +39,23 @@ export async function searchUsers(params: {
   limit?: number;
   offset?: number;
 }): Promise<{ rows: UserListRow[]; total: number }> {
+  const search = params.search ?? null;
   const [{ data: rows, error: e1 }, { data: total, error: e2 }] = await Promise.all([
     supabase.rpc("admin_search_users", {
-      p_search: params.search ?? null,
+      p_search: search,
       p_limit:  params.limit  ?? 25,
       p_offset: params.offset ?? 0,
     }),
-    supabase.rpc("admin_count_users", { p_search: params.search ?? null }),
+    supabase.rpc("admin_count_users", { p_search: search }),
   ]);
-  if (e1) throw e1;
-  if (e2) throw e2;
+  if (e1) throw new Error(`admin_search_users: ${e1.message}`);
+  if (e2) throw new Error(`admin_count_users: ${e2.message}`);
   return { rows: (rows ?? []) as UserListRow[], total: (total as number) ?? 0 };
 }
 
 export async function getUser(userId: string): Promise<UserDetailRow | null> {
   const { data, error } = await supabase.rpc("admin_get_user", { p_user_id: userId });
-  if (error) throw error;
+  if (error) throw new Error(`admin_get_user: ${error.message}`);
   const row = Array.isArray(data) ? data[0] : data;
   return (row as UserDetailRow) ?? null;
 }
