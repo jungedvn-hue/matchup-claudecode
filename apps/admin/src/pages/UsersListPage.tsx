@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { searchUsers } from "@/lib/admin-users";
 import { maskEmail, maskPhone } from "@/lib/utils";
 
 const PAGE_SIZE = 25;
@@ -13,22 +13,14 @@ export default function UsersListPage() {
   const [page, setPage] = useState(0);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["admin-users", search, page],
-    queryFn: async () => {
-      let q = supabase
-        .from("profiles")
-        .select("id, full_name, phone, email, created_at", { count: "exact" })
-        .order("created_at", { ascending: false })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-      if (search.trim()) {
-        const s = `%${search.trim()}%`;
-        q = q.or(`full_name.ilike.${s},phone.ilike.${s},email.ilike.${s}`);
-      }
-      const { data, count, error } = await q;
-      if (error) throw error;
-      return { rows: data ?? [], count: count ?? 0 };
-    },
+    queryFn: () =>
+      searchUsers({
+        search: search.trim() || undefined,
+        limit: PAGE_SIZE,
+        offset: page * PAGE_SIZE,
+      }),
   });
 
   const toggleReveal = (id: string) =>
@@ -39,7 +31,7 @@ export default function UsersListPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-slate-900">{t("users.title")}</h1>
         <div className="text-sm text-slate-500">
-          {data ? `${data.count} total` : ""}
+          {data ? `${data.total} total` : ""}
         </div>
       </div>
 
@@ -47,6 +39,12 @@ export default function UsersListPage() {
         onChange={e => { setSearch(e.target.value); setPage(0); }}
         placeholder={t("users.search_placeholder")}
         className="w-full max-w-md border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded p-3 text-sm">
+          {(error as any).message ?? "Failed to load users"}
+        </div>
+      )}
 
       <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
@@ -65,24 +63,25 @@ export default function UsersListPage() {
             {!isLoading && data?.rows.length === 0 && (
               <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-500">{t("users.empty")}</td></tr>
             )}
-            {data?.rows.map((u: any) => (
-              <tr key={u.id} className="border-t border-slate-100 hover:bg-slate-50">
+            {data?.rows.map(u => (
+              <tr key={u.user_id} className="border-t border-slate-100 hover:bg-slate-50">
                 <td className="px-4 py-2.5">
-                  <Link to={`/users/${u.id}`} className="text-slate-900 hover:text-brand-dark hover:underline">
-                    {u.full_name ?? "—"}
+                  <Link to={`/users/${u.user_id}`}
+                    className="text-slate-900 hover:text-brand-dark hover:underline">
+                    {u.display_name ?? u.email ?? u.phone ?? u.user_id.slice(0, 8)}
                   </Link>
                 </td>
                 <td className="px-4 py-2.5 text-slate-700">
-                  {revealed[u.id] ? (u.phone ?? "—") : maskPhone(u.phone)}{" "}
+                  {revealed[u.user_id] ? (u.phone ?? "—") : maskPhone(u.phone)}{" "}
                   {u.phone && (
-                    <button onClick={() => toggleReveal(u.id)}
+                    <button onClick={() => toggleReveal(u.user_id)}
                       className="ml-1 text-xs text-brand hover:underline">
                       {t("users.reveal")}
                     </button>
                   )}
                 </td>
                 <td className="px-4 py-2.5 text-slate-700">
-                  {revealed[u.id] ? (u.email ?? "—") : maskEmail(u.email)}
+                  {revealed[u.user_id] ? (u.email ?? "—") : maskEmail(u.email)}
                 </td>
                 <td className="px-4 py-2.5 text-slate-500">
                   {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
@@ -99,7 +98,7 @@ export default function UsersListPage() {
           {t("users.prev")}
         </button>
         <span className="text-slate-500">{t("users.page", { n: page + 1 })}</span>
-        <button disabled={!data || (page + 1) * PAGE_SIZE >= data.count}
+        <button disabled={!data || (page + 1) * PAGE_SIZE >= data.total}
           onClick={() => setPage(p => p + 1)}
           className="px-3 py-1.5 border border-slate-300 rounded disabled:opacity-50">
           {t("users.next")}

@@ -1,14 +1,21 @@
 import { supabase } from "./supabase";
 import { logAdminAction } from "./admin-api";
 
-export interface ProfileRow {
-  id: string;
-  full_name: string | null;
+export interface UserListRow {
+  user_id: string;
+  profile_id: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
   phone: string | null;
   email: string | null;
+  location: string | null;
   created_at: string | null;
-  avatar_url?: string | null;
-  [k: string]: any;
+}
+
+export interface UserDetailRow extends UserListRow {
+  bio: string | null;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
 }
 
 export interface SuspensionRow {
@@ -27,14 +34,29 @@ export interface SuspensionRow {
 export type SuspendReasonCode =
   | "spam" | "fraud" | "abuse" | "tos_violation" | "impersonation" | "other";
 
-export async function getProfile(id: string): Promise<ProfileRow | null> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
-  if (error || !data) return null;
-  return data as ProfileRow;
+export async function searchUsers(params: {
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ rows: UserListRow[]; total: number }> {
+  const [{ data: rows, error: e1 }, { data: total, error: e2 }] = await Promise.all([
+    supabase.rpc("admin_search_users", {
+      p_search: params.search ?? null,
+      p_limit:  params.limit  ?? 25,
+      p_offset: params.offset ?? 0,
+    }),
+    supabase.rpc("admin_count_users", { p_search: params.search ?? null }),
+  ]);
+  if (e1) throw e1;
+  if (e2) throw e2;
+  return { rows: (rows ?? []) as UserListRow[], total: (total as number) ?? 0 };
+}
+
+export async function getUser(userId: string): Promise<UserDetailRow | null> {
+  const { data, error } = await supabase.rpc("admin_get_user", { p_user_id: userId });
+  if (error) throw error;
+  const row = Array.isArray(data) ? data[0] : data;
+  return (row as UserDetailRow) ?? null;
 }
 
 export async function getActiveSuspension(userId: string): Promise<SuspensionRow | null> {
@@ -131,7 +153,5 @@ export async function logPiiReveal(userId: string, field: "phone" | "email") {
       target_id: userId,
       reason: `field=${field}`,
     });
-  } catch {
-    // best-effort, không block UI
-  }
+  } catch {/* best-effort */}
 }

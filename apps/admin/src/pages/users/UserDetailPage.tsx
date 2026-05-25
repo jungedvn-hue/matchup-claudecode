@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Eye, Ban, ShieldCheck, EyeOff } from "lucide-react";
-import { getProfile, getActiveSuspension, logPiiReveal } from "@/lib/admin-users";
+import { getUser, getActiveSuspension, logPiiReveal } from "@/lib/admin-users";
 import { maskEmail, maskPhone, cn } from "@/lib/utils";
 import SuspendUserDialog from "./SuspendUserDialog";
 import UnsuspendUserDialog from "./UnsuspendUserDialog";
@@ -20,9 +20,9 @@ export default function UserDetailPage() {
   const [suspendOpen, setSuspendOpen] = useState(false);
   const [unsuspendOpen, setUnsuspendOpen] = useState(false);
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: user, isLoading, error } = useQuery({
     queryKey: ["user-detail", id],
-    queryFn: () => getProfile(id),
+    queryFn: () => getUser(id),
     enabled: !!id,
   });
   const { data: activeSuspension } = useQuery({
@@ -41,18 +41,19 @@ export default function UserDetailPage() {
   };
 
   if (isLoading) return <div className="text-slate-500 text-sm">{t("users.loading")}</div>;
-  if (!profile) {
+  if (error || !user) {
     return (
       <div className="space-y-4">
         <Link to="/users" className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
           <ArrowLeft className="w-4 h-4" /> {t("users.back")}
         </Link>
         <div className="text-slate-500">{t("users.not_found")}</div>
+        {error && <div className="text-xs text-red-600">{(error as any).message}</div>}
       </div>
     );
   }
 
-  const label = profile.full_name || profile.email || profile.phone || profile.id.slice(0, 8);
+  const label = user.display_name || user.email || user.phone || user.user_id.slice(0, 8);
   const isSuspended = !!activeSuspension;
 
   const tabs: { id: Tab; label: string }[] = [
@@ -66,41 +67,39 @@ export default function UserDetailPage() {
 
   return (
     <div className="space-y-5">
-      {/* Back */}
       <Link to="/users" className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
         <ArrowLeft className="w-4 h-4" /> {t("users.back")}
       </Link>
 
-      {/* Header card */}
       <div className="bg-white border border-slate-200 rounded-lg p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 min-w-0">
-            <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-xl text-slate-500 shrink-0">
-              {profile.avatar_url ? (
-                <img src={profile.avatar_url} className="w-full h-full rounded-full object-cover" />
+            <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-xl text-slate-500 shrink-0 overflow-hidden">
+              {user.avatar_url ? (
+                <img src={user.avatar_url} className="w-full h-full object-cover" />
               ) : (label[0]?.toUpperCase() ?? "?")}
             </div>
             <div className="min-w-0">
               <h1 className="text-xl font-semibold text-slate-900 truncate">{label}</h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600 mt-1">
                 <span className="flex items-center gap-1">
-                  📱 {showPhone ? (profile.phone ?? "—") : maskPhone(profile.phone)}
-                  {profile.phone && (
+                  📱 {showPhone ? (user.phone ?? "—") : maskPhone(user.phone)}
+                  {user.phone && (
                     <button onClick={togglePhone} className="ml-1 text-slate-400 hover:text-slate-700">
                       {showPhone ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   )}
                 </span>
                 <span className="flex items-center gap-1">
-                  ✉ {showEmail ? (profile.email ?? "—") : maskEmail(profile.email)}
-                  {profile.email && (
+                  ✉ {showEmail ? (user.email ?? "—") : maskEmail(user.email)}
+                  {user.email && (
                     <button onClick={toggleEmail} className="ml-1 text-slate-400 hover:text-slate-700">
                       {showEmail ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   )}
                 </span>
-                {profile.created_at && (
-                  <span>· {t("users.joined")}: {new Date(profile.created_at).toLocaleDateString()}</span>
+                {user.created_at && (
+                  <span>· {t("users.joined")}: {new Date(user.created_at).toLocaleDateString()}</span>
                 )}
               </div>
               <div className="mt-2">
@@ -143,7 +142,6 @@ export default function UserDetailPage() {
         )}
       </div>
 
-      {/* Tabs */}
       <div className="border-b border-slate-200">
         <nav className="flex gap-1">
           {tabs.map(t1 => (
@@ -160,15 +158,22 @@ export default function UserDetailPage() {
         </nav>
       </div>
 
-      {/* Tab content */}
       <div>
         {tab === "overview" && (
-          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-lg p-5">
             <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               <dt className="text-slate-500">User ID</dt>
-              <dd className="text-slate-900 font-mono text-xs">{profile.id}</dd>
+              <dd className="text-slate-900 font-mono text-xs">{user.user_id}</dd>
+              <dt className="text-slate-500">Location</dt>
+              <dd>{user.location ?? "—"}</dd>
+              <dt className="text-slate-500">Bio</dt>
+              <dd className="whitespace-pre-wrap">{user.bio ?? "—"}</dd>
               <dt className="text-slate-500">{t("users.joined")}</dt>
-              <dd>{profile.created_at ? new Date(profile.created_at).toLocaleString() : "—"}</dd>
+              <dd>{user.created_at ? new Date(user.created_at).toLocaleString() : "—"}</dd>
+              <dt className="text-slate-500">Last sign-in</dt>
+              <dd>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "—"}</dd>
+              <dt className="text-slate-500">Email confirmed</dt>
+              <dd>{user.email_confirmed_at ? new Date(user.email_confirmed_at).toLocaleString() : "—"}</dd>
             </dl>
           </div>
         )}
@@ -178,7 +183,6 @@ export default function UserDetailPage() {
         )}
       </div>
 
-      {/* Modals */}
       <SuspendUserDialog open={suspendOpen} onClose={() => setSuspendOpen(false)}
         userId={id} userLabel={label} />
       {activeSuspension && (
