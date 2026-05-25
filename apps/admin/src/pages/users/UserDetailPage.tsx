@@ -1,194 +1,115 @@
-import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Eye, Ban, ShieldCheck, EyeOff } from "lucide-react";
-import { getUser, getActiveSuspension, logPiiReveal } from "@/lib/admin-users";
-import { maskEmail, maskPhone, cn } from "@/lib/utils";
+import { useState } from "react";
+import { ArrowLeft, Ban, ShieldCheck } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { getActiveSuspension } from "@/lib/admin-users";
 import SuspendUserDialog from "./SuspendUserDialog";
 import UnsuspendUserDialog from "./UnsuspendUserDialog";
 import SuspensionsHistoryTab from "./SuspensionsHistoryTab";
 
-type Tab = "overview" | "bookings" | "payments" | "reports" | "suspensions" | "activity";
-
 export default function UserDetailPage() {
   const { id = "" } = useParams();
-  const { t } = useTranslation();
-  const [tab, setTab] = useState<Tab>("overview");
-  const [showPhone, setShowPhone] = useState(false);
-  const [showEmail, setShowEmail] = useState(false);
   const [suspendOpen, setSuspendOpen] = useState(false);
   const [unsuspendOpen, setUnsuspendOpen] = useState(false);
 
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ["user-detail", id],
-    queryFn: () => getUser(id),
+  // Use direct RPC for maximum visibility into errors
+  const userQ = useQuery({
+    queryKey: ["user-detail-raw", id],
+    queryFn: async () => {
+      const res = await supabase.rpc("admin_get_user", { p_user_id: id });
+      return { data: res.data, error: res.error };
+    },
     enabled: !!id,
     retry: false,
   });
-  const { data: activeSuspension } = useQuery({
+
+  const suspensionQ = useQuery({
     queryKey: ["user-active-suspension", id],
     queryFn: () => getActiveSuspension(id),
     enabled: !!id,
+    retry: false,
   });
 
-  const togglePhone = () => {
-    if (!showPhone) logPiiReveal(id, "phone");
-    setShowPhone(s => !s);
-  };
-  const toggleEmail = () => {
-    if (!showEmail) logPiiReveal(id, "email");
-    setShowEmail(s => !s);
-  };
-
-  if (isLoading) return <div className="text-slate-500 text-sm">{t("users.loading")}</div>;
-  if (error || !user) {
-    return (
-      <div className="space-y-4">
-        <Link to="/users" className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
-          <ArrowLeft className="w-4 h-4" /> {t("users.back")}
-        </Link>
-        <div className="text-slate-500">{t("users.not_found")}</div>
-        {error && <div className="text-xs text-red-600">{(error as any).message}</div>}
-      </div>
-    );
-  }
-
-  const label = user.display_name || user.email || user.phone || user.user_id.slice(0, 8);
-  const isSuspended = !!activeSuspension;
-
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "overview",    label: t("users.tab_overview") },
-    { id: "bookings",    label: t("users.tab_bookings") },
-    { id: "payments",    label: t("users.tab_payments") },
-    { id: "reports",     label: t("users.tab_reports") },
-    { id: "suspensions", label: t("users.tab_suspensions") },
-    { id: "activity",    label: t("users.tab_activity") },
-  ];
+  const row = Array.isArray(userQ.data?.data) ? userQ.data?.data[0] : userQ.data?.data;
+  const rpcError = userQ.data?.error;
+  const isSuspended = !!suspensionQ.data;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <Link to="/users" className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900">
-        <ArrowLeft className="w-4 h-4" /> {t("users.back")}
+        <ArrowLeft className="w-4 h-4" /> Back
       </Link>
 
-      <div className="bg-white border border-slate-200 rounded-lg p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 min-w-0">
-            <div className="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-xl text-slate-500 shrink-0 overflow-hidden">
-              {user.avatar_url ? (
-                <img src={user.avatar_url} className="w-full h-full object-cover" />
-              ) : (label[0]?.toUpperCase() ?? "?")}
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-xl font-semibold text-slate-900 truncate">{label}</h1>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600 mt-1">
-                <span className="flex items-center gap-1">
-                  📱 {showPhone ? (user.phone ?? "—") : maskPhone(user.phone)}
-                  {user.phone && (
-                    <button onClick={togglePhone} className="ml-1 text-slate-400 hover:text-slate-700">
-                      {showPhone ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
-                  )}
-                </span>
-                <span className="flex items-center gap-1">
-                  ✉ {showEmail ? (user.email ?? "—") : maskEmail(user.email)}
-                  {user.email && (
-                    <button onClick={toggleEmail} className="ml-1 text-slate-400 hover:text-slate-700">
-                      {showEmail ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
-                  )}
-                </span>
-                {user.created_at && (
-                  <span>· {t("users.joined")}: {new Date(user.created_at).toLocaleDateString()}</span>
-                )}
-              </div>
-              <div className="mt-2">
+      <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-2">
+        <h1 className="text-xl font-semibold text-slate-900">User detail</h1>
+        <div className="text-xs text-slate-500 font-mono">URL id: {id || "(empty)"}</div>
+
+        {userQ.isLoading && <div className="text-sm text-slate-500">Loading user…</div>}
+
+        {userQ.error && (
+          <div className="bg-red-50 border border-red-300 text-red-800 p-3 rounded text-sm space-y-1">
+            <div className="font-semibold">Query failed</div>
+            <pre className="text-xs whitespace-pre-wrap">{(userQ.error as any).message ?? String(userQ.error)}</pre>
+          </div>
+        )}
+
+        {rpcError && (
+          <div className="bg-amber-50 border border-amber-300 text-amber-900 p-3 rounded text-sm space-y-1">
+            <div className="font-semibold">RPC returned error</div>
+            <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(rpcError, null, 2)}</pre>
+          </div>
+        )}
+
+        {!userQ.isLoading && !userQ.error && !rpcError && !row && (
+          <div className="text-sm text-amber-700">No row returned (user_id may not exist).</div>
+        )}
+
+        {row && (
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-lg font-medium text-slate-900">
+                  {row.display_name || row.email || row.phone || row.user_id?.slice(0, 8)}
+                </div>
+                <div className="text-xs text-slate-500">{row.email} · {row.phone}</div>
                 {isSuspended ? (
-                  <span className="inline-block text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded">
-                    {t("users.status_suspended")}
-                  </span>
+                  <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded">Suspended</span>
                 ) : (
-                  <span className="inline-block text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">
-                    {t("users.status_active")}
-                  </span>
+                  <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded">Active</span>
                 )}
               </div>
+              {isSuspended ? (
+                <button onClick={() => setUnsuspendOpen(true)}
+                  className="px-3 py-1.5 text-sm bg-brand text-white hover:bg-brand-dark rounded inline-flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4" /> Unsuspend
+                </button>
+              ) : (
+                <button onClick={() => setSuspendOpen(true)}
+                  className="px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 rounded inline-flex items-center gap-1.5">
+                  <Ban className="w-4 h-4" /> Suspend
+                </button>
+              )}
             </div>
-          </div>
-          <div className="flex flex-col gap-2 shrink-0">
-            {isSuspended ? (
-              <button onClick={() => setUnsuspendOpen(true)}
-                className="px-3 py-1.5 text-sm bg-brand text-white hover:bg-brand-dark rounded inline-flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4" /> {t("users.unsuspend")}
-              </button>
-            ) : (
-              <button onClick={() => setSuspendOpen(true)}
-                className="px-3 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 rounded inline-flex items-center gap-1.5">
-                <Ban className="w-4 h-4" /> {t("users.suspend")}
-              </button>
-            )}
-          </div>
-        </div>
 
-        {isSuspended && activeSuspension && (
-          <div className="mt-4 px-3 py-2 bg-red-50 border border-red-200 rounded text-sm text-red-800">
-            ⚠ {t("users.suspended_banner", { reason: `${activeSuspension.reason_code} — ${activeSuspension.reason}` })}
-            <div className="text-xs mt-0.5 text-red-700">
-              {activeSuspension.expires_at
-                ? t("users.expires_at", { date: new Date(activeSuspension.expires_at).toLocaleString() })
-                : t("users.no_expiry")}
-            </div>
+            <details className="text-xs">
+              <summary className="cursor-pointer text-slate-600">Full row JSON</summary>
+              <pre className="mt-2 p-3 bg-slate-50 rounded overflow-auto">{JSON.stringify(row, null, 2)}</pre>
+            </details>
           </div>
         )}
       </div>
 
-      <div className="border-b border-slate-200">
-        <nav className="flex gap-1">
-          {tabs.map(t1 => (
-            <button key={t1.id} onClick={() => setTab(t1.id)}
-              className={cn(
-                "px-4 py-2 text-sm border-b-2 -mb-px",
-                tab === t1.id
-                  ? "border-brand text-brand-dark font-medium"
-                  : "border-transparent text-slate-600 hover:text-slate-900"
-              )}>
-              {t1.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      <div>
-        {tab === "overview" && (
-          <div className="bg-white border border-slate-200 rounded-lg p-5">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              <dt className="text-slate-500">User ID</dt>
-              <dd className="text-slate-900 font-mono text-xs">{user.user_id}</dd>
-              <dt className="text-slate-500">Location</dt>
-              <dd>{user.location ?? "—"}</dd>
-              <dt className="text-slate-500">Bio</dt>
-              <dd className="whitespace-pre-wrap">{user.bio ?? "—"}</dd>
-              <dt className="text-slate-500">{t("users.joined")}</dt>
-              <dd>{user.created_at ? new Date(user.created_at).toLocaleString() : "—"}</dd>
-              <dt className="text-slate-500">Last sign-in</dt>
-              <dd>{user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "—"}</dd>
-              <dt className="text-slate-500">Email confirmed</dt>
-              <dd>{user.email_confirmed_at ? new Date(user.email_confirmed_at).toLocaleString() : "—"}</dd>
-            </dl>
-          </div>
-        )}
-        {tab === "suspensions" && <SuspensionsHistoryTab userId={id} />}
-        {tab !== "overview" && tab !== "suspensions" && (
-          <div className="text-slate-500 text-sm py-8 text-center">{t("users.coming_soon")}</div>
-        )}
+      <div className="bg-white border border-slate-200 rounded-lg p-5">
+        <h2 className="text-base font-semibold text-slate-900 mb-3">Suspension history</h2>
+        <SuspensionsHistoryTab userId={id} />
       </div>
 
       <SuspendUserDialog open={suspendOpen} onClose={() => setSuspendOpen(false)}
-        userId={id} userLabel={label} />
-      {activeSuspension && (
+        userId={id} userLabel={row?.display_name || row?.email || id} />
+      {suspensionQ.data && (
         <UnsuspendUserDialog open={unsuspendOpen} onClose={() => setUnsuspendOpen(false)}
-          userId={id} suspensionId={activeSuspension.id} />
+          userId={id} suspensionId={suspensionQ.data.id} />
       )}
     </div>
   );
