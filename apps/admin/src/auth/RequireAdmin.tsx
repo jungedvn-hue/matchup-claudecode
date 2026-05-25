@@ -5,7 +5,8 @@ import LoginPage from "./LoginPage";
 import MfaEnrollPage from "./MfaEnrollPage";
 import MfaVerifyPage from "./MfaVerifyPage";
 
-const MFA_REQUIRED = import.meta.env.VITE_ADMIN_REQUIRE_MFA !== "false";
+// Default OFF in production until MFA debug; flip to true to re-enable.
+const MFA_REQUIRED = import.meta.env.VITE_ADMIN_REQUIRE_MFA === "true";
 
 export default function RequireAdmin({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
