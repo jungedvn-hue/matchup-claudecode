@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import { AdminAuthProvider } from "@/auth/AdminAuthProvider";
 import RequireAdmin from "@/auth/RequireAdmin";
 import AdminShell from "@/layout/AdminShell";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import DashboardPage from "@/pages/DashboardPage";
 import UsersListPage from "@/pages/UsersListPage";
 import UserDetailPage from "@/pages/users/UserDetailPage";
@@ -18,6 +19,7 @@ const Stub = ({ k }: { k: string }) => (
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={qc}>
       <AdminAuthProvider>
         <BrowserRouter>
@@ -43,5 +45,6 @@ export default function App() {
       </AdminAuthProvider>
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
