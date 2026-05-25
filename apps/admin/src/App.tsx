@@ -8,6 +8,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import DashboardPage from "@/pages/DashboardPage";
 import UsersListPage from "@/pages/UsersListPage";
 import UserDetailPage from "@/pages/users/UserDetailPage";
+import VenuesListPage from "@/pages/venues/VenuesListPage";
+import VenueDetailPage from "@/pages/venues/VenueDetailPage";
 
 const qc = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, retry: 1 } },
@@ -29,9 +31,11 @@ export default function App() {
                 <Route index element={<DashboardPage />} />
                 <Route path="users" element={<UsersListPage />} />
                 <Route path="users/:id" element={<UserDetailPage />} />
+                <Route path="venues" element={<VenuesListPage />} />
+                <Route path="venues/:id" element={<VenueDetailPage />} />
                 {/* Stub routes for the rest of the nav */}
                 {[
-                  "venues","bookings","tournaments","groups","marketplace","events",
+                  "bookings","tournaments","groups","marketplace","events",
                   "referees","health","payments","refunds","disputes","reconciliation",
                   "reports","broadcasts","banners","flags","impersonate","audit","settings",
                 ].map(k => (
