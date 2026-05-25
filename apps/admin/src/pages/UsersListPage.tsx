@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { maskEmail, maskPhone } from "@/lib/utils";
 
@@ -66,7 +67,11 @@ export default function UsersListPage() {
             )}
             {data?.rows.map((u: any) => (
               <tr key={u.id} className="border-t border-slate-100 hover:bg-slate-50">
-                <td className="px-4 py-2.5 text-slate-900">{u.full_name ?? "—"}</td>
+                <td className="px-4 py-2.5">
+                  <Link to={`/users/${u.id}`} className="text-slate-900 hover:text-brand-dark hover:underline">
+                    {u.full_name ?? "—"}
+                  </Link>
+                </td>
                 <td className="px-4 py-2.5 text-slate-700">
                   {revealed[u.id] ? (u.phone ?? "—") : maskPhone(u.phone)}{" "}
                   {u.phone && (

@@ -6,6 +6,7 @@ import RequireAdmin from "@/auth/RequireAdmin";
 import AdminShell from "@/layout/AdminShell";
 import DashboardPage from "@/pages/DashboardPage";
 import UsersListPage from "@/pages/UsersListPage";
+import UserDetailPage from "@/pages/users/UserDetailPage";
 
 const qc = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, retry: 1 } },
@@ -25,6 +26,7 @@ export default function App() {
               <Route path="/" element={<AdminShell />}>
                 <Route index element={<DashboardPage />} />
                 <Route path="users" element={<UsersListPage />} />
+                <Route path="users/:id" element={<UserDetailPage />} />
                 {/* Stub routes for the rest of the nav */}
                 {[
                   "venues","bookings","tournaments","groups","marketplace","events",
