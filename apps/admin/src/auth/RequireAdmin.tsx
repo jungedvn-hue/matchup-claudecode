@@ -13,7 +13,15 @@ export default function RequireAdmin({ children }: { children: ReactNode }) {
   const { loading, session, adminRow, mfaSatisfied } = useAdminAuth();
 
   if (loading) {
-    return <div className="min-h-screen grid place-items-center text-slate-500">…</div>;
+    return (
+      <div className="min-h-screen grid place-items-center text-slate-500 p-4">
+        <div className="text-center space-y-2">
+          <div>Loading admin session…</div>
+          <button onClick={() => location.reload()}
+            className="text-xs text-brand hover:underline">Reload</button>
+        </div>
+      </div>
+    );
   }
   if (!session) return <LoginPage />;
   if (!adminRow || adminRow.status !== "active") {

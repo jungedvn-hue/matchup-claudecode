@@ -9,6 +9,7 @@ interface AdminAuthState {
   adminRow: AdminUserRow | null;
   loading: boolean;
   mfaSatisfied: boolean;
+  initError: string | null;
   refreshAdmin: () => Promise<void>;
   setMfaSatisfied: (v: boolean) => void;
   signOut: () => Promise<void>;
@@ -16,17 +17,25 @@ interface AdminAuthState {
 
 const Ctx = createContext<AdminAuthState | null>(null);
 
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, rej) => setTimeout(() => rej(new Error(`${label} timed out after ${ms}ms`)), ms)),
+  ]);
+}
+
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [adminRow, setAdminRow] = useState<AdminUserRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [mfaSatisfied, setMfaSatisfied] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
   const refreshAdmin = async () => {
     try {
-      const row = await getCurrentAdminRow();
+      const row = await withTimeout(getCurrentAdminRow(), 4000, "getCurrentAdminRow");
       setAdminRow(row);
-    } catch (e) {
+    } catch (e: any) {
       console.error("[admin] refreshAdmin failed:", e);
       setAdminRow(null);
     }
@@ -34,9 +43,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const checkMfa = async () => {
     try {
-      const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data } = await withTimeout(
+        supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+        3000,
+        "getAuthenticatorAssuranceLevel"
+      );
       setMfaSatisfied(data?.currentLevel === "aal2");
-    } catch (e) {
+    } catch (e: any) {
       console.error("[admin] AAL check failed:", e);
       setMfaSatisfied(false);
     }
@@ -44,21 +57,36 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    // Hard safety net: never stay loading > 8s
+    const killSwitch = setTimeout(() => {
+      if (!mounted) return;
+      console.warn("[admin] auth init kill switch fired");
+      setLoading(false);
+      setInitError("Auth init took too long; check console.");
+    }, 8000);
+
     (async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        console.log("[admin] auth init: getSession…");
+        const { data, error } = await withTimeout(supabase.auth.getSession(), 4000, "getSession");
         if (error) console.error("[admin] getSession error:", error);
         if (!mounted) return;
         const sess = data?.session ?? null;
+        console.log("[admin] auth init: session?", !!sess);
         setSession(sess);
         if (sess) {
           await refreshAdmin();
           await checkMfa();
         }
-      } catch (e) {
+        console.log("[admin] auth init done");
+      } catch (e: any) {
         console.error("[admin] auth init failed:", e);
+        setInitError(e?.message ?? String(e));
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          clearTimeout(killSwitch);
+          setLoading(false);
+        }
       }
     })();
 
@@ -72,7 +100,11 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         setMfaSatisfied(false);
       }
     });
-    return () => { mounted = false; sub.subscription.unsubscribe(); };
+    return () => {
+      mounted = false;
+      clearTimeout(killSwitch);
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
@@ -85,7 +117,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={{
       session, user: session?.user ?? null, adminRow, loading,
-      mfaSatisfied, refreshAdmin, setMfaSatisfied, signOut,
+      mfaSatisfied, initError, refreshAdmin, setMfaSatisfied, signOut,
     }}>
       {children}
     </Ctx.Provider>
