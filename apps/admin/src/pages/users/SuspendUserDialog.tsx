@@ -42,6 +42,8 @@ export default function SuspendUserDialog({ open, onClose, userId, userLabel }: 
     onSuccess: () => {
       toast.success(t("suspend.success"));
       qc.invalidateQueries({ queryKey: ["user-detail", userId] });
+      qc.invalidateQueries({ queryKey: ["user-detail-raw", userId] });
+      qc.invalidateQueries({ queryKey: ["user-active-suspension", userId] });
       qc.invalidateQueries({ queryKey: ["user-suspensions", userId] });
       reset();
       onClose();

@@ -23,6 +23,8 @@ export default function UnsuspendUserDialog({ open, onClose, userId, suspensionI
     onSuccess: () => {
       toast.success(t("unsuspend.success"));
       qc.invalidateQueries({ queryKey: ["user-detail", userId] });
+      qc.invalidateQueries({ queryKey: ["user-detail-raw", userId] });
+      qc.invalidateQueries({ queryKey: ["user-active-suspension", userId] });
       qc.invalidateQueries({ queryKey: ["user-suspensions", userId] });
       setLiftReason("");
       onClose();
