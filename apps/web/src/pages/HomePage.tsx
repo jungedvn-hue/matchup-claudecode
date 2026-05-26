@@ -4,12 +4,8 @@ import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, ChevronRight, Trophy, Flame, Gem, Plus,
   Users, Calendar, Clock, GraduationCap, Map as MapIcon, Wrench,
-  ShoppingBag, MoreHorizontal,
+  ShoppingBag, UserCircle,
 } from "lucide-react";
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
-} from "@/components/ui/sheet";
-import { STORE_CATEGORIES } from "@/hooks/useStores";
 import { TOOLS, filterToolsForRoles } from "@/lib/tools";
 import { useRoles } from "@/hooks/use-roles";
 import NotificationBell from "@/components/NotificationBell";
@@ -63,10 +59,10 @@ const HomePage = () => {
   const xpRemaining = Math.max(0, xpNextLevel - totalXP);
   const pct = xpNeeded > 0 ? Math.min(100, Math.round((xpProgress / xpNeeded) * 100)) : 0;
 
-  const [moreOpen, setMoreOpen] = useState(false);
   const discoverTiles = [
     { cat: "groups",      icon: Users,          label: t("discover.groups"),      to: "/groups" },
-    { cat: "courts",      icon: MapIcon,        label: t("discover.courts"),      to: "/discover?cat=courts" },
+    { cat: "players",     icon: UserCircle,     label: t("discover.players"),     to: "/players" },
+    { cat: "courts",      icon: MapIcon,        label: t("discover.courts"),      to: "/courts" },
     { cat: "tournaments", icon: Trophy,         label: t("discover.tournaments"), to: "/tournaments" },
     { cat: "services",    icon: GraduationCap,  label: t("discover.services"),    to: "/marketplace?group=services" },
     { cat: "products",    icon: ShoppingBag,    label: t("discover.products"),    to: "/marketplace?group=products" },
@@ -176,30 +172,6 @@ const HomePage = () => {
                 <p className="text-xs font-medium text-foreground leading-tight">{tile.label}</p>
               </button>
             ))}
-            <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-              <SheetTrigger asChild>
-                <button className="group p-3 rounded-xl bg-card border border-dashed border-border hover:border-primary/40 transition-all active:scale-[0.98] text-left">
-                  <MoreHorizontal className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors mb-2" />
-                  <p className="text-xs font-medium text-foreground leading-tight">{t("discover.more")}</p>
-                </button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="rounded-t-2xl">
-                <SheetHeader>
-                  <SheetTitle>{t("discover.allCategories")}</SheetTitle>
-                </SheetHeader>
-                <div className="grid grid-cols-3 gap-2 pt-4 pb-2">
-                  {STORE_CATEGORIES.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => { setMoreOpen(false); navigate(`/marketplace?cat=${c}`); }}
-                      className="p-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-all active:scale-[0.98] text-left"
-                    >
-                      <p className="text-xs font-medium text-foreground leading-tight">{t(`store.cat.${c}`)}</p>
-                    </button>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
           </div>
         </section>
 

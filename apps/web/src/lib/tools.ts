@@ -51,7 +51,7 @@ export const TOOLS: Tool[] = [
     icon: Gavel,
     labelKey: "tools.refInvite.label",
     descKey: "tools.refInvite.desc",
-    route: "/discover?cat=referees",
+    route: "/referees",
     status: "available",
     priority: 80,
   },

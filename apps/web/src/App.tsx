@@ -11,7 +11,9 @@ import BottomNav from "@/components/BottomNav";
 import AIAssistant from "@/components/AIAssistant";
 import HomePage from "./pages/HomePage";
 import GroupDetailPage from "./pages/GroupDetailPage";
-import DiscoverPage from "./pages/DiscoverPage";
+import CourtsPage from "./pages/CourtsPage";
+import PlayersPage from "./pages/PlayersPage";
+import RefereesPage from "./pages/RefereesPage";
 import GroupsPage from "./pages/GroupsPage";
 import TournamentsPage from "./pages/TournamentsPage";
 import HostDashboard from "./pages/HostDashboard";
@@ -92,7 +94,9 @@ const AppShell = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/login" element={<AuthPage />} />
-        <Route path="/discover" element={<DiscoverPage />} />
+        <Route path="/discover" element={<Navigate to="/" replace />} />
+        <Route path="/courts" element={<CourtsPage />} />
+        <Route path="/players" element={<PlayersPage />} />
         <Route path="/groups" element={<GroupsPage />} />
         <Route path="/group/:groupId" element={<GroupDetailPage />} />
         <Route path="/tournaments" element={<TournamentsPage />} />
@@ -134,8 +138,8 @@ const AppShell = () => {
         <Route path="/tour-manager/:tournamentId" element={<ProtectedRoute><FeatureGate role="host"><TourManagerControlPage /></FeatureGate></ProtectedRoute>} />
         <Route path="/referee" element={<ProtectedRoute><RefereeHub /></ProtectedRoute>} />
         <Route path="/referee/:userId" element={<RefereeProfilePage />} />
-        <Route path="/referees" element={<Navigate to="/discover?cat=referees" replace />} />
-        <Route path="/referees/leaderboard" element={<Navigate to="/discover?cat=referees&sort=matches" replace />} />
+        <Route path="/referees" element={<RefereesPage />} />
+        <Route path="/referees/leaderboard" element={<Navigate to="/referees?sort=matches" replace />} />
         <Route path="/courtside/:tournamentId/:matchId" element={<ProtectedRoute><CourtsideRefereePage /></ProtectedRoute>} />
         <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
         
