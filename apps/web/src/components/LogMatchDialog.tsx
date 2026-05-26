@@ -235,17 +235,21 @@ const LogMatchDialog = ({ open, onOpenChange, onCreated }: LogMatchDialogProps) 
                   <div key={idx} className="grid grid-cols-[auto,1fr,1fr,auto] gap-2 items-center">
                     <span className="text-xs font-bold text-muted-foreground uppercase w-12">Set {idx + 1}</span>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       placeholder={t("matches.log.youPh")}
                       value={s.s}
-                      onChange={e => updateSetInput(idx, "s", e.target.value)}
+                      onChange={e => updateSetInput(idx, "s", e.target.value.replace(/\D/g, ""))}
                       className="text-center font-bold tabular-nums h-9"
                     />
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       placeholder={t("matches.log.opponentScorePh")}
                       value={s.o}
-                      onChange={e => updateSetInput(idx, "o", e.target.value)}
+                      onChange={e => updateSetInput(idx, "o", e.target.value.replace(/\D/g, ""))}
                       className="text-center font-bold tabular-nums h-9"
                     />
                     {setInputs.length > 1 ? (

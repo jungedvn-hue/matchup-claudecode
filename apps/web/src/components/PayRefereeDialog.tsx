@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import MoneyInput from "@/components/MoneyInput";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useTournaments } from "@/context/TournamentContext";
@@ -24,7 +25,7 @@ const PayRefereeDialog = ({ open, onOpenChange, refereeUserId, refereeName, onRe
   const { user } = useAuth();
   const { tournaments } = useTournaments();
   const [tournamentId, setTournamentId] = useState<string>("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -37,7 +38,7 @@ const PayRefereeDialog = ({ open, onOpenChange, refereeUserId, refereeName, onRe
   }, [open, myTournaments, tournamentId]);
 
   const handleSubmit = async () => {
-    const amt = parseInt(amount, 10);
+    const amt = amount ?? 0;
     if (!tournamentId || !Number.isFinite(amt) || amt <= 0) {
       toast.error(t("payRef.invalidAmount"));
       return;
@@ -47,7 +48,7 @@ const PayRefereeDialog = ({ open, onOpenChange, refereeUserId, refereeName, onRe
     setSaving(false);
     if (error) { toast.error(error.message ?? String(error)); return; }
     toast.success(t("payRef.success", { name: refereeName }));
-    setAmount("");
+    setAmount(null);
     setNote("");
     onRecorded?.();
     onOpenChange(false);
@@ -90,14 +91,12 @@ const PayRefereeDialog = ({ open, onOpenChange, refereeUserId, refereeName, onRe
 
           <div className="space-y-1.5">
             <Label className="text-[11px] font-medium text-muted-foreground">{t("payRef.amountLabel")}</Label>
-            <Input
-              type="number"
-              inputMode="numeric"
+            <MoneyInput
               min={1}
               value={amount}
-              onChange={e => setAmount(e.target.value)}
+              onChange={setAmount}
               placeholder={t("payRef.amountPh")}
-              className="h-10 rounded-xl font-stat tabular-nums text-base"
+              className="h-10 rounded-xl font-stat text-base"
             />
           </div>
 

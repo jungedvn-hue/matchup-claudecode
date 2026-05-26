@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import NumberInput from "@/components/NumberInput";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Trash2, Lock } from "lucide-react";
@@ -27,8 +28,8 @@ const EditEventDialog = ({ open, onOpenChange, event, onSaved, onDeleted }: Prop
   const [location, setLocation] = useState(event.location ?? "");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [duration, setDuration] = useState(event.duration_minutes);
-  const [maxAttendees, setMaxAttendees] = useState<number | "">(event.max_attendees ?? "");
+  const [duration, setDuration] = useState<number | null>(event.duration_minutes);
+  const [maxAttendees, setMaxAttendees] = useState<number | null>(event.max_attendees ?? null);
   const [priceCoins, setPriceCoins] = useState(event.price_coins);
   const [refundHours, setRefundHours] = useState(event.refund_deadline_hours);
   const [priceLocked, setPriceLocked] = useState(false);
@@ -45,7 +46,7 @@ const EditEventDialog = ({ open, onOpenChange, event, onSaved, onDeleted }: Prop
       setDescription(event.description ?? "");
       setLocation(event.location ?? "");
       setDuration(event.duration_minutes);
-      setMaxAttendees(event.max_attendees ?? "");
+      setMaxAttendees(event.max_attendees ?? null);
       setPriceCoins(event.price_coins);
       setRefundHours(event.refund_deadline_hours);
       hasPaidTicket(event.id).then(setPriceLocked);
@@ -61,8 +62,8 @@ const EditEventDialog = ({ open, onOpenChange, event, onSaved, onDeleted }: Prop
       description: description || null,
       location: location || null,
       event_date: eventDate,
-      duration_minutes: duration,
-      max_attendees: maxAttendees === "" ? null : Number(maxAttendees),
+      duration_minutes: duration ?? event.duration_minutes,
+      max_attendees: maxAttendees,
     };
     if (!priceLocked) {
       patch.price_coins = priceCoins;
@@ -119,11 +120,11 @@ const EditEventDialog = ({ open, onOpenChange, event, onSaved, onDeleted }: Prop
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">{t("events.duration")}</Label>
-              <Input type="number" min={15} max={480} step={15} value={duration} onChange={e => setDuration(parseInt(e.target.value) || 90)} />
+              <NumberInput integer min={15} max={480} value={duration} onChange={setDuration} placeholder="90" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">{t("events.maxAttendees")}</Label>
-              <Input type="number" min={1} value={maxAttendees} onChange={e => setMaxAttendees(e.target.value === "" ? "" : parseInt(e.target.value))} placeholder="—" />
+              <NumberInput integer min={1} value={maxAttendees} onChange={setMaxAttendees} placeholder="—" />
             </div>
           </div>
 

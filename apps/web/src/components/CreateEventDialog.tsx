@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import NumberInput from "@/components/NumberInput";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
@@ -26,15 +27,15 @@ const CreateEventDialog = ({ open, onOpenChange, groupId, onCreated }: Props) =>
   const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [duration, setDuration] = useState(90);
-  const [maxAttendees, setMaxAttendees] = useState<number | "">("");
+  const [duration, setDuration] = useState<number | null>(90);
+  const [maxAttendees, setMaxAttendees] = useState<number | null>(null);
   const [priceCoins, setPriceCoins] = useState(0);
   const [refundHours, setRefundHours] = useState(8);
   const [saving, setSaving] = useState(false);
 
   const reset = () => {
     setTitle(""); setDescription(""); setLocation("");
-    setDate(""); setTime(""); setDuration(90); setMaxAttendees("");
+    setDate(""); setTime(""); setDuration(90); setMaxAttendees(null);
     setPriceCoins(0); setRefundHours(8);
   };
 
@@ -51,8 +52,8 @@ const CreateEventDialog = ({ open, onOpenChange, groupId, onCreated }: Props) =>
       description: description || undefined,
       location: location || undefined,
       event_date: eventDate,
-      duration_minutes: duration,
-      max_attendees: maxAttendees === "" ? undefined : Number(maxAttendees),
+      duration_minutes: duration ?? 90,
+      max_attendees: maxAttendees ?? undefined,
       price_coins: priceCoins,
       refund_deadline_hours: refundHours,
     });
@@ -96,11 +97,11 @@ const CreateEventDialog = ({ open, onOpenChange, groupId, onCreated }: Props) =>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">{t("events.duration")}</Label>
-              <Input type="number" min={15} max={480} step={15} value={duration} onChange={e => setDuration(parseInt(e.target.value) || 90)} />
+              <NumberInput integer min={15} max={480} value={duration} onChange={setDuration} placeholder="90" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">{t("events.maxAttendees")}</Label>
-              <Input type="number" min={1} value={maxAttendees} onChange={e => setMaxAttendees(e.target.value === "" ? "" : parseInt(e.target.value))} placeholder="—" />
+              <NumberInput integer min={1} value={maxAttendees} onChange={setMaxAttendees} placeholder="—" />
             </div>
           </div>
 

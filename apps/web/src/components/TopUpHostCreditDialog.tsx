@@ -6,6 +6,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { usePointBalance, formatPoint } from "@/hooks/usePoints";
 import { topupHostCredit } from "@/hooks/useHostCredit";
 import { toast } from "sonner";
+import MoneyInput from "@/components/MoneyInput";
 
 const PRESETS = [500, 1000, 5000, 10000];
 
@@ -79,12 +80,12 @@ const TopUpHostCreditDialog = ({ open, onOpenChange, onSuccess }: Props) => {
           </div>
 
           {/* Custom input */}
-          <input
-            type="number" min={1} step={100}
-            value={amount || ""}
-            onChange={e => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
-            className="w-full h-10 px-3 rounded-xl border border-border bg-background font-stat text-base text-center tabular-nums focus:outline-none focus:ring-2 focus:ring-primary/40"
+          <MoneyInput
+            min={1}
+            value={amount}
+            onChange={(v) => setAmount(v ?? 0)}
             placeholder={t("hostCredit.topup.customPh")}
+            className="h-10 text-base text-center"
           />
 
           {insufficient && (

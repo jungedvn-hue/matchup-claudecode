@@ -7,6 +7,8 @@ import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { AMENITY_OPTIONS, DAY_KEYS, type DayKey, type OperatingHours, type Venue, type VenueInput, type VenuePricing, type VenueStatus } from "@/hooks/useVenues";
 import ImageUpload from "@/components/ImageUpload";
+import NumberInput from "@/components/NumberInput";
+import MoneyInput from "@/components/MoneyInput";
 
 interface Props {
   open: boolean;
@@ -18,7 +20,7 @@ interface Props {
 const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
   const { t } = useLanguage();
   const [name, setName] = useState("");
-  const [courtCount, setCourtCount] = useState(1);
+  const [courtCount, setCourtCount] = useState<number | null>(1);
   const [amenities, setAmenities] = useState<string[]>([]);
   const [location, setLocation] = useState("");
   const [address, setAddress] = useState("");
@@ -55,7 +57,7 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
     setAmenities(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   const submit = async () => {
-    if (!name.trim() || courtCount < 1) return;
+    if (!name.trim() || !courtCount || courtCount < 1) return;
     setSaving(true);
     const ok = await onSave({
       name: name.trim(),
@@ -93,11 +95,7 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
 
           <div className="space-y-1">
             <Label className="text-[11px] text-muted-foreground">{t("venue.field.courtCount")} *</Label>
-            <Input
-              type="number" min={1} value={courtCount}
-              onChange={e => setCourtCount(Math.max(1, +e.target.value || 1))}
-              className="tabular-nums"
-            />
+            <NumberInput integer min={1} value={courtCount} onChange={setCourtCount} placeholder="1" />
           </div>
 
           <div className="space-y-1">
@@ -177,30 +175,24 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">{t("venue.pricing.weekday")}</Label>
-                <Input
-                  type="number" min={0}
-                  value={pricing.weekday_hour ?? ""}
-                  onChange={e => setPricing(p => ({ ...p, weekday_hour: e.target.value ? +e.target.value : null }))}
-                  className="h-9 tabular-nums" placeholder="100000"
-                />
+                <MoneyInput min={0} className="h-9"
+                  value={pricing.weekday_hour ?? null}
+                  onChange={(v) => setPricing(p => ({ ...p, weekday_hour: v }))}
+                  placeholder="100.000" />
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">{t("venue.pricing.weekend")}</Label>
-                <Input
-                  type="number" min={0}
-                  value={pricing.weekend_hour ?? ""}
-                  onChange={e => setPricing(p => ({ ...p, weekend_hour: e.target.value ? +e.target.value : null }))}
-                  className="h-9 tabular-nums" placeholder="150000"
-                />
+                <MoneyInput min={0} className="h-9"
+                  value={pricing.weekend_hour ?? null}
+                  onChange={(v) => setPricing(p => ({ ...p, weekend_hour: v }))}
+                  placeholder="150.000" />
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] text-muted-foreground">{t("venue.pricing.fullDay")}</Label>
-                <Input
-                  type="number" min={0}
-                  value={pricing.full_day ?? ""}
-                  onChange={e => setPricing(p => ({ ...p, full_day: e.target.value ? +e.target.value : null }))}
-                  className="h-9 tabular-nums" placeholder="1500000"
-                />
+                <MoneyInput min={0} className="h-9"
+                  value={pricing.full_day ?? null}
+                  onChange={(v) => setPricing(p => ({ ...p, full_day: v }))}
+                  placeholder="1.500.000" />
               </div>
             </div>
             <p className="text-[10px] text-muted-foreground">{t("venue.pricing.hint")}</p>
@@ -267,7 +259,7 @@ const VenueEditDialog = ({ open, onOpenChange, venue, onSave }: Props) => {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
-          <Button onClick={submit} disabled={saving || !name.trim() || courtCount < 1}>
+          <Button onClick={submit} disabled={saving || !name.trim() || !courtCount || courtCount < 1}>
             {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
             {t("common.save")}
           </Button>
