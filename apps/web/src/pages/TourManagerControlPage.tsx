@@ -1816,35 +1816,62 @@ function MatchCard({
     onScoreChange(match.id, wonA, wonB, next);
   };
 
+  const isCompleted = match.status === "completed";
+  const courtName = match.courtId ? courtMap?.[match.courtId] : undefined;
+  const refName = match.refereeId ? refereeMap?.[match.refereeId] : undefined;
+
   return (
     <Card className={`${statusBg[match.status]} border`}>
       <CardContent className={compact ? "p-2" : "p-3"}>
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] text-muted-foreground">
-            {match.poolId && `${t("tm.pool")} ${match.poolId.split("-").pop()?.toUpperCase()} • `}
-            #{match.matchNo}
-          </span>
-          <div className="flex items-center gap-1">
-            {/* Court badge */}
-            {match.courtId && courtMap?.[match.courtId] && (
-              <span className="text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium">
-                📍 {courtMap[match.courtId]}
+        {isCompleted ? (
+          // ── Completed: monoline meta, no colored chips ──
+          <div className="flex items-center justify-between mb-2 text-[10px] text-muted-foreground">
+            <span className="truncate">
+              {match.poolId && `${t("tm.pool")} ${match.poolId.split("-").pop()?.toUpperCase()} · `}#{match.matchNo}
+            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              {courtName && (
+                <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{courtName}</span>
+              )}
+              {refName && (
+                <span className="inline-flex items-center gap-1"><Gavel className="h-3 w-3" />{refName}</span>
+              )}
+              {match.livestreamUrl && (
+                <a href={match.livestreamUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-primary/10 text-primary">
+                <Check className="h-2.5 w-2.5" strokeWidth={3} />
               </span>
-            )}
-            {/* Referee badge */}
-            {match.refereeId && refereeMap?.[match.refereeId] && (
-              <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-medium">
-                🏳️ {refereeMap[match.refereeId]}
-              </span>
-            )}
-            <Badge
-              variant={match.status === "completed" ? "default" : match.status === "in_progress" ? "outline" : "secondary"}
-              className="text-[10px]"
-            >
-              {match.status === "completed" ? "✓" : match.status === "in_progress" ? "LIVE" : "—"}
-            </Badge>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-muted-foreground">
+              {match.poolId && `${t("tm.pool")} ${match.poolId.split("-").pop()?.toUpperCase()} • `}
+              #{match.matchNo}
+            </span>
+            <div className="flex items-center gap-1">
+              {courtName && (
+                <span className="text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-0.5">
+                  <MapPin className="h-2.5 w-2.5" /> {courtName}
+                </span>
+              )}
+              {refName && (
+                <span className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-medium inline-flex items-center gap-0.5">
+                  <Gavel className="h-2.5 w-2.5" /> {refName}
+                </span>
+              )}
+              <Badge
+                variant={match.status === "in_progress" ? "outline" : "secondary"}
+                className="text-[10px]"
+              >
+                {match.status === "in_progress" ? "LIVE" : "—"}
+              </Badge>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-2">
           {/* Team A row — name (wrap-free) + inline score widget on right */}
@@ -1963,8 +1990,8 @@ function MatchCard({
           </div>
         )}
 
-        {/* Per-match livestream URL */}
-        {!readonly && (
+        {/* Per-match livestream URL — hidden when completed (icon link in header instead) */}
+        {!readonly && !isCompleted && (
           <div className="mt-2 flex items-center gap-1.5">
             <Input
               value={localStream}
@@ -1994,16 +2021,16 @@ function MatchCard({
           </div>
         )}
 
-        {/* Reopen button — shown when match is completed and host/referee can undo */}
-        {match.status === "completed" && onUndo && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full mt-3 h-9 text-xs gap-1.5 border-amber-500/30 text-amber-700 dark:text-amber-500 hover:bg-amber-500/10"
-            onClick={() => onUndo(match.id)}
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> {t("tm.reopen")}
-          </Button>
+        {/* Reopen — quiet ghost link when match is completed */}
+        {isCompleted && onUndo && (
+          <div className="flex justify-end mt-2">
+            <button
+              onClick={() => onUndo(match.id)}
+              className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-amber-600 dark:hover:text-amber-500 transition-colors"
+            >
+              <RotateCcw className="h-3 w-3" /> {t("tm.reopen")}
+            </button>
+          </div>
         )}
 
         {/* Complete button */}
@@ -2256,7 +2283,9 @@ function TeamRow({
     <div className={`flex items-center justify-between gap-2 ${isWinner ? "font-bold text-primary" : "text-foreground"}`}>
       <div className="flex items-baseline gap-1.5 min-w-0 flex-1">
         {seedLabel && (
-          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums shrink-0">
+          <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded tabular-nums shrink-0 ${
+            isWinner ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+          }`}>
             {seedLabel}
           </span>
         )}
@@ -2282,7 +2311,9 @@ function TeamRow({
             </Button>
           </div>
         ) : (
-          <span className="text-2xl font-stat font-black text-foreground tabular-nums shrink-0 px-2">
+          <span className={`font-stat font-black tabular-nums shrink-0 px-2 ${
+            isWinner ? "text-2xl text-primary" : "text-xl text-muted-foreground/70"
+          }`}>
             {readonlyScore}
           </span>
         )
