@@ -70,9 +70,9 @@ const TournamentsPage = () => {
             <button
               onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}
               aria-label={t("common.back")}
-              className="h-8 w-8 -ml-1 flex items-center justify-center rounded-lg hover:bg-secondary/60 transition-colors"
+              className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0"
             >
-              <ArrowLeft className="h-4.5 w-4.5 text-foreground" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
             <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
               <Trophy className="h-5 w-5 text-primary" />
