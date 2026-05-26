@@ -59,10 +59,10 @@ const HomePage = () => {
   const pct = xpNeeded > 0 ? Math.min(100, Math.round((xpProgress / xpNeeded) * 100)) : 0;
 
   const discoverTiles = [
-    { cat: "groups",      icon: Users,          label: t("discover.groups") },
-    { cat: "courts",      icon: MapIcon,        label: t("discover.courts") },
-    { cat: "coaches",     icon: GraduationCap,  label: t("discover.coaches") },
-    { cat: "tournaments", icon: Trophy,         label: t("discover.tournaments") },
+    { cat: "groups",      icon: Users,          label: t("discover.groups"),      to: "/groups" },
+    { cat: "courts",      icon: MapIcon,        label: t("discover.courts"),      to: "/discover?cat=courts" },
+    { cat: "coaches",     icon: GraduationCap,  label: t("discover.coaches"),     to: "/discover?cat=coaches" },
+    { cat: "tournaments", icon: Trophy,         label: t("discover.tournaments"), to: "/tournaments" },
   ];
 
   return (
@@ -161,7 +161,7 @@ const HomePage = () => {
             {discoverTiles.map((tile) => (
               <button
                 key={tile.cat}
-                onClick={() => navigate(`/discover?cat=${tile.cat}`)}
+                onClick={() => navigate(tile.to)}
                 className="group p-4 rounded-xl bg-card border border-border hover:border-primary/40 transition-all active:scale-[0.98] text-left"
               >
                 <tile.icon className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors mb-2.5" />
