@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Users, MapPin, Search, Loader2, Lock } from "lucide-react";
+import { Plus, Users, MapPin, Search, Loader2, Lock, ChevronDown, Zap, Check } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { useGroups, useMyGroups, VN_CITIES, type SkillLevel } from "@/hooks/useGroups";
@@ -32,16 +33,21 @@ const GroupsPage = () => {
 
   const handleCreated = () => { refetchDiscover(); refetchMine(); setTab("mine"); };
 
+  const cityLabel = city || t("common.all");
+  const levelLabel = skill === "all" ? t("common.all") : t(`skill.${skill}`);
+
   return (
-    <div className="pb-20 min-h-screen">
+    <div className="pb-28 min-h-screen">
       <CreateGroupDialog open={createOpen} onOpenChange={setCreateOpen} onCreated={handleCreated} />
 
       <PageHeader
         title={t("groups.title")}
         right={session ? (
           <button onClick={() => setCreateOpen(true)}
-            className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors">
-            <Plus className="h-3.5 w-3.5" /> {t("groups.newGroup")}
+            aria-label={t("groups.newGroup")}
+            title={t("groups.newGroup")}
+            className="h-9 w-9 inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors">
+            <Plus className="h-4 w-4" />
           </button>
         ) : undefined}
         className="space-y-3"
@@ -61,28 +67,50 @@ const GroupsPage = () => {
               <input placeholder={t("groups.searchPh")} value={search} onChange={e => setSearch(e.target.value)}
                 className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary/60 text-sm placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
-            <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
-              <button onClick={() => setCity("")}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all shrink-0 ${city === "" ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
-                {t("common.all")}
-              </button>
-              {VN_CITIES.map(c => {
-                const active = city === c;
-                return (
-                  <button key={c} onClick={() => setCity(active ? "" : c)}
-                    className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all shrink-0 flex items-center gap-1 ${active ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
-                    <MapPin className="h-3 w-3" /> {c}
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className={`flex-1 h-9 px-3 inline-flex items-center justify-between gap-2 rounded-xl text-xs font-medium transition-colors ${city ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-foreground hover:bg-secondary"}`}>
+                    <span className="inline-flex items-center gap-1.5 truncate">
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{cityLabel}</span>
+                    </span>
+                    <ChevronDown className="h-3.5 w-3.5 opacity-70 shrink-0" />
                   </button>
-                );
-              })}
-            </div>
-            <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide">
-              {SKILL_FILTERS.map(s => (
-                <button key={s} onClick={() => setSkill(s)}
-                  className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all shrink-0 ${skill === s ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
-                  {s === "all" ? t("common.all") : t(`skill.${s}`)}
-                </button>
-              ))}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56 max-h-72 overflow-y-auto">
+                  <DropdownMenuItem onSelect={() => setCity("")} className="text-xs">
+                    <span className="flex-1">{t("common.all")}</span>
+                    {city === "" && <Check className="h-3.5 w-3.5 text-primary" />}
+                  </DropdownMenuItem>
+                  {VN_CITIES.map(c => (
+                    <DropdownMenuItem key={c} onSelect={() => setCity(c)} className="text-xs">
+                      <span className="flex-1">{c}</span>
+                      {city === c && <Check className="h-3.5 w-3.5 text-primary" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className={`flex-1 h-9 px-3 inline-flex items-center justify-between gap-2 rounded-xl text-xs font-medium transition-colors ${skill !== "all" ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-foreground hover:bg-secondary"}`}>
+                    <span className="inline-flex items-center gap-1.5 truncate">
+                      <Zap className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate capitalize">{levelLabel}</span>
+                    </span>
+                    <ChevronDown className="h-3.5 w-3.5 opacity-70 shrink-0" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  {SKILL_FILTERS.map(s => (
+                    <DropdownMenuItem key={s} onSelect={() => setSkill(s)} className="text-xs capitalize">
+                      <span className="flex-1">{s === "all" ? t("common.all") : t(`skill.${s}`)}</span>
+                      {skill === s && <Check className="h-3.5 w-3.5 text-primary" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </>
         )}
@@ -109,26 +137,28 @@ const GroupsPage = () => {
         ) : list.map((group, i) => (
           <motion.div key={group.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
             <button className="w-full text-left" onClick={() => navigate(`/group/${group.id}`)}>
-              <Card className="p-3.5 shadow-card hover:border-primary/30 transition-all bg-gradient-to-br from-primary/5 via-card to-card">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl shrink-0">
+              <Card className="p-3 shadow-card hover:border-primary/30 transition-all bg-gradient-to-br from-primary/5 via-card to-card">
+                <div className="flex items-start gap-3">
+                  <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0">
                     {group.cover_emoji}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-display font-bold text-foreground truncate">{group.name}</p>
-                      {group.skill_level !== "all" && <SkillBadge level={group.skill_level as any} />}
-                      {!group.is_open && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 min-w-0 flex items-center gap-1.5">
+                        <p className="text-sm font-display font-bold text-foreground truncate">{group.name}</p>
+                        {!group.is_open && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
+                      </div>
+                      <span className={`shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full ${group.is_open ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
+                        {group.is_open ? t("groups.open") : t("groups.closed")}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-3 mt-0.5 text-[11px] text-muted-foreground">
-                      <span className="flex items-center gap-0.5"><Users className="h-3 w-3" /> {group.member_count}</span>
-                      {group.location && <span className="flex items-center gap-0.5 truncate"><MapPin className="h-3 w-3 shrink-0" /> {group.location}</span>}
+                    <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground">
+                      <span className="flex items-center gap-1 shrink-0"><Users className="h-3 w-3" /> {group.member_count}</span>
+                      {group.location && <span className="flex items-center gap-1 min-w-0"><MapPin className="h-3 w-3 shrink-0" /> <span className="truncate">{group.location}</span></span>}
+                      {group.skill_level !== "all" && <span className="shrink-0"><SkillBadge level={group.skill_level as any} /></span>}
                     </div>
-                    {group.description && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{group.description}</p>}
+                    {group.description && <p className="text-[11px] text-muted-foreground mt-1 truncate">{group.description}</p>}
                   </div>
-                  <span className={`shrink-0 text-[9px] font-bold px-2 py-1 rounded-full ${group.is_open ? "bg-primary/10 text-primary dark:text-primary" : "bg-secondary text-muted-foreground"}`}>
-                    {group.is_open ? t("groups.open") : t("groups.closed")}
-                  </span>
                 </div>
               </Card>
             </button>

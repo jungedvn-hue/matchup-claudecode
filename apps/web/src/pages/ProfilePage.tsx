@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Settings, ChevronRight, Trophy, Target, TrendingUp,
   Users, Star, BarChart3, MapPin, Edit, Flame, LogOut, Sparkles,
-  Ticket, Heart, History, ShieldCheck, Activity, LayoutDashboard, Coins, Gavel, Building2,
+  Ticket, Heart, History, ShieldCheck, Activity, LayoutDashboard, Coins, Gavel, Building2, Store,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -215,6 +215,7 @@ const ProfilePage = () => {
             { label: t("profile.statistics"), path: "/statistics", icon: <BarChart3 className="h-4 w-4" /> },
             (hasRole(roles, "host") || hasRole(roles, "court_owner")) && { label: t("nav.host"), path: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
             hasRole(roles, "court_owner") && { label: t("profile.myVenues"), path: "/my-venues", icon: <Building2 className="h-4 w-4" /> },
+            hasRole(roles, "store_owner") && { label: t("store.dashboard.title"), path: "/my-store", icon: <Store className="h-4 w-4" /> },
             hasRole(roles, "referee") && { label: t("profile.refereeHub"), path: "/referee", icon: <Gavel className="h-4 w-4" /> },
             { label: t("settings.title"), path: "/settings", icon: <Settings className="h-4 w-4" /> },
           ].filter(Boolean).map((item: any, i) => (
