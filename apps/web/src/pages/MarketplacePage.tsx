@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Search, MapPin, Star, Phone, Loader2, Store as StoreIcon,
@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { useStores, STORE_CATEGORIES, type Store } from "@/hooks/useStores";
+import { useStores, SERVICE_CATEGORIES, PRODUCT_CATEGORIES, getGroupForCategory, type Store, type StoreCategory, type StoreGroup } from "@/hooks/useStores";
 import PageHeader from "@/components/PageHeader";
 
 const CATEGORY_ICONS: Record<string, typeof ShoppingBag> = {
@@ -30,27 +30,56 @@ const CATEGORY_ICONS: Record<string, typeof ShoppingBag> = {
 const MarketplacePage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [searchParams] = useSearchParams();
+  const urlCat = searchParams.get("cat");
+  const urlGroup = searchParams.get("group") as StoreGroup | null;
+  const initialGroup: StoreGroup = urlGroup ?? (urlCat ? getGroupForCategory(urlCat as StoreCategory) : "services");
+  const initialCat = urlCat ?? "all";
+  const [activeGroup, setActiveGroup] = useState<StoreGroup>(initialGroup);
+  const [activeCategory, setActiveCategory] = useState<string>(initialCat);
   const [searchQuery, setSearchQuery] = useState("");
-  const { stores, loading } = useStores({
+  const groupCategories = activeGroup === "services" ? SERVICE_CATEGORIES : PRODUCT_CATEGORIES;
+  const { stores: rawStores, loading } = useStores({
     category: activeCategory === "all" ? undefined : activeCategory,
     search: searchQuery || undefined,
   });
 
+  const stores = activeCategory === "all"
+    ? rawStores.filter(s => s.categories.some(c => groupCategories.includes(c as StoreCategory)))
+    : rawStores;
   const featured = stores.filter(s => s.is_featured);
   const regular = stores.filter(s => !s.is_featured);
 
+  const switchGroup = (g: StoreGroup) => {
+    setActiveGroup(g);
+    setActiveCategory("all");
+  };
+
   return (
     <div className="pb-20 min-h-screen">
-      <PageHeader title={t("marketplace.title")} right={<span className="text-xs text-muted-foreground">{stores.length} {t("marketplace.servicesNearby")}</span>} className="space-y-3">
+      <PageHeader title={t("marketplace.title")} right={<span className="text-xs text-muted-foreground">{stores.length} {t("marketplace.itemsNearby")}</span>} className="space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t("marketplace.searchPlaceholder")}
             className="w-full h-9 pl-9 pr-3 rounded-xl bg-secondary text-sm text-secondary-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary" />
         </div>
+        <div className="inline-flex p-0.5 rounded-xl bg-secondary text-secondary-foreground">
+          <button
+            onClick={() => switchGroup("services")}
+            className={`px-4 h-8 rounded-lg text-xs font-semibold transition-colors ${activeGroup === "services" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}
+          >
+            {t("marketplace.group.services")}
+          </button>
+          <button
+            onClick={() => switchGroup("products")}
+            className={`px-4 h-8 rounded-lg text-xs font-semibold transition-colors ${activeGroup === "products" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}
+          >
+            {t("marketplace.group.products")}
+          </button>
+        </div>
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
           <CatChip id="all" label={t("common.all")} icon={ShoppingBag} active={activeCategory === "all"} onClick={() => setActiveCategory("all")} />
-          {STORE_CATEGORIES.map(c => (
+          {groupCategories.map(c => (
             <CatChip key={c} id={c} label={t(`store.cat.${c}`)} icon={CATEGORY_ICONS[c] ?? ShoppingBag} active={activeCategory === c} onClick={() => setActiveCategory(c)} />
           ))}
         </div>
@@ -83,7 +112,7 @@ const MarketplacePage = () => {
 
             <section>
               <h2 className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2.5">
-                {activeCategory === "all" ? t("marketplace.allServices") : t(`store.cat.${activeCategory}`)}
+                {activeCategory === "all" ? t(`marketplace.group.${activeGroup}`) : t(`store.cat.${activeCategory}`)}
               </h2>
               <div className="space-y-2.5">
                 {(activeCategory === "all" ? regular : stores).map((store, i) => (

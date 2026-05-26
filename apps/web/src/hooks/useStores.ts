@@ -307,3 +307,12 @@ export const STORE_CATEGORIES = [
 ] as const;
 
 export type StoreCategory = (typeof STORE_CATEGORIES)[number];
+
+export const SERVICE_CATEGORIES: StoreCategory[] = ["coaching", "repair", "physio", "fitness", "food"];
+export const PRODUCT_CATEGORIES: StoreCategory[] = ["paddles", "balls", "shoes", "apparel", "bags", "accessories"];
+
+export type StoreGroup = "services" | "products";
+
+export const getGroupForCategory = (cat: StoreCategory): StoreGroup =>
+  SERVICE_CATEGORIES.includes(cat) ? "services" : "products";
+

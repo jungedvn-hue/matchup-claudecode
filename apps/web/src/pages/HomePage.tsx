@@ -4,7 +4,12 @@ import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, ChevronRight, Trophy, Flame, Gem, Plus,
   Users, Calendar, Clock, GraduationCap, Map as MapIcon, Wrench,
+  ShoppingBag, MoreHorizontal,
 } from "lucide-react";
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
+} from "@/components/ui/sheet";
+import { STORE_CATEGORIES } from "@/hooks/useStores";
 import { TOOLS, filterToolsForRoles } from "@/lib/tools";
 import { useRoles } from "@/hooks/use-roles";
 import NotificationBell from "@/components/NotificationBell";
@@ -58,12 +63,15 @@ const HomePage = () => {
   const xpRemaining = Math.max(0, xpNextLevel - totalXP);
   const pct = xpNeeded > 0 ? Math.min(100, Math.round((xpProgress / xpNeeded) * 100)) : 0;
 
+  const [moreOpen, setMoreOpen] = useState(false);
   const discoverTiles = [
     { cat: "groups",      icon: Users,          label: t("discover.groups"),      to: "/groups" },
     { cat: "courts",      icon: MapIcon,        label: t("discover.courts"),      to: "/discover?cat=courts" },
-    { cat: "coaches",     icon: GraduationCap,  label: t("discover.coaches"),     to: "/discover?cat=coaches" },
     { cat: "tournaments", icon: Trophy,         label: t("discover.tournaments"), to: "/tournaments" },
+    { cat: "services",    icon: GraduationCap,  label: t("discover.services"),    to: "/marketplace?group=services" },
+    { cat: "products",    icon: ShoppingBag,    label: t("discover.products"),    to: "/marketplace?group=products" },
   ];
+
 
   return (
     <div className="pb-24 min-h-screen">
@@ -148,26 +156,50 @@ const HomePage = () => {
           </button>
         )}
 
-        {/* Discover — 2x2 flat grid */}
+        {/* Discover — 2x3 grid with More sheet */}
         <section>
           <SectionTitle action={
-            <button onClick={() => navigate("/discover")} className="text-[11px] text-primary font-medium">
+            <button onClick={() => navigate("/marketplace")} className="text-[11px] text-primary font-medium">
               {t("common.seeAll")}
             </button>
           }>
             {t("home.discoverNearby")}
           </SectionTitle>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {discoverTiles.map((tile) => (
               <button
                 key={tile.cat}
                 onClick={() => navigate(tile.to)}
-                className="group p-4 rounded-xl bg-card border border-border hover:border-primary/40 transition-all active:scale-[0.98] text-left"
+                className="group p-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-all active:scale-[0.98] text-left"
               >
-                <tile.icon className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors mb-2.5" />
-                <p className="text-sm font-medium text-foreground">{tile.label}</p>
+                <tile.icon className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors mb-2" />
+                <p className="text-xs font-medium text-foreground leading-tight">{tile.label}</p>
               </button>
             ))}
+            <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+              <SheetTrigger asChild>
+                <button className="group p-3 rounded-xl bg-card border border-dashed border-border hover:border-primary/40 transition-all active:scale-[0.98] text-left">
+                  <MoreHorizontal className="h-5 w-5 text-primary/70 group-hover:text-primary transition-colors mb-2" />
+                  <p className="text-xs font-medium text-foreground leading-tight">{t("discover.more")}</p>
+                </button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="rounded-t-2xl">
+                <SheetHeader>
+                  <SheetTitle>{t("discover.allCategories")}</SheetTitle>
+                </SheetHeader>
+                <div className="grid grid-cols-3 gap-2 pt-4 pb-2">
+                  {STORE_CATEGORIES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => { setMoreOpen(false); navigate(`/marketplace?cat=${c}`); }}
+                      className="p-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-all active:scale-[0.98] text-left"
+                    >
+                      <p className="text-xs font-medium text-foreground leading-tight">{t(`store.cat.${c}`)}</p>
+                    </button>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </section>
 
