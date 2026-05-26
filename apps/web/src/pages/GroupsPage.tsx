@@ -42,6 +42,8 @@ const GroupsPage = () => {
 
       <PageHeader
         title={t("groups.title")}
+        back
+        onBack={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}
         right={session ? (
           <button onClick={() => setCreateOpen(true)}
             aria-label={t("groups.newGroup")}

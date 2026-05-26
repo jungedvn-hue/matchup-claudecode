@@ -57,7 +57,7 @@ const MarketplacePage = () => {
 
   return (
     <div className="pb-20 min-h-screen">
-      <PageHeader title={t("marketplace.title")} right={<span className="text-xs text-muted-foreground">{stores.length} {t("marketplace.itemsNearby")}</span>} className="space-y-3">
+      <PageHeader title={t("marketplace.title")} back onBack={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))} right={<span className="text-xs text-muted-foreground">{stores.length} {t("marketplace.itemsNearby")}</span>} className="space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t("marketplace.searchPlaceholder")}
