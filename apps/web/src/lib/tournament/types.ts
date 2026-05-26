@@ -124,6 +124,7 @@ export interface Tournament {
   name: string;
   date: string;
   location: string;
+  logoUrl?: string | null;
   format: TournamentFormat;
   pointsPerGame: number;
   winByTwo: boolean;

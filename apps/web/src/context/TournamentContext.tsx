@@ -130,6 +130,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
       const transformed: Tournament[] = (data as unknown as DBTournament[] || []).map(t => {
         return {
         ...t,
+        logoUrl: (t as any).logo_url ?? null,
         referees: t.referees || [],
         courts: t.courts || [],
         rankingPriority: t.ranking_priority || ["wins", "head_to_head", "point_diff", "points_scored"],
@@ -298,6 +299,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           ranking_priority: t.rankingPriority,
           host_id: user?.id,
           venue_id: t.venue_id ?? null,
+          logo_url: t.logoUrl ?? null,
           referees: t.referees || [],
           courts: t.courts || [],
           livestream_urls: t.livestreamUrls || []
@@ -363,6 +365,7 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           status: t.status,
           location: t.location,
           venue_id: t.venue_id ?? null,
+          logo_url: t.logoUrl ?? null,
           referees: t.referees || [],
           courts: t.courts || [],
           livestream_urls: t.livestreamUrls || []

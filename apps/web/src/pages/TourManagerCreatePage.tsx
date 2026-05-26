@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy, Targ
 import BracketTemplateEditor from "@/components/tournament/BracketTemplateEditor";
 import type { BracketSeedMode, BracketTemplateMatch } from "@/lib/tournament/types";
 import { LivestreamEditor } from "@/components/tournament/LivestreamSection";
+import ImageUpload from "@/components/ImageUpload";
 import VenuePicker from "@/components/VenuePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ const TourManagerCreatePage = () => {
 
   // Step 1
   const [name, setName] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [location, setLocation] = useState("");
   const [venueId, setVenueId] = useState<string | null>(null);
@@ -171,6 +173,7 @@ const TourManagerCreatePage = () => {
       name,
       date,
       location,
+      logoUrl,
       venue_id: venueId,
       format,
       pointsPerGame,
@@ -231,9 +234,17 @@ const TourManagerCreatePage = () => {
           <>
             {/* Card 1 — Basics */}
             <SectionCard icon={Trophy} title={t("tm.basicsTitle") || "Basics"} tone="from-primary/5">
-              <Field label={t("tm.tournamentName")} required>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("tm.tournamentNamePh")} className="h-10" />
-              </Field>
+              <div className="flex items-start gap-3">
+                <div className="w-20 shrink-0">
+                  <ImageUpload mode="single" value={logoUrl} onChange={setLogoUrl} bucket="tournament-assets" aspect="square" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Field label={t("tm.tournamentName")} required>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("tm.tournamentNamePh")} className="h-10" />
+                  </Field>
+                  <p className="text-[10px] text-muted-foreground mt-1">{t("tm.logoHint")}</p>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-2.5">
                 <Field label={t("tm.date")} required>
                   <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10" />

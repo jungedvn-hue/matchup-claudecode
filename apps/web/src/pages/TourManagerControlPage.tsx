@@ -50,6 +50,7 @@ import {
   revertBracket,
   resolveTemplateToEntries,
 } from "@/lib/tournament/engine";
+import ExportSummaryButton from "@/components/tournament/ExportSummaryButton";
 import { Tournament, TournamentCategory, TournamentMatch, Pool, Standing } from "@/lib/tournament/types";
 import { exportStandingsCSV, exportStandingsPDF } from "@/lib/tournament/export";
 import { supabase } from "@/integrations/supabase/client";
@@ -621,7 +622,8 @@ const TourManagerControlPage = () => {
             <h1 className="text-base font-bold text-foreground truncate">{tournament.name}</h1>
             <p className="text-xs text-muted-foreground">{tournament.date} • {tournament.location}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {isHost && <ExportSummaryButton tournament={tournament} label="" />}
             <Button
               variant="outline"
               size="icon"

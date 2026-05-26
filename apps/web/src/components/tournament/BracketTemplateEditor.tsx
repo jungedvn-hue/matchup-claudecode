@@ -57,7 +57,7 @@ export default function BracketTemplateEditor({
 
   const current = useMemo<BracketTemplateMatch[]>(() => {
     if (template && template.length === expectedMatches) return template;
-    return generateCrossPoolTemplate(poolCount, advancingPerPool, wildcardCount);
+    return generateSnakeTemplate(poolCount, advancingPerPool, wildcardCount);
   }, [template, expectedMatches, poolCount, advancingPerPool, wildcardCount]);
 
   const validation = useMemo(
