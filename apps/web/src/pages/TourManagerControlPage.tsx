@@ -1844,135 +1844,83 @@ function MatchCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className={`flex-1 text-right min-w-0 ${match.winner === match.entryAId ? "font-bold text-primary" : "text-foreground"}`}>
-            <p className="text-sm font-semibold line-clamp-2 break-words leading-tight min-h-[2.5rem] flex items-center justify-end gap-1.5">
-              {match.entryASeedLabel && (
-                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums shrink-0">
-                  {match.entryASeedLabel}
-                </span>
-              )}
-              <span className="truncate">{match.entryAName}</span>
-            </p>
-            <p className="text-[10px] text-muted-foreground">Team A</p>
-          </div>
+        <div className="space-y-2">
+          {/* Team A row — name (wrap-free) + inline score widget on right */}
+          <TeamRow
+            label="Team A"
+            isWinner={match.winner === match.entryAId}
+            seedLabel={match.entryASeedLabel}
+            name={match.entryAName}
+            interactive={!isMultiSet && !readonly && match.status !== "completed"}
+            readonlyScore={match.scoreA}
+            value={localA}
+            onInc={() => updateA(localA + 1)}
+            onDec={() => updateA(Math.max(0, localA - 1))}
+            onChange={(v) => updateA(v)}
+            hideScore={isMultiSet}
+          />
 
-          {/* Score Controls */}
-          <div className="flex items-center gap-1.5 bg-secondary/50 rounded-xl p-1 shadow-inner">
-            {isMultiSet ? (
-              <div className="px-2 py-1.5 flex flex-col items-center gap-1 min-w-[120px]">
-                <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  BO{numSets} • {pointsPerGame}{winByTwo ? "+" : ""}{maxPoints ? `/${maxPoints}` : ""} • {setsWonA}-{setsWonB}
-                </span>
-                {(match.status === "completed" || readonly) ? (
-                  <div className="flex flex-col gap-0.5 text-center">
-                    {(match.setScores && match.setScores.length > 0 ? match.setScores : localSets).map((s, i) => (
-                      <span key={i} className="text-xs font-display font-bold tabular-nums text-foreground">
-                        {s.a}-{s.b}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-1">
-                    {localSets.map((s, i) => (
-                      <div key={i} className="flex items-center gap-1">
-                        <span className="text-[9px] text-muted-foreground w-3">S{i + 1}</span>
-                        <input
-                          type="number"
-                          min={0}
-                          max={50}
-                          value={s.a}
-                          onChange={(e) => updateSet(i, "a", parseInt(e.target.value) || 0)}
-                          className="text-xs font-bold w-9 h-6 text-center rounded bg-card border border-border focus:outline-none focus:ring-1 focus:ring-primary tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                        <span className="text-[10px] text-muted-foreground">:</span>
-                        <input
-                          type="number"
-                          min={0}
-                          max={50}
-                          value={s.b}
-                          onChange={(e) => updateSet(i, "b", parseInt(e.target.value) || 0)}
-                          className="text-xs font-bold w-9 h-6 text-center rounded bg-card border border-border focus:outline-none focus:ring-1 focus:ring-primary tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : !readonly && match.status !== "completed" ? (
-              <>
-                <div className="flex flex-col items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 bg-card text-primary shadow-sm hover:bg-primary/10"
-                    onClick={() => updateA(localA + 1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <input
-                    type="number"
-                    value={localA}
-                    onChange={(e) => updateA(parseInt(e.target.value) || 0)}
-                    className="text-xl font-display font-black w-10 text-center bg-transparent focus:outline-none focus:ring-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-foreground tabular-nums"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 bg-card text-muted-foreground shadow-sm hover:bg-destructive/10"
-                    onClick={() => updateA(Math.max(0, localA - 1))}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
+          {/* Multi-set block — stays between rows so sets stay paired visually */}
+          {isMultiSet && (
+            <div className="flex justify-center">
+              <div className="flex items-center gap-1.5 bg-secondary/50 rounded-xl p-1 shadow-inner">
+                <div className="px-2 py-1.5 flex flex-col items-center gap-1 min-w-[120px]">
+                  <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    BO{numSets} • {pointsPerGame}{winByTwo ? "+" : ""}{maxPoints ? `/${maxPoints}` : ""} • {setsWonA}-{setsWonB}
+                  </span>
+                  {(match.status === "completed" || readonly) ? (
+                    <div className="flex flex-col gap-0.5 text-center">
+                      {(match.setScores && match.setScores.length > 0 ? match.setScores : localSets).map((s, i) => (
+                        <span key={i} className="text-xs font-display font-bold tabular-nums text-foreground">
+                          {s.a}-{s.b}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      {localSets.map((s, i) => (
+                        <div key={i} className="flex items-center gap-1">
+                          <span className="text-[9px] text-muted-foreground w-3">S{i + 1}</span>
+                          <input
+                            type="number"
+                            min={0}
+                            max={50}
+                            value={s.a}
+                            onChange={(e) => updateSet(i, "a", parseInt(e.target.value) || 0)}
+                            className="text-xs font-bold w-9 h-6 text-center rounded bg-card border border-border focus:outline-none focus:ring-1 focus:ring-primary tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                          <span className="text-[10px] text-muted-foreground">:</span>
+                          <input
+                            type="number"
+                            min={0}
+                            max={50}
+                            value={s.b}
+                            onChange={(e) => updateSet(i, "b", parseInt(e.target.value) || 0)}
+                            className="text-xs font-bold w-9 h-6 text-center rounded bg-card border border-border focus:outline-none focus:ring-1 focus:ring-primary tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-
-                <div className="h-10 w-[2px] bg-border/50 mx-1" />
-
-                <div className="flex flex-col items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 bg-card text-primary shadow-sm hover:bg-primary/10"
-                    onClick={() => updateB(localB + 1)}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <input
-                    type="number"
-                    value={localB}
-                    onChange={(e) => updateB(parseInt(e.target.value) || 0)}
-                    className="text-xl font-display font-black w-10 text-center bg-transparent focus:outline-none focus:ring-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-foreground tabular-nums"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 bg-card text-muted-foreground shadow-sm hover:bg-destructive/10"
-                    onClick={() => updateB(Math.max(0, localB - 1))}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className="px-4 py-2 flex items-center gap-3">
-                <span className="text-2xl font-stat font-black text-foreground">{match.scoreA}</span>
-                <span className="text-muted-foreground font-bold">:</span>
-                <span className="text-2xl font-stat font-black text-foreground">{match.scoreB}</span>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          <div className={`flex-1 min-w-0 ${match.winner === match.entryBId ? "font-bold text-primary" : "text-foreground"}`}>
-            <p className="text-sm font-semibold line-clamp-2 break-words leading-tight min-h-[2.5rem] flex items-center gap-1.5">
-              {match.entryBSeedLabel && (
-                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums shrink-0">
-                  {match.entryBSeedLabel}
-                </span>
-              )}
-              <span className="truncate">{match.entryBName}</span>
-            </p>
-            <p className="text-[10px] text-muted-foreground">Team B</p>
-          </div>
+          {/* Team B row — name (wrap-free) + inline score widget on right */}
+          <TeamRow
+            label="Team B"
+            isWinner={match.winner === match.entryBId}
+            seedLabel={match.entryBSeedLabel}
+            name={match.entryBName}
+            interactive={!isMultiSet && !readonly && match.status !== "completed"}
+            readonlyScore={match.scoreB}
+            value={localB}
+            onInc={() => updateB(localB + 1)}
+            onDec={() => updateB(Math.max(0, localB - 1))}
+            onChange={(v) => updateB(v)}
+            hideScore={isMultiSet}
+          />
         </div>
 
         {/* Resource selectors (manual mode) */}
@@ -2276,5 +2224,69 @@ const StatPill = ({
     </div>
   );
 };
+
+function TeamRow({
+  label,
+  isWinner,
+  seedLabel,
+  name,
+  interactive,
+  readonlyScore,
+  value,
+  onInc,
+  onDec,
+  onChange,
+  hideScore,
+}: {
+  label: string;
+  isWinner?: boolean;
+  seedLabel?: string;
+  name: string;
+  interactive: boolean;
+  readonlyScore: number;
+  value: number;
+  onInc: () => void;
+  onDec: () => void;
+  onChange: (v: number) => void;
+  hideScore?: boolean;
+}) {
+  return (
+    <div className={`flex items-center justify-between gap-2 ${isWinner ? "font-bold text-primary" : "text-foreground"}`}>
+      <div className="flex items-baseline gap-1.5 min-w-0 flex-1">
+        {seedLabel && (
+          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums shrink-0">
+            {seedLabel}
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold break-words leading-snug" title={name}>{name}</p>
+          <p className="text-[10px] text-muted-foreground font-normal">{label}</p>
+        </div>
+      </div>
+      {!hideScore && (
+        interactive ? (
+          <div className="flex items-center gap-1 bg-secondary/50 rounded-xl p-1 shadow-inner shrink-0">
+            <Button variant="ghost" size="icon" className="h-7 w-7 bg-card text-muted-foreground shadow-sm hover:bg-destructive/10" onClick={onDec}>
+              <Minus className="h-3.5 w-3.5" />
+            </Button>
+            <input
+              type="number"
+              value={value}
+              onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+              className="text-xl font-display font-black w-10 text-center bg-transparent focus:outline-none focus:ring-0 select-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-foreground tabular-nums"
+            />
+            <Button variant="ghost" size="icon" className="h-7 w-7 bg-card text-primary shadow-sm hover:bg-primary/10" onClick={onInc}>
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        ) : (
+          <span className="text-2xl font-stat font-black text-foreground tabular-nums shrink-0 px-2">
+            {readonlyScore}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
 
 export default TourManagerControlPage;
