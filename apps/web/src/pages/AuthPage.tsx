@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Chrome, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import BrandLogo from "@/components/BrandLogo";
+import { LEGAL_VERSION } from "@/pages/legal/legalContent";
 
 const AuthPage = () => {
   const { t } = useLanguage();
@@ -18,6 +20,7 @@ const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [consented, setConsented] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signInWithGoogle } = useAuth();
@@ -36,11 +39,29 @@ const AuthPage = () => {
         toast({ title: t("auth.toast.welcomeBack"), description: t("auth.toast.signInSuccess") });
         navigate("/profile");
       } else {
-        const { error } = await supabase.auth.signUp({
+        if (!consented) {
+          toast({
+            title: t("auth.toast.error"),
+            description: t("auth.consent.required"),
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
+        // Stamp consent on the profile. Best-effort; if the profile row hasn't
+        // been created yet by the handle_new_user trigger, this update is a no-op.
+        const uid = data.user?.id;
+        if (uid) {
+          await supabase
+            .from("profiles")
+            .update({ consent_version: LEGAL_VERSION, consented_at: new Date().toISOString() })
+            .eq("user_id", uid);
+        }
         toast({
           title: t("auth.toast.signUpSuccess"),
           description: t("auth.toast.checkEmail")
@@ -125,10 +146,29 @@ const AuthPage = () => {
               </div>
             </div>
 
+            {!isLogin && (
+              <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer select-none pt-1">
+                <input
+                  type="checkbox"
+                  checked={consented}
+                  onChange={(e) => setConsented(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-primary cursor-pointer shrink-0"
+                />
+                <span className="leading-snug">
+                  {t("auth.consent.label")}
+                  {" "}
+                  <span className="text-muted-foreground/80">{t("auth.consent.read")} </span>
+                  <Link to="/terms" target="_blank" className="text-primary font-medium underline-offset-2 hover:underline">{t("auth.consent.tos")}</Link>
+                  <span className="mx-1">·</span>
+                  <Link to="/privacy" target="_blank" className="text-primary font-medium underline-offset-2 hover:underline">{t("auth.consent.privacy")}</Link>
+                </span>
+              </label>
+            )}
+
             <Button
               type="submit"
               className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02]"
-              disabled={isLoading}
+              disabled={isLoading || (!isLogin && !consented)}
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -172,9 +212,11 @@ const AuthPage = () => {
           </div>
         </Card>
 
-        <p className="mt-8 text-center text-xs text-muted-foreground px-8">
-          {t("auth.terms")}
-        </p>
+        {isLogin && (
+          <p className="mt-8 text-center text-xs text-muted-foreground px-8">
+            {t("auth.terms")}
+          </p>
+        )}
       </motion.div>
     </div>
   );

@@ -6,12 +6,14 @@ import DashboardTab from "./components/DashboardTab";
 import StatsTab from "./components/StatsTab";
 import NutritionTab from "./components/NutritionTab";
 import DevicesTab from "./components/DevicesTab";
+import HealthConsentGate from "./HealthConsentGate";
 
 const HealthHub = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
   return (
+    <HealthConsentGate>
     <div className="pb-24 min-h-screen">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
@@ -59,6 +61,7 @@ const HealthHub = () => {
         </TabsContent>
       </Tabs>
     </div>
+    </HealthConsentGate>
   );
 };
 

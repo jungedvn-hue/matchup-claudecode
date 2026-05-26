@@ -99,6 +99,8 @@ const SettingsPage = () => {
   const [newPw, setNewPw] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
   const [delOpen, setDelOpen] = useState(false);
+  const [delConfirm, setDelConfirm] = useState("");
+  const [delLoading, setDelLoading] = useState(false);
 
   // Deep-link to FAQ section
   const initialFaq = hash?.startsWith("#faq-") ? hash.replace("#faq-", "") : null;
@@ -179,11 +181,21 @@ const SettingsPage = () => {
     navigate("/login");
   };
 
-  const handleRequestDelete = () => {
-    const subject = encodeURIComponent("Account deletion request");
-    const body = encodeURIComponent(`User ID: ${user?.id}\nEmail: ${user?.email}\n\nI request deletion of my MatchUp account and all associated data.`);
-    window.location.href = `mailto:support@matchup.vn?subject=${subject}&body=${body}`;
+  const handleDeleteAccount = async () => {
+    if (delConfirm !== t("settings.deleteAccount.confirmWord")) return;
+    setDelLoading(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase.rpc as any)("delete_my_account");
+    if (error) {
+      setDelLoading(false);
+      toast.error(t("settings.deleteAccount.error") + " " + (error.message ?? ""));
+      return;
+    }
+    await supabase.auth.signOut();
+    setDelLoading(false);
     setDelOpen(false);
+    toast.success(t("settings.deleteAccount.success"));
+    navigate("/login");
   };
 
   const NOTIF_ITEMS: { key: NotifKey; label: string; desc: string }[] = [
@@ -353,12 +365,26 @@ const SettingsPage = () => {
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </button>
-              <button onClick={() => setDelOpen(true)} className="w-full flex items-center justify-between p-3.5 hover:bg-destructive/5 transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                  <span className="text-sm font-medium text-destructive">{t("settings.account.delete")}</span>
+            </Card>
+          </Section>
+        )}
+
+        {/* ── Danger zone (delete account) ───────────────────────────── */}
+        {user && (
+          <Section icon={Trash2} title={t("settings.danger.title")}>
+            <Card className="shadow-card overflow-hidden border-destructive/30">
+              <button
+                onClick={() => { setDelConfirm(""); setDelOpen(true); }}
+                className="w-full flex items-start justify-between gap-3 p-3.5 hover:bg-destructive/5 transition-colors text-left"
+              >
+                <div className="flex items-start gap-2.5">
+                  <Trash2 className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-destructive">{t("settings.deleteAccount.button")}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{t("settings.deleteAccount.desc")}</p>
+                  </div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-destructive/60" />
+                <ChevronRight className="h-4 w-4 text-destructive/60 mt-0.5 shrink-0" />
               </button>
             </Card>
           </Section>
@@ -438,17 +464,31 @@ const SettingsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Account Confirm */}
-      <AlertDialog open={delOpen} onOpenChange={setDelOpen}>
+      {/* Delete Account Confirm (type-DELETE) */}
+      <AlertDialog open={delOpen} onOpenChange={(o) => { if (!delLoading) setDelOpen(o); }}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-destructive">{t("settings.account.deleteTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("settings.account.deleteDesc")}</AlertDialogDescription>
+            <AlertDialogTitle className="text-destructive">{t("settings.deleteAccount.dialogTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("settings.deleteAccount.dialogBody")}</AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="py-2">
+            <Input
+              value={delConfirm}
+              onChange={(e) => setDelConfirm(e.target.value)}
+              placeholder={t("settings.deleteAccount.placeholder")}
+              disabled={delLoading}
+              className="rounded-xl"
+            />
+          </div>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRequestDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl">
-              {t("settings.account.deleteConfirm")}
+            <AlertDialogCancel className="rounded-xl" disabled={delLoading}>{t("settings.deleteAccount.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDeleteAccount(); }}
+              disabled={delLoading || delConfirm !== t("settings.deleteAccount.confirmWord")}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+            >
+              {delLoading && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+              {delLoading ? t("settings.deleteAccount.deleting") : t("settings.deleteAccount.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

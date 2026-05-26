@@ -2169,5 +2169,38 @@
   "admin.settings.warning": "Changes apply to all future records. Existing bookings keep their snapshotted values.",
   "admin.settings.empty": "No settings defined yet.",
   "admin.settings.saved": "Setting saved",
-  "admin.settings.lastUpdated": "Last updated"
+  "admin.settings.lastUpdated": "Last updated",
+
+  "auth.consent.label": "I have read and agree to the Terms of Service and Privacy Policy.",
+  "auth.consent.read": "Read:",
+  "auth.consent.tos": "Terms of Service",
+  "auth.consent.privacy": "Privacy Policy",
+  "auth.consent.required": "You must accept the Terms of Service and Privacy Policy to continue.",
+
+  "settings.danger.title": "Danger zone",
+  "settings.deleteAccount.button": "Delete my account",
+  "settings.deleteAccount.desc": "Permanently delete your account and all associated data. This action cannot be undone.",
+  "settings.deleteAccount.dialogTitle": "Delete account?",
+  "settings.deleteAccount.dialogBody": "This will permanently delete your profile, health data, bookings, matches, and tournaments. To confirm, type DELETE below.",
+  "settings.deleteAccount.confirmWord": "DELETE",
+  "settings.deleteAccount.placeholder": "Type DELETE to confirm",
+  "settings.deleteAccount.cancel": "Cancel",
+  "settings.deleteAccount.confirm": "Permanently delete",
+  "settings.deleteAccount.deleting": "Deleting...",
+  "settings.deleteAccount.success": "Your account has been deleted.",
+  "settings.deleteAccount.error": "Failed to delete account. Please try again.",
+
+  "health.consent.title": "Consent to process health data",
+  "health.consent.intro": "MatchUp Health Hub processes sensitive personal data under Decree 13/2023/ND-CP. You can withdraw consent anytime in Settings; doing so will stop new data collection and AI analysis.",
+  "health.consent.dataLabel": "I consent to MatchUp collecting and processing my health data (heart rate, breathing rate, calories, activity) from connected wearables.",
+  "health.consent.aiLabel": "I consent to AI-assisted analysis of my health data for nutrition and training suggestions. (Optional — you can use Health Hub without AI.)",
+  "health.consent.disclaimer": "AI suggestions are informational only and do not replace medical advice.",
+  "health.consent.accept": "Accept and continue",
+  "health.consent.decline": "Not now",
+  "health.consent.required": "Health data consent is required to use Health Hub.",
+
+  "legal.tabs.privacy": "Privacy Policy",
+  "legal.tabs.tos": "Terms of Service",
+  "legal.version": "Version",
+  "legal.effective": "Effective date"
 }

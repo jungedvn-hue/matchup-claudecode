@@ -2169,5 +2169,38 @@
   "admin.settings.warning": "Thay đổi áp dụng cho bản ghi mới. Booking cũ giữ giá trị đã snapshot.",
   "admin.settings.empty": "Chưa có cấu hình.",
   "admin.settings.saved": "Đã lưu cấu hình",
-  "admin.settings.lastUpdated": "Cập nhật lần cuối"
+  "admin.settings.lastUpdated": "Cập nhật lần cuối",
+
+  "auth.consent.label": "Tôi đã đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.",
+  "auth.consent.read": "Đọc:",
+  "auth.consent.tos": "Điều khoản dịch vụ",
+  "auth.consent.privacy": "Chính sách bảo mật",
+  "auth.consent.required": "Bạn cần đồng ý Điều khoản dịch vụ và Chính sách bảo mật để tiếp tục.",
+
+  "settings.danger.title": "Vùng nguy hiểm",
+  "settings.deleteAccount.button": "Xóa tài khoản của tôi",
+  "settings.deleteAccount.desc": "Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu liên quan. Hành động này không thể hoàn tác.",
+  "settings.deleteAccount.dialogTitle": "Xóa tài khoản?",
+  "settings.deleteAccount.dialogBody": "Thao tác này sẽ xóa vĩnh viễn hồ sơ, dữ liệu sức khỏe, lịch đặt sân, các trận đấu và giải đấu của bạn. Để xác nhận, gõ DELETE bên dưới.",
+  "settings.deleteAccount.confirmWord": "DELETE",
+  "settings.deleteAccount.placeholder": "Gõ DELETE để xác nhận",
+  "settings.deleteAccount.cancel": "Hủy",
+  "settings.deleteAccount.confirm": "Xóa vĩnh viễn",
+  "settings.deleteAccount.deleting": "Đang xóa...",
+  "settings.deleteAccount.success": "Tài khoản của bạn đã được xóa.",
+  "settings.deleteAccount.error": "Không thể xóa tài khoản. Vui lòng thử lại.",
+
+  "health.consent.title": "Đồng ý xử lý dữ liệu sức khỏe",
+  "health.consent.intro": "Health Hub của MatchUp xử lý dữ liệu cá nhân nhạy cảm theo Nghị định 13/2023/NĐ-CP. Bạn có thể rút lại đồng ý bất kỳ lúc nào trong Cài đặt; khi đó việc thu thập và phân tích AI sẽ dừng lại.",
+  "health.consent.dataLabel": "Tôi đồng ý cho MatchUp thu thập và xử lý dữ liệu sức khỏe của tôi (nhịp tim, nhịp thở, calo, vận động) từ thiết bị đeo đã kết nối.",
+  "health.consent.aiLabel": "Tôi đồng ý cho AI phân tích dữ liệu sức khỏe để gợi ý dinh dưỡng và luyện tập. (Tùy chọn — bạn vẫn dùng được Health Hub nếu không bật AI.)",
+  "health.consent.disclaimer": "Gợi ý của AI chỉ mang tính tham khảo, không thay thế tư vấn y tế.",
+  "health.consent.accept": "Đồng ý và tiếp tục",
+  "health.consent.decline": "Để sau",
+  "health.consent.required": "Cần đồng ý dữ liệu sức khỏe để sử dụng Health Hub.",
+
+  "legal.tabs.privacy": "Chính sách bảo mật",
+  "legal.tabs.tos": "Điều khoản dịch vụ",
+  "legal.version": "Phiên bản",
+  "legal.effective": "Ngày hiệu lực"
 }
