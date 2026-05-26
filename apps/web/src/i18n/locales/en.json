@@ -2232,6 +2232,18 @@
 
   "help.pageTitle": "Help & FAQ",
   "help.backToSettings": "Settings",
+
+  "common.continue": "Continue",
+  "groups.wizard.step1.title": "Group identity",
+  "groups.wizard.step1.sub": "How members will recognize you.",
+  "groups.wizard.step2.title": "Location",
+  "groups.wizard.step2.sub": "Where the group usually plays.",
+  "groups.wizard.step3.title": "Rules",
+  "groups.wizard.step3.sub": "Skill level and join policy.",
+  "groups.wizard.stepLabel1": "Group",
+  "groups.wizard.stepLabel2": "Location",
+  "groups.wizard.stepLabel3": "Rules",
+  "groups.wizard.preview": "Preview",
   "auth.consent.tos": "Terms of Service",
   "auth.consent.privacy": "Privacy Policy",
   "auth.consent.required": "You must accept the Terms of Service and Privacy Policy to continue.",

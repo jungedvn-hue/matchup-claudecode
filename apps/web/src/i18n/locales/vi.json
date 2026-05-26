@@ -2232,6 +2232,18 @@
 
   "help.pageTitle": "Trợ giúp & FAQ",
   "help.backToSettings": "Cài đặt",
+
+  "common.continue": "Tiếp tục",
+  "groups.wizard.step1.title": "Nhận diện nhóm",
+  "groups.wizard.step1.sub": "Cách thành viên nhận ra nhóm của bạn.",
+  "groups.wizard.step2.title": "Vị trí",
+  "groups.wizard.step2.sub": "Nơi nhóm thường chơi.",
+  "groups.wizard.step3.title": "Quy tắc",
+  "groups.wizard.step3.sub": "Trình độ và chính sách tham gia.",
+  "groups.wizard.stepLabel1": "Nhóm",
+  "groups.wizard.stepLabel2": "Vị trí",
+  "groups.wizard.stepLabel3": "Quy tắc",
+  "groups.wizard.preview": "Xem trước",
   "auth.consent.tos": "Điều khoản dịch vụ",
   "auth.consent.privacy": "Chính sách bảo mật",
   "auth.consent.required": "Bạn cần đồng ý Điều khoản dịch vụ và Chính sách bảo mật để tiếp tục.",
