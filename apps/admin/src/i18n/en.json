@@ -42,7 +42,8 @@
     "flags": "Feature flags",
     "impersonate": "Impersonate",
     "audit": "Audit log",
-    "settings": "Settings"
+    "settings": "Settings",
+    "platform_health": "Platform health"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -187,5 +188,33 @@
   "common": {
     "language": "Language",
     "logout": "Sign out"
+  },
+  "platform_health": {
+    "title": "Platform health",
+    "subtitle": "Provider quotas, capacity and alerts.",
+    "summary_critical": "{{count}} critical",
+    "summary_warn": "{{count}} warnings",
+    "summary_ok": "All systems within thresholds",
+    "last_poll": "Last poll {{ago}}",
+    "refresh": "Refresh",
+    "trigger_poll": "Run poll now",
+    "no_data": "No data yet. Run the poll function once to populate metrics.",
+    "alerts_open": "Active alerts",
+    "alerts_history": "Alert history (30d)",
+    "metrics": "Metrics",
+    "ack": "Ack",
+    "acked": "Acked",
+    "severity": {
+      "warn": "Warning",
+      "critical": "Critical"
+    },
+    "metric_label": {
+      "supabase.db_size": "Supabase DB size",
+      "supabase.auth_mau": "Supabase Auth MAU",
+      "supabase.egress": "Supabase egress",
+      "vercel.bandwidth": "Vercel bandwidth",
+      "payment.webhook_success": "Payment webhook success",
+      "domain.expiry_days": "Domain expiry"
+    }
   }
 }

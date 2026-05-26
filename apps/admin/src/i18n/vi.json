@@ -42,7 +42,8 @@
     "flags": "Feature flags",
     "impersonate": "Mạo nhận",
     "audit": "Audit log",
-    "settings": "Cài đặt"
+    "settings": "Cài đặt",
+    "platform_health": "Sức khỏe nền tảng"
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -187,5 +188,33 @@
   "common": {
     "language": "Ngôn ngữ",
     "logout": "Đăng xuất"
+  },
+  "platform_health": {
+    "title": "Sức khỏe nền tảng",
+    "subtitle": "Hạn mức, dung lượng và cảnh báo từ các nhà cung cấp.",
+    "summary_critical": "{{count}} critical",
+    "summary_warn": "{{count}} cảnh báo",
+    "summary_ok": "Mọi chỉ số dưới ngưỡng",
+    "last_poll": "Poll gần nhất {{ago}}",
+    "refresh": "Tải lại",
+    "trigger_poll": "Chạy poll ngay",
+    "no_data": "Chưa có dữ liệu. Chạy poll function 1 lần để có metric.",
+    "alerts_open": "Cảnh báo đang mở",
+    "alerts_history": "Lịch sử cảnh báo (30 ngày)",
+    "metrics": "Chỉ số",
+    "ack": "Xác nhận",
+    "acked": "Đã xác nhận",
+    "severity": {
+      "warn": "Cảnh báo",
+      "critical": "Critical"
+    },
+    "metric_label": {
+      "supabase.db_size": "Supabase dung lượng DB",
+      "supabase.auth_mau": "Supabase Auth MAU",
+      "supabase.egress": "Supabase egress",
+      "vercel.bandwidth": "Vercel bandwidth",
+      "payment.webhook_success": "Tỉ lệ webhook thanh toán thành công",
+      "domain.expiry_days": "Hết hạn tên miền"
+    }
   }
 }

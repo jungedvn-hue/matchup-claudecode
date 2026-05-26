@@ -10,6 +10,7 @@ import UsersListPage from "@/pages/UsersListPage";
 import UserDetailPage from "@/pages/users/UserDetailPage";
 import VenuesListPage from "@/pages/venues/VenuesListPage";
 import VenueDetailPage from "@/pages/venues/VenueDetailPage";
+import PlatformHealthPage from "@/pages/platform-health/PlatformHealthPage";
 
 const qc = new QueryClient({
   defaultOptions: { queries: { staleTime: 60_000, retry: 1 } },
@@ -33,6 +34,7 @@ export default function App() {
                 <Route path="users/:id" element={<UserDetailPage />} />
                 <Route path="venues" element={<VenuesListPage />} />
                 <Route path="venues/:id" element={<VenueDetailPage />} />
+                <Route path="platform-health" element={<PlatformHealthPage />} />
                 {/* Stub routes for the rest of the nav */}
                 {[
                   "bookings","tournaments","groups","marketplace","events",

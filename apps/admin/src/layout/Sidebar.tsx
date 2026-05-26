@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Building2, Calendar, Trophy, UsersRound, ShoppingBag,
   Ticket, Shield, Heart, CreditCard, Undo2, Scale, BookOpen, Flag, Megaphone,
   Image, ToggleRight, Eye, ScrollText, Settings, ChevronsLeft, ChevronsRight,
-  ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +52,7 @@ const groups = [
       { to: "/flags", icon: ToggleRight, key: "nav.flags" },
       { to: "/impersonate", icon: Eye, key: "nav.impersonate" },
       { to: "/audit", icon: ScrollText, key: "nav.audit" },
+      { to: "/platform-health", icon: Activity, key: "nav.platform_health" },
       { to: "/settings", icon: Settings, key: "nav.settings" },
     ],
   },
