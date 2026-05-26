@@ -1,13 +1,61 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Bell, Users, Megaphone, Calendar, Gift, UserPlus, Check, Coins, Ticket, Undo2, Wallet, Star } from "lucide-react";
+import { ArrowLeft, Bell, Users, Megaphone, Calendar, Gift, UserPlus, Check, X, Loader2, Coins, Ticket, Undo2, Wallet, Star } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useNotifications, type Notification } from "@/hooks/useNotifications";
+import { useMyPendingGroupInvites, respondToGroupInvite, type PendingInvite } from "@/hooks/useGroupInvites";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
+// Inline accept/decline row for a pending group invite
+const InviteRow = ({ item, onResponded }: { item: PendingInvite; onResponded: () => void }) => {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState<"accept" | "decline" | null>(null);
+
+  const respond = async (accept: boolean) => {
+    setBusy(accept ? "accept" : "decline");
+    const { error } = await respondToGroupInvite(item.invite.id, accept);
+    setBusy(null);
+    if (error) { toast.error(error); return; }
+    toast.success(accept ? t("groups.invite.accepted") : t("groups.invite.declined"));
+    onResponded();
+    if (accept) navigate(`/group/${item.group.id}`);
+  };
+
+  return (
+    <div className="flex items-start gap-3 px-4 py-3">
+      <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-base shrink-0 mt-0.5">
+        {item.group.cover_emoji ?? "🥎"}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground leading-snug">
+          <span className="text-primary">{item.inviter.display_name ?? "—"}</span> {t("groups.invite.inviteToYou")}
+        </p>
+        <p className="text-[12px] text-muted-foreground mt-0.5 truncate">
+          {item.group.name}{item.group.city ? ` · ${item.group.city}` : ""}
+        </p>
+        {item.invite.message && (
+          <p className="text-[11px] text-muted-foreground italic mt-1 line-clamp-2">"{item.invite.message}"</p>
+        )}
+        <div className="flex items-center gap-2 mt-2">
+          <Button size="sm" className="h-8 text-xs rounded-lg" onClick={() => respond(true)} disabled={!!busy}>
+            {busy === "accept" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Check className="h-3 w-3 mr-1" />{t("groups.invite.accept")}</>}
+          </Button>
+          <Button size="sm" variant="outline" className="h-8 text-xs rounded-lg" onClick={() => respond(false)} disabled={!!busy}>
+            {busy === "decline" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><X className="h-3 w-3 mr-1" />{t("groups.invite.decline")}</>}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const TYPE_META: Record<string, { icon: React.ElementType; color: string }> = {
+  group_invite:       { icon: UserPlus,  color: "text-primary bg-primary/10" },
   group_join_request: { icon: UserPlus,  color: "text-amber-500 bg-amber-500/10" },
   group_approved:     { icon: Check,     color: "text-primary bg-primary/10" },
   group_announcement: { icon: Megaphone, color: "text-blue-500 bg-blue-500/10" },
@@ -72,6 +120,7 @@ const NotificationsPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { notifications, loading, unreadCount, markRead, markAllRead } = useNotifications();
+  const { items: pendingInvites, refetch: refetchInvites } = useMyPendingGroupInvites();
 
   const handleClick = (notif: Notification) => {
     if (!notif.read_at) markRead([notif.id]);
@@ -94,7 +143,20 @@ const NotificationsPage = () => {
         </div>
       </div>
 
-      <div className="pt-2">
+      <div className="pt-2 space-y-3">
+        {pendingInvites.length > 0 && (
+          <div className="px-4">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 ml-1">
+              {t("groups.invite.pendingForYou")}
+            </p>
+            <Card className="shadow-card overflow-hidden divide-y divide-border">
+              {pendingInvites.map(item => (
+                <InviteRow key={item.invite.id} item={item} onResponded={refetchInvites} />
+              ))}
+            </Card>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex flex-col gap-2 px-4 pt-4">
             {[...Array(5)].map((_, i) => (

@@ -29,6 +29,7 @@ import { useAnnouncements, useAnnouncementActions, type Announcement } from "@/h
 import { useDrinkMenu, type MenuItem } from "@/hooks/useDrinkMenu";
 import { useGroupHostRatings, useHostRatingSummary } from "@/hooks/useHostRatings";
 import HostRatingSheet from "@/components/HostRatingSheet";
+import InviteFriendsDialog from "@/components/InviteFriendsDialog";
 import { toast } from "sonner";
 
 const GroupDetailPage = () => {
@@ -45,6 +46,7 @@ const GroupDetailPage = () => {
   const [purchaseEvent, setPurchaseEvent] = useState<GroupEvent | null>(null);
   const [editEvent, setEditEvent] = useState<GroupEvent | null>(null);
   const [editGroupOpen, setEditGroupOpen] = useState(false);
+  const [inviteFriendsOpen, setInviteFriendsOpen] = useState(false);
   const [assignAssistantOpen, setAssignAssistantOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareEvent, setShareEvent] = useState<{ id: string; title: string } | null>(null);
@@ -143,9 +145,14 @@ const GroupDetailPage = () => {
           </button>
           <h1 className="text-base font-display font-bold text-foreground truncate flex-1">{group.name}</h1>
           {isHost && (
-            <button onClick={() => setEditGroupOpen(true)} aria-label={t("groups.editGroup")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
-              <Pencil className="h-4 w-4" />
-            </button>
+            <>
+              <button onClick={() => setInviteFriendsOpen(true)} aria-label={t("groups.invite.title")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
+                <UserPlus className="h-4 w-4" />
+              </button>
+              <button onClick={() => setEditGroupOpen(true)} aria-label={t("groups.editGroup")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
+                <Pencil className="h-4 w-4" />
+              </button>
+            </>
           )}
           <button onClick={() => { setShareEvent(null); setShareOpen(true); }} aria-label={t("share.title")} className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
             <Share2 className="h-4 w-4" />
@@ -165,6 +172,15 @@ const GroupDetailPage = () => {
         onOpenChange={setEditGroupOpen}
         editGroup={group}
         onUpdated={refetch}
+      />
+
+      <InviteFriendsDialog
+        open={inviteFriendsOpen}
+        onOpenChange={setInviteFriendsOpen}
+        groupId={group.id}
+        groupName={group.name}
+        existingMemberIds={new Set(members.filter(m => m.status === "active").map(m => m.user_id))}
+        onInvited={refetch}
       />
 
       <AssignAssistantDialog
