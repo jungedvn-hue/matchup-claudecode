@@ -17,4 +17,21 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    include: ["recharts"],
+  },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: (id: string) => {
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) {
+            return "recharts";
+          }
+        },
+      },
+    },
+  },
 }));

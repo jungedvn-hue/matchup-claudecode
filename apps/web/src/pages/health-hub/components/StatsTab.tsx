@@ -3,7 +3,7 @@ import { Zap, Map, Footprints, Heart, Activity, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
   Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
-  Line, LineChart, Area, AreaChart, ReferenceLine, Legend,
+  Line, LineChart, ReferenceLine, Legend,
 } from "recharts";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { useHealthData, HealthDailyLog } from "@/hooks/useHealthData";
