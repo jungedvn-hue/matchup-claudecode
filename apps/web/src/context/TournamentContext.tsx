@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Tournament, TournamentMatch } from "@/lib/tournament/types";
+import { rearrangePoolMatches } from "@/lib/tournament/engine";
 import { useAuth } from "@/context/AuthContext";
 import i18n from "@/i18n";
 
@@ -164,10 +165,27 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           const mergePoolMatches = (matches: any[]) =>
             (matches || []).map((m) => liveMap.get(m.id) || m);
 
-          const pools = (c.pools || []).map((p: any) => ({
-            ...p,
-            matches: mergePoolMatches(p.matches || []),
-          }));
+          // Build entryId → name map for this category (used by RR migration).
+          const catEntryMap: Record<string, string> = {};
+          (c.participants || []).forEach((p: any) => { catEntryMap[p.id] = p.name; });
+
+          const pools = (c.pools || []).map((p: any) => {
+            const merged = mergePoolMatches(p.matches || []);
+            // One-time migration: re-order matches via circle method when an old
+            // pool (no seed labels) is detected. Scores/state are preserved.
+            const needsReorder =
+              merged.length > 1 &&
+              merged.some((m: any) => !m.entryASeedLabel);
+            if (needsReorder) {
+              const reordered = rearrangePoolMatches(
+                { id: p.id, name: p.name, entryIds: p.entryIds || [], matches: merged },
+                c.id,
+                catEntryMap,
+              );
+              return { ...p, matches: reordered };
+            }
+            return { ...p, matches: merged };
+          });
           const bracketRounds = (c.bracket_rounds || []).map((r: any) => ({
             ...r,
             matches: mergePoolMatches(r.matches || []),
@@ -189,6 +207,9 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             bracketRounds,
             poolAllocationMode: c.pool_allocation_mode as any,
             bracketFillMode: ((c as any).bracket_fill_mode as any) || "wildcard",
+            bracketSeedMode: ((c as any).bracket_seed_mode as any) || "auto",
+            bracketTemplate: (c as any).bracket_template || undefined,
+            bracketTemplatePoolCount: (c as any).bracket_template_pool_count ?? undefined,
             matches: liveMatches
           };
         })
@@ -247,6 +268,9 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
           advancingPerPool: raw.advancing_per_pool ?? c.advancingPerPool,
           wildcardCount: raw.wildcard_count ?? c.wildcardCount,
           bracketFillMode: raw.bracket_fill_mode || c.bracketFillMode,
+          bracketSeedMode: raw.bracket_seed_mode || c.bracketSeedMode,
+          bracketTemplate: raw.bracket_template ?? c.bracketTemplate,
+          bracketTemplatePoolCount: raw.bracket_template_pool_count ?? c.bracketTemplatePoolCount,
         };
       })
     })));
@@ -297,11 +321,14 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             pool_allocation_mode: cat.poolAllocationMode,
             pools: cat.pools || [],
             bracket_rounds: cat.bracketRounds || [],
-            bracket_fill_mode: cat.bracketFillMode || "wildcard"
+            bracket_fill_mode: cat.bracketFillMode || "wildcard",
+            bracket_seed_mode: cat.bracketSeedMode || "auto",
+            bracket_template: cat.bracketTemplate ?? null,
+            bracket_template_pool_count: cat.bracketTemplatePoolCount ?? null,
           }])
           .select()
           .single();
-          
+
         if (catError) throw catError;
 
         // Add Participants
@@ -354,7 +381,10 @@ export const TournamentProvider = ({ children }: { children: ReactNode }) => {
             bracket_rounds: cat.bracketRounds || [],
             pool_allocation_mode: cat.poolAllocationMode,
             advancing_per_pool: cat.advancingPerPool,
-            bracket_fill_mode: cat.bracketFillMode || "wildcard"
+            bracket_fill_mode: cat.bracketFillMode || "wildcard",
+            bracket_seed_mode: cat.bracketSeedMode || "auto",
+            bracket_template: cat.bracketTemplate ?? null,
+            bracket_template_pool_count: cat.bracketTemplatePoolCount ?? null,
           })
           .eq('id', cat.id);
 

@@ -5,6 +5,17 @@ export type SkillLevel = "beginner" | "intermediate" | "advanced";
 export type RankingCriterion = "wins" | "head_to_head" | "point_diff" | "points_scored" | "match_diff" | "random";
 export type PoolAllocationMode = "auto" | "manual";
 export type BracketFillMode = "bye" | "wildcard";
+export type BracketSeedMode = "auto" | "template";
+
+export type BracketSlotRef =
+  | { type: "pool_rank"; poolIndex: number; rank: number }
+  | { type: "wildcard"; index: number }
+  | { type: "bye" };
+
+export interface BracketTemplateMatch {
+  a: BracketSlotRef;
+  b: BracketSlotRef;
+}
 
 
 export interface TournamentPlayer {
@@ -58,6 +69,8 @@ export interface TournamentMatch {
   entryAIsWildcard?: boolean;
   entryBIsWildcard?: boolean;
   livestreamUrl?: string;
+  entryASeedLabel?: string;
+  entryBSeedLabel?: string;
 }
 
 export interface Pool {
@@ -100,6 +113,10 @@ export interface TournamentCategory {
   poolAllocationMode: PoolAllocationMode;
   bracketFillMode?: BracketFillMode;
   separatePools?: boolean;
+  matchOrderVersion?: number;
+  bracketSeedMode?: BracketSeedMode;
+  bracketTemplate?: BracketTemplateMatch[];
+  bracketTemplatePoolCount?: number;
 }
 
 export interface Tournament {

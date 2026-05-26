@@ -5,6 +5,8 @@ import {
   BracketRound,
   MatchStatus,
   RankingCriterion,
+  BracketTemplateMatch,
+  BracketSlotRef,
 } from "./types";
 
 let matchCounter = 0;
@@ -58,34 +60,105 @@ export function suggestAdvancingPerPool(poolCount: number, format: string): numb
   return 2;
 }
 
-// ── Round Robin Match Generator ──
+// ── Round Robin Match Generator (Circle method) ──
+// Generates rounds via the classic circle method so each team plays once per
+// round, then flattens rounds in order. On a single court this yields fair
+// rest spacing (each team rests ~1 match between its games).
+export const MATCH_ORDER_VERSION = 2;
+
+function buildCircleRounds<T>(items: T[]): T[][][] {
+  const arr = [...items];
+  const odd = arr.length % 2 === 1;
+  if (odd) arr.push(null as unknown as T); // BYE placeholder
+  const n = arr.length;
+  const rounds: T[][][] = [];
+  for (let r = 0; r < n - 1; r++) {
+    const round: T[][] = [];
+    for (let i = 0; i < n / 2; i++) {
+      const a = arr[i];
+      const b = arr[n - 1 - i];
+      if (a !== null && b !== null) round.push([a, b]);
+    }
+    rounds.push(round);
+    // Rotate: keep arr[0] fixed, rotate rest clockwise.
+    const rest = arr.slice(1);
+    rest.unshift(rest.pop() as T);
+    for (let k = 1; k < n; k++) arr[k] = rest[k - 1];
+  }
+  return rounds;
+}
+
 export function generateRoundRobinMatches(
   pool: Pool,
   categoryId: string,
   entryMap: Record<string, string>
 ): TournamentMatch[] {
   const ids = pool.entryIds;
+  if (ids.length < 2) return [];
+
+  const seedLabel = (entryId: string): string => {
+    const idx = ids.indexOf(entryId);
+    return `${pool.name}${idx + 1}`;
+  };
+
+  const rounds = buildCircleRounds(ids);
   const matches: TournamentMatch[] = [];
   let matchNo = 1;
-
-  for (let i = 0; i < ids.length; i++) {
-    for (let j = i + 1; j < ids.length; j++) {
+  rounds.forEach((round) => {
+    round.forEach(([a, b]) => {
       matches.push({
         id: nextMatchId(),
         categoryId,
         poolId: pool.id,
         matchNo: matchNo++,
-        entryAId: ids[i],
-        entryBId: ids[j],
-        entryAName: entryMap[ids[i]] || ids[i],
-        entryBName: entryMap[ids[j]] || ids[j],
+        entryAId: a,
+        entryBId: b,
+        entryAName: entryMap[a] || a,
+        entryBName: entryMap[b] || b,
+        entryASeedLabel: seedLabel(a),
+        entryBSeedLabel: seedLabel(b),
         scoreA: 0,
         scoreB: 0,
         status: "not_started",
       });
-    }
-  }
+    });
+  });
   return matches;
+}
+
+// Regenerate match order for an existing pool using the circle method,
+// preserving any played scores keyed by entry-pair (orientation-agnostic).
+export function rearrangePoolMatches(
+  pool: Pool,
+  categoryId: string,
+  entryMap: Record<string, string>
+): TournamentMatch[] {
+  const key = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+  const old = new Map<string, TournamentMatch>();
+  (pool.matches || []).forEach((m) => old.set(key(m.entryAId, m.entryBId), m));
+
+  const fresh = generateRoundRobinMatches(pool, categoryId, entryMap);
+  return fresh.map((m) => {
+    const prev = old.get(key(m.entryAId, m.entryBId));
+    if (!prev) return m;
+    // Preserve recorded state. Orientation A/B might have flipped; remap scores.
+    const sameOrientation = prev.entryAId === m.entryAId;
+    return {
+      ...m,
+      id: prev.id,
+      scoreA: sameOrientation ? prev.scoreA : prev.scoreB,
+      scoreB: sameOrientation ? prev.scoreB : prev.scoreA,
+      setScores: prev.setScores
+        ? (sameOrientation ? prev.setScores : prev.setScores.map((s) => ({ a: s.b, b: s.a })))
+        : undefined,
+      winner: prev.winner,
+      status: prev.status,
+      courtId: prev.courtId,
+      refereeId: prev.refereeId,
+      timeSlot: prev.timeSlot,
+      livestreamUrl: prev.livestreamUrl,
+    };
+  });
 }
 
 // ── Standings Calculator ──
@@ -271,6 +344,153 @@ export function nearestBracketSize(n: number): number {
   return s;
 }
 
+// ── Bracket Pairing Templates ──
+// A "template" defines R1 pairings symbolically (e.g. 1A vs 2B) — actual entries
+// fill in at knockout-generation time based on pool standings.
+
+export const poolLetter = (i: number): string => String.fromCharCode(65 + i);
+
+export function formatSlotRef(slot: BracketSlotRef): string {
+  if (slot.type === "pool_rank") return `${slot.rank}${poolLetter(slot.poolIndex)}`;
+  if (slot.type === "wildcard") return `W${slot.index}`;
+  return "BYE";
+}
+
+// Build a list of all available pool-rank slots given pool count and advancing per pool.
+export function listPoolRankSlots(poolCount: number, advancingPerPool: number): BracketSlotRef[] {
+  const slots: BracketSlotRef[] = [];
+  for (let r = 1; r <= advancingPerPool; r++) {
+    for (let p = 0; p < poolCount; p++) {
+      slots.push({ type: "pool_rank", poolIndex: p, rank: r });
+    }
+  }
+  return slots;
+}
+
+const poolRank = (p: number, r: number): BracketSlotRef =>
+  ({ type: "pool_rank", poolIndex: p, rank: r });
+
+function padWithByes(matches: BracketTemplateMatch[], expected: number): BracketTemplateMatch[] {
+  while (matches.length < expected) matches.push({ a: { type: "bye" }, b: { type: "bye" } });
+  return matches;
+}
+
+function fallbackPairing(
+  poolCount: number,
+  advancingPerPool: number,
+  wildcardCount: number,
+): BracketTemplateMatch[] {
+  const slots = listPoolRankSlots(poolCount, advancingPerPool);
+  for (let i = 0; i < wildcardCount; i++) slots.push({ type: "wildcard", index: i + 1 });
+  const size = nearestBracketSize(Math.max(2, slots.length));
+  while (slots.length < size) slots.push({ type: "bye" });
+  const matches: BracketTemplateMatch[] = [];
+  for (let i = 0; i < size / 2; i++) matches.push({ a: slots[i], b: slots[size - 1 - i] });
+  return matches;
+}
+
+// Cross-pool preset: avoids same-pool rematch by pairing pools (A,B), (C,D)…
+// For each pair: 1A-2B and 1B-2A — i.e. 1st of one meets 2nd of the other.
+// Requires even poolCount and advancingPerPool === 2 (most common shape).
+export function generateCrossPoolTemplate(
+  poolCount: number,
+  advancingPerPool: number,
+  wildcardCount: number = 0,
+): BracketTemplateMatch[] {
+  const expectedSize = nearestBracketSize(Math.max(2, poolCount * advancingPerPool + wildcardCount));
+  if (poolCount % 2 !== 0 || advancingPerPool !== 2 || wildcardCount > 0) {
+    return fallbackPairing(poolCount, advancingPerPool, wildcardCount);
+  }
+  const matches: BracketTemplateMatch[] = [];
+  for (let pairIdx = 0; pairIdx < poolCount / 2; pairIdx++) {
+    const p1 = pairIdx * 2;
+    const p2 = pairIdx * 2 + 1;
+    matches.push({ a: poolRank(p1, 1), b: poolRank(p2, 2) });
+    matches.push({ a: poolRank(p2, 1), b: poolRank(p1, 2) });
+  }
+  return padWithByes(matches, expectedSize / 2);
+}
+
+// Snake preset: spread top seeds maximally across the bracket.
+// 1A-2D, 1B-2C, 1C-2B, 1D-2A — 1st of pool p meets 2nd of pool (poolCount-1-p).
+export function generateSnakeTemplate(
+  poolCount: number,
+  advancingPerPool: number,
+  wildcardCount: number = 0,
+): BracketTemplateMatch[] {
+  const expectedSize = nearestBracketSize(Math.max(2, poolCount * advancingPerPool + wildcardCount));
+  if (advancingPerPool !== 2 || wildcardCount > 0) {
+    return fallbackPairing(poolCount, advancingPerPool, wildcardCount);
+  }
+  const matches: BracketTemplateMatch[] = [];
+  for (let p = 0; p < poolCount; p++) {
+    matches.push({ a: poolRank(p, 1), b: poolRank(poolCount - 1 - p, 2) });
+  }
+  return padWithByes(matches, expectedSize / 2);
+}
+
+// Validate that a template uses each non-BYE slot at most once.
+export function validateTemplate(
+  template: BracketTemplateMatch[],
+  poolCount: number,
+  advancingPerPool: number,
+  wildcardCount: number,
+): { ok: true } | { ok: false; reason: string } {
+  const seen = new Set<string>();
+  const expectedSize = nearestBracketSize(Math.max(2, poolCount * advancingPerPool + wildcardCount));
+  if (template.length !== expectedSize / 2) {
+    return { ok: false, reason: `Expected ${expectedSize / 2} matches, got ${template.length}` };
+  }
+  for (const m of template) {
+    for (const s of [m.a, m.b]) {
+      if (s.type === "bye") continue;
+      const key = formatSlotRef(s);
+      if (seen.has(key)) return { ok: false, reason: `Duplicate slot ${key}` };
+      if (s.type === "pool_rank") {
+        if (s.poolIndex >= poolCount) return { ok: false, reason: `Pool ${poolLetter(s.poolIndex)} not in range` };
+        if (s.rank > advancingPerPool) return { ok: false, reason: `${formatSlotRef(s)} exceeds advancingPerPool` };
+      }
+      if (s.type === "wildcard" && s.index > wildcardCount) {
+        return { ok: false, reason: `Wildcard W${s.index} exceeds count` };
+      }
+      seen.add(key);
+    }
+  }
+  return { ok: true };
+}
+
+// Resolve a template against actual pool standings → ordered list of entries
+// in bracket-seed order (suitable for feeding into the bracket rounds builder).
+export function resolveTemplateToEntries(
+  template: BracketTemplateMatch[],
+  standingsByPool: Standing[][],
+  wildcards: { entryId: string; entryName: string }[],
+): { id: string; name: string; poolId?: string }[] {
+  const flat: { id: string; name: string; poolId?: string }[] = [];
+  template.forEach((m) => {
+    flat.push(resolveSlot(m.a, standingsByPool, wildcards));
+    flat.push(resolveSlot(m.b, standingsByPool, wildcards));
+  });
+  return flat;
+}
+
+function resolveSlot(
+  slot: BracketSlotRef,
+  standingsByPool: Standing[][],
+  wildcards: { entryId: string; entryName: string }[],
+): { id: string; name: string; poolId?: string } {
+  if (slot.type === "bye") return { id: `bye-${Math.random().toString(36).slice(2, 7)}`, name: "BYE" };
+  if (slot.type === "wildcard") {
+    const w = wildcards[slot.index - 1];
+    if (!w) return { id: `bye-wc-${slot.index}`, name: "BYE" };
+    return { id: w.entryId, name: w.entryName };
+  }
+  const poolStandings = standingsByPool[slot.poolIndex] || [];
+  const s = poolStandings[slot.rank - 1];
+  if (!s) return { id: `bye-${formatSlotRef(slot)}`, name: "BYE" };
+  return { id: s.entryId, name: s.entryName };
+}
+
 // Standard Seeding Pattern (recursive for power of 2): [1,8,4,5,2,7,3,6] for n=8.
 const getSeedingPattern = (n: number): number[] => {
   if (n === 1) return [1];
@@ -337,20 +557,24 @@ export function separatePoolEntries<T extends { id: string; name: string; poolId
 export function generateBracket(
   qualifiedEntries: { id: string; name: string; poolId?: string }[],
   categoryId: string,
-  options?: { separatePools?: boolean }
+  options?: { separatePools?: boolean; useTemplateOrder?: boolean }
 ): BracketRound[] {
   const size = nearestBracketSize(qualifiedEntries.length);
   const padded = [...qualifiedEntries];
   while (padded.length < size) padded.push({ id: `bye-${padded.length}`, name: "BYE" });
 
-  // If pool separation is requested, reorder padded[] so that padded[k-1] is the
-  // entry assigned to seed k after teammate-spreading. Standard rank order otherwise.
-  const seedOrdered = options?.separatePools
-    ? separatePoolEntries(padded, size)
-    : padded;
-
-  const seedPattern = getSeedingPattern(size);
-  const reordered = seedPattern.map((sIdx) => seedOrdered[sIdx - 1]);
+  // Template mode: caller already resolved entries into R1 pairing order
+  // (entries[0] vs entries[1], entries[2] vs entries[3], ...). Skip seed pattern.
+  let reordered: typeof padded;
+  if (options?.useTemplateOrder) {
+    reordered = padded;
+  } else {
+    const seedOrdered = options?.separatePools
+      ? separatePoolEntries(padded, size)
+      : padded;
+    const seedPattern = getSeedingPattern(size);
+    reordered = seedPattern.map((sIdx) => seedOrdered[sIdx - 1]);
+  }
 
   const roundNames: Record<number, string> = {
     2: "Final",

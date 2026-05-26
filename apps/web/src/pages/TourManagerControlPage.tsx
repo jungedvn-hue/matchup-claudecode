@@ -48,6 +48,7 @@ import {
   nearestBracketSize,
   advanceBracket,
   revertBracket,
+  resolveTemplateToEntries,
 } from "@/lib/tournament/engine";
 import { Tournament, TournamentCategory, TournamentMatch, Pool, Standing } from "@/lib/tournament/types";
 import { exportStandingsCSV, exportStandingsPDF } from "@/lib/tournament/export";
@@ -490,7 +491,28 @@ const TourManagerControlPage = () => {
     }
 
     const wildcardIds = new Set(wildcards.map((w) => w.id));
-    const bracketRounds = generateBracket(finalQualified, activeCat.id, { separatePools }).map((r) => ({
+
+    // Template seed mode: resolve symbolic slots against pool standings, then feed
+    // the engine an already-ordered entry list (one match per pair, in order).
+    const useTemplate = activeCat.bracketSeedMode === "template" && Array.isArray(activeCat.bracketTemplate) && activeCat.bracketTemplate.length > 0;
+    let bracketEntries = finalQualified;
+    if (useTemplate) {
+      // standings per pool (ranked) — re-derive in pool order so resolver indexes correctly.
+      const standingsByPool = (activeCat.pools || []).map((pool) =>
+        calculateStandings(pool.matches || [], pool.entryIds || [], entryMap, activeCat.advancingPerPool, tournament.rankingPriority)
+      );
+      bracketEntries = resolveTemplateToEntries(
+        activeCat.bracketTemplate!,
+        standingsByPool,
+        wildcards.map((w) => ({ entryId: w.id, entryName: w.name })),
+      ).map((e) => ({ ...e, poolId: entryPoolMap[e.id] }));
+    }
+
+    const bracketRounds = generateBracket(
+      bracketEntries,
+      activeCat.id,
+      useTemplate ? { useTemplateOrder: true } : { separatePools },
+    ).map((r) => ({
       ...r,
       matches: r.matches.map((m) => ({
         ...m,
@@ -1824,8 +1846,13 @@ function MatchCard({
 
         <div className="flex items-center gap-4">
           <div className={`flex-1 text-right min-w-0 ${match.winner === match.entryAId ? "font-bold text-primary" : "text-foreground"}`}>
-            <p className="text-sm font-semibold line-clamp-2 break-words leading-tight min-h-[2.5rem] flex items-center justify-end">
-              {match.entryAName}
+            <p className="text-sm font-semibold line-clamp-2 break-words leading-tight min-h-[2.5rem] flex items-center justify-end gap-1.5">
+              {match.entryASeedLabel && (
+                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums shrink-0">
+                  {match.entryASeedLabel}
+                </span>
+              )}
+              <span className="truncate">{match.entryAName}</span>
             </p>
             <p className="text-[10px] text-muted-foreground">Team A</p>
           </div>
@@ -1936,8 +1963,13 @@ function MatchCard({
           </div>
 
           <div className={`flex-1 min-w-0 ${match.winner === match.entryBId ? "font-bold text-primary" : "text-foreground"}`}>
-            <p className="text-sm font-semibold line-clamp-2 break-words leading-tight min-h-[2.5rem] flex items-center">
-              {match.entryBName}
+            <p className="text-sm font-semibold line-clamp-2 break-words leading-tight min-h-[2.5rem] flex items-center gap-1.5">
+              {match.entryBSeedLabel && (
+                <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary tabular-nums shrink-0">
+                  {match.entryBSeedLabel}
+                </span>
+              )}
+              <span className="truncate">{match.entryBName}</span>
             </p>
             <p className="text-[10px] text-muted-foreground">Team B</p>
           </div>

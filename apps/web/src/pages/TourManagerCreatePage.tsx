@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy, Target, Settings, BarChart3, ChevronDown, Radio } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ChevronRight, ArrowUp, ArrowDown, Trophy, Target, Settings, BarChart3, ChevronDown, Radio, Brackets } from "lucide-react";
+import BracketTemplateEditor from "@/components/tournament/BracketTemplateEditor";
+import type { BracketSeedMode, BracketTemplateMatch } from "@/lib/tournament/types";
 import { LivestreamEditor } from "@/components/tournament/LivestreamSection";
 import VenuePicker from "@/components/VenuePicker";
 import { Button } from "@/components/ui/button";
@@ -66,9 +68,13 @@ const TourManagerCreatePage = () => {
   ]);
 
 
+  // Step 1 — bracket seeding mode (tournament-level default for all categories).
+  const [bracketSeedMode, setBracketSeedMode] = useState<BracketSeedMode>("auto");
+
   // Step 2
   const [categories, setCategories] = useState<
-    { type: CategoryType; name: string; skillFilter?: SkillLevel; maxEntries?: number; advancingPerPool: number; wildcardCount: number }[]
+    { type: CategoryType; name: string; skillFilter?: SkillLevel; maxEntries?: number; advancingPerPool: number; wildcardCount: number;
+      bracketSeedMode?: BracketSeedMode; bracketTemplate?: BracketTemplateMatch[]; bracketTemplatePoolCount?: number }[]
   >([]);
   const [newCatType, setNewCatType] = useState<CategoryType>("singles");
 
@@ -85,11 +91,12 @@ const TourManagerCreatePage = () => {
   const addCategory = () => {
     const opt = CATEGORY_OPTIONS.find((c) => c.value === newCatType);
     if (!opt || categories.find((c) => c.type === newCatType)) return;
-    setCategories([...categories, { 
-      type: opt.value, 
-      name: opt.label, 
-      advancingPerPool: 2, 
-      wildcardCount: 0 
+    setCategories([...categories, {
+      type: opt.value,
+      name: opt.label,
+      advancingPerPool: 2,
+      wildcardCount: 0,
+      bracketSeedMode,
     }]);
   };
 
@@ -154,6 +161,9 @@ const TourManagerCreatePage = () => {
       advancingPerPool: c.advancingPerPool,
       wildcardCount: c.wildcardCount,
       poolAllocationMode: "auto",
+      bracketSeedMode: c.bracketSeedMode ?? "auto",
+      bracketTemplate: c.bracketTemplate,
+      bracketTemplatePoolCount: c.bracketTemplatePoolCount,
     }));
 
     const tournament: Tournament = {
@@ -362,6 +372,34 @@ const TourManagerCreatePage = () => {
               </Field>
             </SectionCard>
 
+            {/* Card 3.4 — Bracket seeding mode (knockout pairing) */}
+            <SectionCard icon={Brackets} title={t("tm.tpl.seedModeTitle")} tone="from-amber-500/5">
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { id: "auto", label: t("tm.tpl.seedAuto"), desc: t("tm.tpl.seedAutoDesc") },
+                  { id: "template", label: t("tm.tpl.seedTemplate"), desc: t("tm.tpl.seedTemplateDesc") },
+                ] as const).map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setBracketSeedMode(opt.id);
+                      setCategories(categories.map(c => ({ ...c, bracketSeedMode: opt.id })));
+                    }}
+                    className={`text-left p-3 rounded-lg border transition-all ${
+                      bracketSeedMode === opt.id
+                        ? "bg-primary/5 border-primary text-foreground shadow-sm"
+                        : "bg-card border-border hover:border-primary/30 text-muted-foreground"
+                    }`}
+                  >
+                    <p className="text-xs font-semibold">{opt.label}</p>
+                    <p className="text-[10px] mt-0.5 leading-tight">{opt.desc}</p>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground italic">{t("tm.tpl.seedModeHint")}</p>
+            </SectionCard>
+
             {/* Card 3.5 — Livestream */}
             <SectionCard icon={Radio} title={t("tm.livestream.title")} tone="from-red-500/5">
               <LivestreamEditor value={livestreamUrls} onChange={setLivestreamUrls} />
@@ -492,6 +530,32 @@ const TourManagerCreatePage = () => {
                         <p className="text-[10px] text-muted-foreground leading-tight">{t("tm.wildcardHint")}</p>
                       </div>
                     </div>
+
+                    {/* Bracket template editor — shown when category seed mode is "template" */}
+                    {cat.bracketSeedMode === "template" && (
+                      <div className="px-4 pb-4 pt-2 border-t border-border/60 bg-amber-500/5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Brackets className="h-3.5 w-3.5 text-amber-600" />
+                          <p className="text-xs font-display font-semibold text-foreground">{t("tm.tpl.editorTitle")}</p>
+                        </div>
+                        <BracketTemplateEditor
+                          poolCount={cat.bracketTemplatePoolCount ?? 4}
+                          advancingPerPool={cat.advancingPerPool}
+                          wildcardCount={cat.wildcardCount === -1 ? 0 : cat.wildcardCount}
+                          template={cat.bracketTemplate}
+                          onChange={({ template, poolCount }) =>
+                            setCategories(categories.map(c => c.type === cat.type
+                              ? { ...c, bracketTemplate: template, bracketTemplatePoolCount: poolCount }
+                              : c))
+                          }
+                          onPoolCountChange={(n) =>
+                            setCategories(categories.map(c => c.type === cat.type
+                              ? { ...c, bracketTemplatePoolCount: n, bracketTemplate: undefined }
+                              : c))
+                          }
+                        />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

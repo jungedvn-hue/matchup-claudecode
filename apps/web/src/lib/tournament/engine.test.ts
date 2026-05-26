@@ -5,6 +5,11 @@ import {
   generateRoundRobinMatches,
   calculateStandings,
   generateBracket,
+  generateCrossPoolTemplate,
+  generateSnakeTemplate,
+  validateTemplate,
+  formatSlotRef,
+  resolveTemplateToEntries,
 } from './engine';
 import { TournamentMatch, RankingCriterion } from './types';
 
@@ -42,29 +47,47 @@ describe('Tournament Engine', () => {
   });
 
   describe('generateRoundRobinMatches', () => {
-    it('should generate all permutations for a pool', () => {
+    it('should generate all pair permutations once', () => {
       const pool = {
         id: 'pool-a',
         name: 'A',
         entryIds: ['1', '2', '3'],
         matches: []
       };
-      
+
       const matches = generateRoundRobinMatches(pool, 'cat-1', {
-        '1': 'Player 1',
-        '2': 'Player 2',
-        '3': 'Player 3'
+        '1': 'Player 1', '2': 'Player 2', '3': 'Player 3'
       });
-      
-      // 3 players = 3 matches (1v2, 1v3, 2v3)
+
       expect(matches.length).toBe(3);
-      expect(matches[0].entryAId).toBe('1');
-      expect(matches[0].entryBId).toBe('2');
-      expect(matches[1].entryAId).toBe('1');
-      expect(matches[1].entryBId).toBe('3');
-      expect(matches[2].entryAId).toBe('2');
-      expect(matches[2].entryBId).toBe('3');
+      const pairs = matches.map(m => [m.entryAId, m.entryBId].sort().join('-')).sort();
+      expect(pairs).toEqual(['1-2', '1-3', '2-3']);
       expect(matches[0].poolId).toBe('pool-a');
+    });
+
+    it('should attach seed labels like A1, A2 derived from pool name + position', () => {
+      const pool = { id: 'pool-a', name: 'A', entryIds: ['x', 'y', 'z'], matches: [] };
+      const matches = generateRoundRobinMatches(pool, 'cat-1', { x: 'X', y: 'Y', z: 'Z' });
+      matches.forEach(m => {
+        expect(m.entryASeedLabel).toMatch(/^A[1-3]$/);
+        expect(m.entryBSeedLabel).toMatch(/^A[1-3]$/);
+      });
+    });
+
+    it('should space matches so no team plays 3 consecutive matches (circle method)', () => {
+      // 4 teams → 6 matches on a single court. Perfect single-rest is impossible
+      // (one back-to-back per cycle), but no team should ever play 3 in a row.
+      const pool = { id: 'pool-a', name: 'A', entryIds: ['1', '2', '3', '4'], matches: [] };
+      const matches = generateRoundRobinMatches(pool, 'cat-1', { '1': 'P1', '2': 'P2', '3': 'P3', '4': 'P4' });
+      expect(matches.length).toBe(6);
+      for (let i = 2; i < matches.length; i++) {
+        const a = new Set([matches[i - 2].entryAId, matches[i - 2].entryBId]);
+        const b = new Set([matches[i - 1].entryAId, matches[i - 1].entryBId]);
+        const c = [matches[i].entryAId, matches[i].entryBId];
+        for (const id of c) {
+          expect(a.has(id) && b.has(id)).toBe(false);
+        }
+      }
     });
   });
 
@@ -182,6 +205,66 @@ describe('Tournament Engine', () => {
       expect(semis[1].entryBName).toBe('Seed 3');
       expect(semis[1].status).toBe('not_started');
       expect(semis[1].winner).toBeUndefined();
+    });
+  });
+
+  describe('Bracket pairing templates', () => {
+    it('formatSlotRef renders 1A / 2B / W1 / BYE', () => {
+      expect(formatSlotRef({ type: 'pool_rank', poolIndex: 0, rank: 1 })).toBe('1A');
+      expect(formatSlotRef({ type: 'pool_rank', poolIndex: 1, rank: 2 })).toBe('2B');
+      expect(formatSlotRef({ type: 'wildcard', index: 1 })).toBe('W1');
+      expect(formatSlotRef({ type: 'bye' })).toBe('BYE');
+    });
+
+    it('cross-pool preset avoids same-pool rematch in R1 (4 pools × 2)', () => {
+      const tpl = generateCrossPoolTemplate(4, 2, 0);
+      expect(tpl.length).toBe(4); // 8 entries → 4 R1 matches
+      tpl.forEach((m) => {
+        const a = formatSlotRef(m.a);
+        const b = formatSlotRef(m.b);
+        if (!a.startsWith('BYE') && !b.startsWith('BYE')) {
+          const poolA = a[a.length - 1];
+          const poolB = b[b.length - 1];
+          expect(poolA).not.toBe(poolB);
+        }
+      });
+    });
+
+    it('snake preset spreads top seeds across bracket halves (4 pools × 2)', () => {
+      const tpl = generateSnakeTemplate(4, 2, 0);
+      expect(tpl.length).toBe(4);
+      // Top half = first 2 matches; bottom half = last 2. All four "1X" slots split 2 per half.
+      const half1Refs = [tpl[0], tpl[1]].flatMap(m => [formatSlotRef(m.a), formatSlotRef(m.b)]);
+      const half2Refs = [tpl[2], tpl[3]].flatMap(m => [formatSlotRef(m.a), formatSlotRef(m.b)]);
+      const top1Half1 = half1Refs.filter(r => r.startsWith('1')).length;
+      const top1Half2 = half2Refs.filter(r => r.startsWith('1')).length;
+      expect(top1Half1).toBe(2);
+      expect(top1Half2).toBe(2);
+    });
+
+    it('validateTemplate rejects duplicate slot refs', () => {
+      const dup = generateCrossPoolTemplate(4, 2, 0);
+      dup[1] = { a: dup[0].a, b: dup[1].b }; // force duplicate
+      const res = validateTemplate(dup, 4, 2, 0);
+      expect(res.ok).toBe(false);
+    });
+
+    it('validateTemplate accepts a clean cross-pool template', () => {
+      const tpl = generateCrossPoolTemplate(4, 2, 0);
+      expect(validateTemplate(tpl, 4, 2, 0).ok).toBe(true);
+    });
+
+    it('resolveTemplateToEntries swaps in real team names by pool standings', () => {
+      const tpl = generateCrossPoolTemplate(2, 2, 0);
+      const standings: any = [
+        [ { entryId: 'a1', entryName: 'Alpha 1' }, { entryId: 'a2', entryName: 'Alpha 2' } ],
+        [ { entryId: 'b1', entryName: 'Beta 1' },  { entryId: 'b2', entryName: 'Beta 2' } ],
+      ];
+      const entries = resolveTemplateToEntries(tpl, standings, []);
+      const names = entries.map(e => e.name);
+      expect(names).toContain('Alpha 1');
+      expect(names).toContain('Beta 2');
+      expect(entries.length).toBe(4);
     });
   });
 });
