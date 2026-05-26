@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trophy, Calendar, MapPin, Users, Search, Loader2, ChevronRight, Settings, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Trophy, Calendar, MapPin, Users, Search, Loader2, ChevronRight, Settings, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -66,10 +66,19 @@ const TournamentsPage = () => {
     <div className="pb-20 min-h-screen">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border px-4 py-3 space-y-3">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
-          <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-primary" />
-            {t("tournaments.title")}
-          </h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/"))}
+              aria-label={t("common.back")}
+              className="h-8 w-8 -ml-1 flex items-center justify-center rounded-lg hover:bg-secondary/60 transition-colors"
+            >
+              <ArrowLeft className="h-4.5 w-4.5 text-foreground" />
+            </button>
+            <h1 className="text-lg font-display font-bold text-foreground flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-primary" />
+              {t("tournaments.title")}
+            </h1>
+          </div>
           {isHost && (
             <button
               onClick={() => navigate("/tour-manager/create")}
