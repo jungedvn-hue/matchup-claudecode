@@ -2311,8 +2311,8 @@ function TeamRow({
             </Button>
           </div>
         ) : (
-          <span className={`font-stat font-black tabular-nums shrink-0 px-2 ${
-            isWinner ? "text-2xl text-primary" : "text-xl text-muted-foreground/70"
+          <span className={`font-display font-black tabular-nums shrink-0 px-2 leading-none ${
+            isWinner ? "text-3xl text-primary" : "text-2xl text-muted-foreground/60"
           }`}>
             {readonlyScore}
           </span>
