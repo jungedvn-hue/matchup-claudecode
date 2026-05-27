@@ -153,7 +153,7 @@ const ProfilePage = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <PageHeader title={t("profile.title")} right={
+      <PageHeader title={t("profile.title")} back right={
         <button onClick={() => navigate("/settings")} aria-label={t("settings.title")}
           className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground">
           <Settings className="h-4 w-4" />
