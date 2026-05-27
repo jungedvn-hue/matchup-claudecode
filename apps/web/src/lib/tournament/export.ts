@@ -95,13 +95,19 @@ export function exportStandingsPDF(
 
       const matchRows = pool.matches
         .map(
-          (m) => `
+          (m) => {
+            const played = getWinnerId(m) || m.scoreA > 0 || m.scoreB > 0;
+            const scoreStyle = played
+              ? "text-align:center;font-weight:700"
+              : "text-align:center;font-weight:400;color:#cbd5e1";
+            return `
         <tr>
           <td style="text-align:center">${m.matchNo}</td>
           <td style="text-align:right;${getWinnerId(m) === m.entryAId ? "font-weight:700;color:#2e7d32" : ""}">${m.entryAName}</td>
-          <td style="text-align:center;font-weight:700">${m.scoreA} - ${m.scoreB}</td>
+          <td style="${scoreStyle}">${m.scoreA} - ${m.scoreB}</td>
           <td style="${getWinnerId(m) === m.entryBId ? "font-weight:700;color:#2e7d32" : ""}">${m.entryBName}</td>
-        </tr>`
+        </tr>`;
+          }
         )
         .join("");
 
