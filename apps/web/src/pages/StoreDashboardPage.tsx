@@ -138,8 +138,9 @@ const StoreDashboardPage = () => {
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <ActionTile icon={Plus} labelKey="store.action.addProduct" onClick={() => navigate("/my-store/products?add=1")} />
+          <ActionTile icon={Package} labelKey="store.action.manageProducts" onClick={() => navigate("/my-store/products")} />
           <ActionTile icon={Calendar} labelKey="store.action.manageBookings" onClick={() => navigate("/my-store/bookings")} count={activeBookings || undefined} />
           <ActionTile icon={Pencil} labelKey="store.action.editProfile" onClick={() => navigate("/my-store/edit")} />
         </div>
