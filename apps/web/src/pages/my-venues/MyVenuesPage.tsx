@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Building2, Plus, MapPin, Phone, Edit, Trash2, Loader2, Calendar, Trophy, Users, ExternalLink, CalendarCheck, Coffee } from "lucide-react";
+import { ArrowLeft, Building2, Plus, MapPin, Phone, Edit, Trash2, Loader2, Calendar, Trophy, Users, ExternalLink, CalendarCheck, Coffee, CalendarClock, ClipboardList } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -146,19 +146,35 @@ const MyVenuesPage = () => {
                 <ActivityStrip venueId={v.id} />
 
 
-                <div className="flex items-center gap-2 pt-1 border-t border-border/60">
-                  <button
-                    onClick={() => navigate(`/my-venues/${v.id}/bookings`)}
-                    className="flex-1 h-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/90 transition-colors"
-                  >
-                    <CalendarCheck className="h-3.5 w-3.5" /> {t("venue.bookings")}
-                  </button>
-                  <button
-                    onClick={() => navigate(`/my-venues/${v.id}/services`)}
-                    className="flex-1 h-8 rounded-lg bg-secondary text-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-secondary/70 transition-colors"
-                  >
-                    <Coffee className="h-3.5 w-3.5" /> {t("venue.services")}
-                  </button>
+                <div className="space-y-2 pt-1 border-t border-border/60">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => navigate(`/my-venues/${v.id}/bookings`)}
+                      className="h-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/90 transition-colors"
+                    >
+                      <CalendarCheck className="h-3.5 w-3.5" /> {t("venue.bookings")}
+                    </button>
+                    <button
+                      onClick={() => navigate(`/my-venues/${v.id}/services`)}
+                      className="h-8 rounded-lg bg-secondary text-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-secondary/70 transition-colors"
+                    >
+                      <Coffee className="h-3.5 w-3.5" /> {t("venue.services")}
+                    </button>
+                    <button
+                      onClick={() => navigate(`/my-venues/${v.id}/sessions`)}
+                      className="h-8 rounded-lg bg-secondary text-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-secondary/70 transition-colors"
+                    >
+                      <CalendarClock className="h-3.5 w-3.5" /> {t("venue.sessions")}
+                    </button>
+                    <button
+                      onClick={() => navigate(`/my-venues/${v.id}/orders`)}
+                      className="h-8 rounded-lg bg-secondary text-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-secondary/70 transition-colors"
+                    >
+                      <ClipboardList className="h-3.5 w-3.5" /> {t("venue.orders")}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                  <div className="flex-1" />
                   <button
                     onClick={() => navigate(`/venue/${v.id}`)}
                     className="h-8 w-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center"
@@ -198,6 +214,7 @@ const MyVenuesPage = () => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                  </div>
                 </div>
               </Card>
             </motion.div>

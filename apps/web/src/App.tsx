@@ -57,6 +57,10 @@ import MyVenuesPage from "./pages/my-venues/MyVenuesPage";
 import VenueProfilePage from "./pages/VenueProfilePage";
 import VenueBookingsPage from "./pages/my-venues/VenueBookingsPage";
 import VenueServicesPage from "./pages/my-venues/VenueServicesPage";
+import VenueSessionsPage from "./pages/my-venues/VenueSessionsPage";
+import VenueOrdersPage from "./pages/my-venues/VenueOrdersPage";
+import VenueSessionPage from "./pages/VenueSessionPage";
+import MyOrdersPage from "./pages/MyOrdersPage";
 import MyBookingsPage from "./pages/MyBookingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
@@ -163,6 +167,10 @@ const AppShell = () => {
         <Route path="/venue/:venueId" element={<VenueProfilePage />} />
         <Route path="/my-venues/:venueId/bookings" element={<ProtectedRoute><VenueBookingsPage /></ProtectedRoute>} />
         <Route path="/my-venues/:venueId/services" element={<ProtectedRoute><VenueServicesPage /></ProtectedRoute>} />
+        <Route path="/my-venues/:venueId/sessions" element={<ProtectedRoute><VenueSessionsPage /></ProtectedRoute>} />
+        <Route path="/my-venues/:venueId/orders" element={<ProtectedRoute><VenueOrdersPage /></ProtectedRoute>} />
+        <Route path="/v/:venueId/s/:sessionId" element={<ProtectedRoute><VenueSessionPage /></ProtectedRoute>} />
+        <Route path="/my-orders" element={<ProtectedRoute><MyOrdersPage /></ProtectedRoute>} />
         <Route path="/my-bookings" element={<ProtectedRoute><MyBookingsPage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
