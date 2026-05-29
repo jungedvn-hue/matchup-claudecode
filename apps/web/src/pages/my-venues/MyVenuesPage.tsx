@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Building2, Plus, MapPin, Phone, Edit, Trash2, Loader2, Calendar, Trophy, Users, ExternalLink, CalendarCheck } from "lucide-react";
+import { ArrowLeft, Building2, Plus, MapPin, Phone, Edit, Trash2, Loader2, Calendar, Trophy, Users, ExternalLink, CalendarCheck, Coffee } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -152,6 +152,12 @@ const MyVenuesPage = () => {
                     className="flex-1 h-8 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/90 transition-colors"
                   >
                     <CalendarCheck className="h-3.5 w-3.5" /> {t("venue.bookings")}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/my-venues/${v.id}/services`)}
+                    className="flex-1 h-8 rounded-lg bg-secondary text-foreground text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-secondary/70 transition-colors"
+                  >
+                    <Coffee className="h-3.5 w-3.5" /> {t("venue.services")}
                   </button>
                   <button
                     onClick={() => navigate(`/venue/${v.id}`)}

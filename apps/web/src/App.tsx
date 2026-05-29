@@ -56,6 +56,7 @@ import BudgetCalculatorPage from "./pages/tools/BudgetCalculatorPage";
 import MyVenuesPage from "./pages/my-venues/MyVenuesPage";
 import VenueProfilePage from "./pages/VenueProfilePage";
 import VenueBookingsPage from "./pages/my-venues/VenueBookingsPage";
+import VenueServicesPage from "./pages/my-venues/VenueServicesPage";
 import MyBookingsPage from "./pages/MyBookingsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import NotFound from "./pages/NotFound";
@@ -161,6 +162,7 @@ const AppShell = () => {
         <Route path="/my-venues" element={<ProtectedRoute><MyVenuesPage /></ProtectedRoute>} />
         <Route path="/venue/:venueId" element={<VenueProfilePage />} />
         <Route path="/my-venues/:venueId/bookings" element={<ProtectedRoute><VenueBookingsPage /></ProtectedRoute>} />
+        <Route path="/my-venues/:venueId/services" element={<ProtectedRoute><VenueServicesPage /></ProtectedRoute>} />
         <Route path="/my-bookings" element={<ProtectedRoute><MyBookingsPage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
