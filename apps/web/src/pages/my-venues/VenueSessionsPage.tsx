@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plus, Pencil, Trash2, Loader2, CalendarClock, Share2, Clock, MapPin } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Loader2, CalendarClock, Share2, Clock, MapPin, UserPlus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useVenue } from "@/hooks/useVenues";
 import { useVenueSessions, type VenueSession, type VenueSessionStatus } from "@/hooks/useVenueSessions";
+import CohostDialog from "./components/CohostDialog";
 
 const fmtTime = (iso: string) => new Date(iso).toLocaleString("vi-VN", { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 // datetime-local <-> ISO helpers (local timezone)
@@ -31,10 +32,11 @@ const VenueSessionsPage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { data: venue, loading: venueLoading } = useVenue(venueId);
-  const { items, loading, create, update, remove } = useVenueSessions(venueId);
+  const { items, loading, create, update, remove, refetch } = useVenueSessions(venueId);
   const [editing, setEditing] = useState<VenueSession | null>(null);
   const [adding, setAdding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<VenueSession | null>(null);
+  const [cohostSession, setCohostSession] = useState<string | null>(null);
 
   useEffect(() => {
     if (!venueLoading && venue && user && venue.owner_user_id !== user.id) {
@@ -113,6 +115,7 @@ const VenueSessionsPage = () => {
                   </div>
                   <div className="flex items-center gap-1 pt-1 border-t border-border/60">
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => share(s)}><Share2 className="h-3 w-3 mr-1" /> {t("venueSessionMgr.share")}</Button>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setCohostSession(s.id)}><UserPlus className="h-3 w-3 mr-1" /> {t("cohost.title")}</Button>
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => navigate(`/my-venues/${venue.id}/orders?session=${s.id}`)}>{t("venueSessionMgr.viewOrders")}</Button>
                     <div className="flex-1" />
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => setEditing(s)}><Pencil className="h-3 w-3 mr-1" /> {t("common.edit")}</Button>
@@ -126,6 +129,7 @@ const VenueSessionsPage = () => {
       </div>
 
       <SessionDialog open={adding || !!editing} session={editing} onClose={() => { setAdding(false); setEditing(null); }} onSave={(f) => handleSave(f, editing?.id)} />
+      <CohostDialog open={!!cohostSession} sessionId={cohostSession} onClose={() => { setCohostSession(null); refetch(); }} />
 
       <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent className="max-w-sm">

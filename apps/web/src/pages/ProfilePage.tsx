@@ -5,7 +5,7 @@ import {
   Settings, ChevronRight, Trophy, Target, TrendingUp,
   Users, Star, MapPin, Edit, Flame, LogOut, Ticket, Heart,
   ShieldCheck, Activity, LayoutDashboard, Coins, Gavel, Building2, Store,
-  Sparkles, BarChart3,
+  Sparkles, BarChart3, Receipt, UserPlus,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -284,6 +284,9 @@ const ProfilePage = () => {
         <SectionCard>
           <Row icon={Ticket} label={t("profile.myTickets")} onClick={() => navigate("/my-tickets")} iconBg="bg-blue-500/10" iconColor="text-blue-600 dark:text-blue-400" />
           <Row icon={Activity} label={t("profile.myBookings")} onClick={() => navigate("/my-bookings")} iconBg="bg-emerald-500/10" iconColor="text-emerald-600 dark:text-emerald-400" />
+          <Row icon={Receipt} label={t("myOrders.title")} onClick={() => navigate("/my-orders")} iconBg="bg-orange-500/10" iconColor="text-orange-600 dark:text-orange-400" />
+          <Row icon={UserPlus} label={t("hostInvites.title")} onClick={() => navigate("/host/invites")} iconBg="bg-violet-500/10" iconColor="text-violet-600 dark:text-violet-400" />
+          <Row icon={Coins} label={t("hostCredits.title")} onClick={() => navigate("/host/credits")} iconBg="bg-amber-500/10" iconColor="text-amber-600 dark:text-amber-500" />
           <Row icon={BarChart3} label={t("profile.statistics")} onClick={() => navigate("/statistics")} iconBg="bg-amber-500/10" iconColor="text-amber-600 dark:text-amber-500" />
         </SectionCard>
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Building2, Plus, MapPin, Phone, Edit, Trash2, Loader2, Calendar, Trophy, Users, ExternalLink, CalendarCheck, Coffee, CalendarClock, ClipboardList } from "lucide-react";
+import { ArrowLeft, Building2, Plus, MapPin, Phone, Edit, Trash2, Loader2, Calendar, Trophy, Users, ExternalLink, CalendarCheck, Coffee, CalendarClock, ClipboardList, Coins } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -174,6 +174,13 @@ const MyVenuesPage = () => {
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(`/my-venues/${v.id}/credits`)}
+                    className="h-8 w-8 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center"
+                    title={t("venueCredits.title")}
+                  >
+                    <Coins className="h-3.5 w-3.5" />
+                  </button>
                   <div className="flex-1" />
                   <button
                     onClick={() => navigate(`/venue/${v.id}`)}
