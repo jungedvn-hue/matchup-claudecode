@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Building2, Star, Coins, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Building2, Star, Coins, CheckCircle2, Settings, Activity } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SkillBadge from "@/components/SkillBadge";
@@ -29,7 +30,7 @@ import { useOpenSessions } from "@/hooks/useVenueSessions";
 import { useGroupAssistants, useAssistantActions } from "@/hooks/useAssistants";
 import { useAnnouncements, useAnnouncementActions, type Announcement } from "@/hooks/useAnnouncements";
 import { useVenue } from "@/hooks/useVenues";
-import { useVenueServices } from "@/hooks/useVenueServices";
+import { useVenueServices, useGroupMenu } from "@/hooks/useVenueServices";
 import { useGroupHostRatings, useHostRatingSummary } from "@/hooks/useHostRatings";
 import HostRatingSheet from "@/components/HostRatingSheet";
 import InviteFriendsDialog from "@/components/InviteFriendsDialog";
@@ -63,6 +64,7 @@ const GroupDetailPage = () => {
   const { items: venueServices } = useVenueServices(group?.venue_id ?? undefined);
   const [orderOpen, setOrderOpen] = useState(false);
   const { sessions: memberSessions } = useOpenSessions(members.map(m => m.user_id));
+  const { featuredIds, toggle: toggleMenuItem } = useGroupMenu(groupId);
   const [giftTarget, setGiftTarget] = useState<{ id: string; name: string } | null>(null);
   const { deleteGroup } = useDeleteGroup();
   const { ratings: hostRatings, myRating: myHostRating, refetch: refetchHostRatings } = useGroupHostRatings(groupId);
@@ -285,6 +287,25 @@ const GroupDetailPage = () => {
           </Card>
         </motion.div>
 
+        <Tabs defaultValue="activity" className="w-full">
+          <TabsList className="grid w-full h-12" style={{ gridTemplateColumns: `repeat(${isHost ? 4 : 3}, minmax(0,1fr))` }}>
+            <TabsTrigger value="activity" className="flex flex-col gap-0.5 text-[10px]">
+              <Activity className="h-4 w-4" /> {t("groups.tab.activity")}
+            </TabsTrigger>
+            <TabsTrigger value="members" className="flex flex-col gap-0.5 text-[10px]">
+              <Users className="h-4 w-4" /> {t("groups.tab.members")}
+            </TabsTrigger>
+            <TabsTrigger value="venue" className="flex flex-col gap-0.5 text-[10px]">
+              <Coffee className="h-4 w-4" /> {t("groups.tab.venue")}
+            </TabsTrigger>
+            {isHost && (
+              <TabsTrigger value="settings" className="flex flex-col gap-0.5 text-[10px]">
+                <Settings className="h-4 w-4" /> {t("groups.tab.settings")}
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          <TabsContent value="activity" className="mt-4 space-y-4">
         {/* Announcements */}
         {(isHost || announcements.length > 0) && (
           <section className="space-y-2">
@@ -535,6 +556,9 @@ const GroupDetailPage = () => {
           </section>
         )}
 
+          </TabsContent>
+
+          <TabsContent value="members" className="mt-4 space-y-4">
         {/* Members */}
         <section className="space-y-2">
           <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
@@ -643,10 +667,51 @@ const GroupDetailPage = () => {
           </section>
         )}
 
+          </TabsContent>
+
+          <TabsContent value="venue" className="mt-4 space-y-4">
+        {/* Menu nhóm — host curates which venue items appear (empty = sync all) */}
+        {isHost && group.venue_id && venueServices.filter(s => s.is_published).length > 0 && (
+          <section className="space-y-2">
+            <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
+              <Coffee className="h-4 w-4 text-primary" /> {t("groupMenu.title")}
+            </h2>
+            <Card className="p-3 shadow-card space-y-2.5">
+              <p className="text-[11px] text-muted-foreground">
+                {featuredIds.length === 0 ? t("groupMenu.syncingAll") : t("groupMenu.featuredCount", { count: featuredIds.length })}
+              </p>
+              <div className="space-y-1.5">
+                {venueServices.filter(s => s.is_published).map(s => {
+                  const on = featuredIds.includes(s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={async () => { const { error } = await toggleMenuItem(s.id); if (error) toast.error(error.message); }}
+                      className="w-full flex items-center gap-3 p-2 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors text-left"
+                    >
+                      <div className="h-9 w-9 rounded-lg overflow-hidden bg-background shrink-0 flex items-center justify-center">
+                        {s.image_url ? <img src={s.image_url} alt={s.name} className="h-full w-full object-cover" /> : <Coffee className="h-4 w-4 text-primary" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{s.name}</p>
+                        <p className="text-[11px] text-primary tabular-nums">{Math.round(s.price).toLocaleString("vi-VN")}đ</p>
+                      </div>
+                      <div className={`h-5 w-5 rounded-md border flex items-center justify-center shrink-0 ${on ? "bg-primary border-primary text-primary-foreground" : "border-border"}`}>
+                        {on && <Check className="h-3.5 w-3.5" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+          </section>
+        )}
+
         {/* Đặt món — order F&B from linked venue */}
         {isMember && (() => {
           const hasVenue = !!group.venue_id;
-          const publishedServices = venueServices.filter(s => s.is_published);
+          const allPublished = venueServices.filter(s => s.is_published);
+          const publishedServices = featuredIds.length > 0 ? allPublished.filter(s => featuredIds.includes(s.id)) : allPublished;
           return (
             <section className="space-y-2">
               <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
@@ -686,6 +751,10 @@ const GroupDetailPage = () => {
             </section>
           );
         })()}
+          </TabsContent>
+
+          {isHost && (
+          <TabsContent value="settings" className="mt-4 space-y-4">
         {/* Danger zone — host only */}
         {isHost && group.host_user_id === user?.id && (
           <section className="pt-2">
@@ -712,6 +781,9 @@ const GroupDetailPage = () => {
             </Card>
           </section>
         )}
+          </TabsContent>
+          )}
+        </Tabs>
       </div>
 
       {/* Delete confirmation */}
@@ -779,6 +851,7 @@ const GroupDetailPage = () => {
           onOpenChange={setOrderOpen}
           groupId={groupId}
           venueId={group.venue_id}
+          featuredIds={featuredIds}
         />
       )}
 
@@ -794,6 +867,7 @@ const GroupDetailPage = () => {
             venueId: memberSessions[giftTarget.id].venue_id,
             courtRef: memberSessions[giftTarget.id].court_ref,
           }}
+          featuredIds={memberSessions[giftTarget.id].venue_id === group.venue_id ? featuredIds : undefined}
         />
       )}
     </div>

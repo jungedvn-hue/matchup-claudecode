@@ -69,3 +69,40 @@ export const useVenueServices = (venueId: string | undefined) => {
 
   return { items, loading, refetch, create, update, remove };
 };
+
+// ── Group menu curation ────────────────────────────────────────────────────────
+// A group can feature a subset of its linked venue's services. Empty set = sync
+// the venue's full published menu (default). Host-only writes.
+export const useGroupMenu = (groupId: string | undefined) => {
+  const [featuredIds, setFeaturedIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refetch = useCallback(async () => {
+    if (!groupId) { setFeaturedIds([]); setLoading(false); return; }
+    setLoading(true);
+    const { data } = await sb.from("group_menu_services")
+      .select("service_id").eq("group_id", groupId);
+    setFeaturedIds(((data as { service_id: string }[]) ?? []).map(r => r.service_id));
+    setLoading(false);
+  }, [groupId]);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  // Toggle a service in/out of the featured set (host only via RLS).
+  const toggle = async (serviceId: string) => {
+    if (!groupId) return { error: new Error("no_group") };
+    const isOn = featuredIds.includes(serviceId);
+    if (isOn) {
+      const { error } = await sb.from("group_menu_services")
+        .delete().eq("group_id", groupId).eq("service_id", serviceId);
+      if (!error) setFeaturedIds(ids => ids.filter(id => id !== serviceId));
+      return { error };
+    }
+    const { error } = await sb.from("group_menu_services")
+      .insert({ group_id: groupId, service_id: serviceId });
+    if (!error) setFeaturedIds(ids => [...ids, serviceId]);
+    return { error };
+  };
+
+  return { featuredIds, loading, refetch, toggle };
+};

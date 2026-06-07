@@ -21,6 +21,7 @@ interface Props {
   recipientId: string;
   recipientName: string;
   session: GiftSession;
+  featuredIds?: string[];
   onSent?: () => void;
 }
 
@@ -33,7 +34,7 @@ const buildVietQRUrl = (bank: string, acc: string, amount: number, note: string)
   return `https://img.vietqr.io/image/${encodeURIComponent(bank)}-${encodeURIComponent(acc)}-compact2.jpg?${params.toString()}`;
 };
 
-const DrinkGiftSheet = ({ open, onOpenChange, recipientId, recipientName, session, onSent }: Props) => {
+const DrinkGiftSheet = ({ open, onOpenChange, recipientId, recipientName, session, featuredIds, onSent }: Props) => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { data: venue } = useVenue(open ? session.venueId : undefined);
@@ -45,7 +46,10 @@ const DrinkGiftSheet = ({ open, onOpenChange, recipientId, recipientName, sessio
   const [placing, setPlacing] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState<string | null>(null);
 
-  const published = useMemo(() => services.filter(s => s.is_published), [services]);
+  const published = useMemo(() => {
+    const pub = services.filter(s => s.is_published);
+    return featuredIds && featuredIds.length > 0 ? pub.filter(s => featuredIds.includes(s.id)) : pub;
+  }, [services, featuredIds]);
   const selected = services.find(s => s.id === serviceId) ?? null;
   const total = selected ? selected.price * qty : 0;
 

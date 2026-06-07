@@ -20,6 +20,7 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   groupId: string;
   venueId: string;
+  featuredIds?: string[];
 }
 
 const fmtMoney = (n: number) => `${Math.round(n).toLocaleString("vi-VN")}đ`;
@@ -31,7 +32,7 @@ const buildVietQRUrl = (bank: string, acc: string, amount: number, note: string)
   return `https://img.vietqr.io/image/${encodeURIComponent(bank)}-${encodeURIComponent(acc)}-compact2.jpg?${params.toString()}`;
 };
 
-const GroupOrderSheet = ({ open, onOpenChange, groupId, venueId }: Props) => {
+const GroupOrderSheet = ({ open, onOpenChange, groupId, venueId, featuredIds }: Props) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -46,7 +47,10 @@ const GroupOrderSheet = ({ open, onOpenChange, groupId, venueId }: Props) => {
   const [placing, setPlacing] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState<string | null>(null);
 
-  const published = useMemo(() => services.filter(s => s.is_published), [services]);
+  const published = useMemo(() => {
+    const pub = services.filter(s => s.is_published);
+    return featuredIds && featuredIds.length > 0 ? pub.filter(s => featuredIds.includes(s.id)) : pub;
+  }, [services, featuredIds]);
   const lines: CartLine[] = useMemo(() =>
     Object.entries(cart)
       .filter(([, q]) => q > 0)
