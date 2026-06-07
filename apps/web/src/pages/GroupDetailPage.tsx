@@ -24,6 +24,8 @@ import CreateGroupDialog from "@/components/CreateGroupDialog";
 import AssignAssistantDialog from "@/components/AssignAssistantDialog";
 import AnnouncementDialog from "@/components/AnnouncementDialog";
 import GroupOrderSheet from "@/components/GroupOrderSheet";
+import DrinkGiftSheet from "@/components/DrinkGiftSheet";
+import { useOpenSessions } from "@/hooks/useVenueSessions";
 import { useGroupAssistants, useAssistantActions } from "@/hooks/useAssistants";
 import { useAnnouncements, useAnnouncementActions, type Announcement } from "@/hooks/useAnnouncements";
 import { useVenue } from "@/hooks/useVenues";
@@ -60,6 +62,8 @@ const GroupDetailPage = () => {
   const { data: linkedVenue } = useVenue(group?.venue_id ?? undefined);
   const { items: venueServices } = useVenueServices(group?.venue_id ?? undefined);
   const [orderOpen, setOrderOpen] = useState(false);
+  const { sessions: memberSessions } = useOpenSessions(members.map(m => m.user_id));
+  const [giftTarget, setGiftTarget] = useState<{ id: string; name: string } | null>(null);
   const { deleteGroup } = useDeleteGroup();
   const { ratings: hostRatings, myRating: myHostRating, refetch: refetchHostRatings } = useGroupHostRatings(groupId);
   const { summary: hostSummary, refetch: refetchHostSummary } = useHostRatingSummary(group?.host_user_id);
@@ -556,6 +560,15 @@ const GroupDetailPage = () => {
                   {m.role === "host" && (
                     <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                   )}
+                  {isMember && !isMe && memberSessions[m.user_id] && (
+                    <button
+                      onClick={() => setGiftTarget({ id: m.user_id, name: m.display_name || t("common.unknown") })}
+                      title={t("drinkGift.title")}
+                      className="h-6 px-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[10px] font-semibold hover:bg-orange-500/20 flex items-center gap-1 shrink-0"
+                    >
+                      <Coffee className="h-3 w-3" /> {t("drinkGift.short")}
+                    </button>
+                  )}
                   {isHost && !isMe && (
                     <button onClick={() => handleRemove(m.user_id)} className="text-[10px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded transition-colors">
                       {t("groups.remove")}
@@ -766,6 +779,21 @@ const GroupDetailPage = () => {
           onOpenChange={setOrderOpen}
           groupId={groupId}
           venueId={group.venue_id}
+        />
+      )}
+
+      {/* Drink Gift Sheet — gift a real drink to a member playing in an open session */}
+      {giftTarget && memberSessions[giftTarget.id] && (
+        <DrinkGiftSheet
+          open={!!giftTarget}
+          onOpenChange={(o) => { if (!o) setGiftTarget(null); }}
+          recipientId={giftTarget.id}
+          recipientName={giftTarget.name}
+          session={{
+            sessionId: memberSessions[giftTarget.id].session_id,
+            venueId: memberSessions[giftTarget.id].venue_id,
+            courtRef: memberSessions[giftTarget.id].court_ref,
+          }}
         />
       )}
     </div>

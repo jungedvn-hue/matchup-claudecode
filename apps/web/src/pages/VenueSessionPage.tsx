@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Loader2, MapPin, Clock, Users, Coffee, Minus, Plus,
-  ShoppingCart, Copy, Building2, AlertCircle, Truck, CheckCircle2,
+  ShoppingCart, Copy, Building2, AlertCircle, Truck, CheckCircle2, Gift,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import { useVenue } from "@/hooks/useVenues";
 import { useVenueSession } from "@/hooks/useVenueSessions";
 import { useVenueServices } from "@/hooks/useVenueServices";
 import { createVenueOrder, type CartLine, type PaymentMethod } from "@/hooks/useVenueOrders";
+import DrinkGiftSheet from "@/components/DrinkGiftSheet";
 
 const fmtMoney = (n: number) => `${Math.round(n).toLocaleString("vi-VN")}đ`;
 const fmtTime = (iso: string) => new Date(iso).toLocaleString("vi-VN", { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -47,6 +49,22 @@ const VenueSessionPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [placing, setPlacing] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState<string | null>(null);
+  const [profiles, setProfiles] = useState<Record<string, { display_name: string | null; avatar_url: string | null }>>({});
+  const [giftTarget, setGiftTarget] = useState<{ id: string; name: string } | null>(null);
+
+  useEffect(() => {
+    const ids = members.map(m => m.user_id);
+    if (ids.length === 0) { setProfiles({}); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase as any).from("profiles").select("user_id, display_name, avatar_url").in("user_id", ids);
+      if (cancelled) return;
+      const map: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      (data ?? []).forEach((p: any) => { map[p.user_id] = { display_name: p.display_name, avatar_url: p.avatar_url }; });
+      setProfiles(map);
+    })();
+    return () => { cancelled = true; };
+  }, [members]);
 
   const published = useMemo(() => services.filter(s => s.is_published), [services]);
   const lines: CartLine[] = useMemo(() =>
@@ -162,6 +180,39 @@ const VenueSessionPage = () => {
             </div>
           )}
         </Card>
+
+        {/* Players — gift a drink to a co-player, delivered to this court */}
+        {members.length > 0 && (
+          <div>
+            <h2 className="text-sm font-display font-bold text-foreground mb-2 flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-primary" /> {t("venueSession.players")}
+            </h2>
+            <Card className="shadow-card overflow-hidden">
+              {members.map((m, i) => {
+                const isMe = m.user_id === user?.id;
+                const name = profiles[m.user_id]?.display_name || t("common.unknown");
+                return (
+                  <div key={m.user_id} className={`flex items-center gap-3 px-3.5 py-2.5 ${i < members.length - 1 ? "border-b border-border" : ""}`}>
+                    <div className="h-8 w-8 rounded-full overflow-hidden bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold shrink-0">
+                      {profiles[m.user_id]?.avatar_url
+                        ? <img src={profiles[m.user_id]!.avatar_url!} alt={name} className="h-full w-full object-cover" />
+                        : name[0]?.toUpperCase()}
+                    </div>
+                    <p className="flex-1 text-sm font-medium text-foreground truncate">{name}{isMe ? ` (${t("common.you")})` : ""}</p>
+                    {!isMe && (
+                      <button
+                        onClick={() => setGiftTarget({ id: m.user_id, name })}
+                        className="h-7 px-2.5 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[10px] font-semibold hover:bg-orange-500/20 flex items-center gap-1 shrink-0"
+                      >
+                        <Gift className="h-3 w-3" /> {t("drinkGift.short")}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </Card>
+          </div>
+        )}
 
         {/* Menu */}
         <div>
@@ -318,6 +369,17 @@ const VenueSessionPage = () => {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Gift a drink to a co-player → delivered to this session's court */}
+      {giftTarget && (
+        <DrinkGiftSheet
+          open={!!giftTarget}
+          onOpenChange={(o) => { if (!o) setGiftTarget(null); }}
+          recipientId={giftTarget.id}
+          recipientName={giftTarget.name}
+          session={{ sessionId: session.id, venueId: venue.id, courtRef: session.court_ref }}
+        />
+      )}
     </div>
   );
 };

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, ClipboardList, RefreshCw, Check, X, BadgeDollarSign } from "lucide-react";
+import { ArrowLeft, Loader2, ClipboardList, RefreshCw, Check, X, BadgeDollarSign, Gift } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,21 @@ const VenueOrdersPage = () => {
   const { orders, loading, refetch, setStatus, setPaymentStatus } = useVenueOrders({ venueId, sessionId: sessionFilter });
   const [tab, setTab] = useState<"active" | "delivered" | "cancelled">("active");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [recipients, setRecipients] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const ids = [...new Set(orders.map(o => o.recipient_id).filter(Boolean) as string[])];
+    if (ids.length === 0) { setRecipients({}); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase as any).from("profiles").select("user_id, display_name").in("user_id", ids);
+      if (cancelled) return;
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((p: any) => { map[p.user_id] = p.display_name ?? ""; });
+      setRecipients(map);
+    })();
+    return () => { cancelled = true; };
+  }, [orders]);
 
   useEffect(() => {
     if (!venueLoading && venue && user && venue.owner_user_id !== user.id) navigate("/my-venues", { replace: true });
@@ -108,6 +124,11 @@ const VenueOrdersPage = () => {
                     <p className="text-sm font-semibold text-foreground">
                       {o.court_ref ? `${t("venueSession.court")} ${o.court_ref}` : t("venueOrders.noCourt")}
                     </p>
+                    {o.recipient_id && (
+                      <p className="text-[11px] font-medium text-orange-600 dark:text-orange-400 inline-flex items-center gap-1">
+                        <Gift className="h-3 w-3" /> {t("venueOrders.giftFor")} {recipients[o.recipient_id] || t("common.unknown")}
+                      </p>
+                    )}
                     <p className="text-[11px] text-muted-foreground tabular-nums">{fmtTime(o.created_at)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">

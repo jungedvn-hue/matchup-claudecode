@@ -26,6 +26,7 @@ export interface VenueOrder {
   session_id: string | null;
   group_id: string | null;
   player_id: string;
+  recipient_id: string | null;
   court_ref: string | null;
   attributed_host_id: string | null;
   status: OrderStatus;
@@ -50,6 +51,7 @@ export interface CreateOrderInput {
   venue_id: string;
   session_id?: string | null;
   group_id?: string | null;
+  recipient_id?: string | null;
   court_ref?: string | null;
   payment_method: PaymentMethod;
   note?: string | null;
@@ -65,6 +67,7 @@ export const createVenueOrder = async (playerId: string, input: CreateOrderInput
     session_id: input.session_id ?? null,
     group_id: input.group_id ?? null,
     player_id: playerId,
+    recipient_id: input.recipient_id ?? null,
     court_ref: input.court_ref ?? null,
     payment_method: input.payment_method,
     note: input.note ?? null,

@@ -2,7 +2,35 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 
-const sb = supabase as unknown as { from: (t: string) => any };
+const sb = supabase as unknown as { from: (t: string) => any; rpc: (fn: string, args?: any) => any };
+
+export interface OpenSession {
+  user_id: string;
+  session_id: string;
+  venue_id: string;
+  court_ref: string | null;
+  title: string;
+}
+
+// Resolve which of the given users are currently in an open venue session
+// (→ where to deliver a gifted drink). Returns a map keyed by user_id.
+export const useOpenSessions = (userIds: string[]) => {
+  const [map, setMap] = useState<Record<string, OpenSession>>({});
+  const key = [...userIds].sort().join(",");
+
+  const refetch = useCallback(async () => {
+    if (userIds.length === 0) { setMap({}); return; }
+    const { data } = await sb.rpc("fn_users_open_sessions", { p_users: userIds });
+    const next: Record<string, OpenSession> = {};
+    (data as OpenSession[] | null)?.forEach(s => { next[s.user_id] = s; });
+    setMap(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  useEffect(() => { refetch(); }, [refetch]);
+
+  return { sessions: map, refetch };
+};
 
 export type VenueSessionStatus = "open" | "closed" | "cancelled";
 
