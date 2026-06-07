@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Pencil as PencilIcon, Star, Coins, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Users, MapPin, Lock, Crown, Check, Clock, Loader2, UserMinus, Calendar, Plus, ScanLine, Share2, Pencil, Shield, UserPlus, X, Megaphone, Pin, Trash2, Coffee, Building2, Star, Coins, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,10 +23,11 @@ import ShareGroupDialog from "@/components/ShareGroupDialog";
 import CreateGroupDialog from "@/components/CreateGroupDialog";
 import AssignAssistantDialog from "@/components/AssignAssistantDialog";
 import AnnouncementDialog from "@/components/AnnouncementDialog";
-import DrinkGiftSheet from "@/components/DrinkGiftSheet";
+import GroupOrderSheet from "@/components/GroupOrderSheet";
 import { useGroupAssistants, useAssistantActions } from "@/hooks/useAssistants";
 import { useAnnouncements, useAnnouncementActions, type Announcement } from "@/hooks/useAnnouncements";
-import { useDrinkMenu, type MenuItem } from "@/hooks/useDrinkMenu";
+import { useVenue } from "@/hooks/useVenues";
+import { useVenueServices } from "@/hooks/useVenueServices";
 import { useGroupHostRatings, useHostRatingSummary } from "@/hooks/useHostRatings";
 import HostRatingSheet from "@/components/HostRatingSheet";
 import InviteFriendsDialog from "@/components/InviteFriendsDialog";
@@ -56,14 +57,9 @@ const GroupDetailPage = () => {
   const { remove: removeAnnouncement, togglePin: toggleAnnPin } = useAnnouncementActions();
   const [annDialogOpen, setAnnDialogOpen] = useState(false);
   const [editingAnn, setEditingAnn] = useState<Announcement | undefined>(undefined);
-  const { menu, items: menuItems, loading: menuLoading, upsertItem, deleteItem, uploadItemImage } = useDrinkMenu(groupId);
-  const [drinkGiftOpen, setDrinkGiftOpen] = useState(false);
-  const [giftTarget, setGiftTarget] = useState<{ id: string; name: string } | null>(null);
-  const [menuEditItem, setMenuEditItem] = useState<MenuItem | Partial<MenuItem> | null>(null);
-  const [editItemForm, setEditItemForm] = useState({ name: "", name_vi: "", emoji: "🧃", image_url: null as string | null, price_vnd: 0, available: true, sort_order: 0 });
-  const [savingItem, setSavingItem] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const menuImageRef = useRef<HTMLInputElement>(null);
+  const { data: linkedVenue } = useVenue(group?.venue_id ?? undefined);
+  const { items: venueServices } = useVenueServices(group?.venue_id ?? undefined);
+  const [orderOpen, setOrderOpen] = useState(false);
   const { deleteGroup } = useDeleteGroup();
   const { ratings: hostRatings, myRating: myHostRating, refetch: refetchHostRatings } = useGroupHostRatings(groupId);
   const { summary: hostSummary, refetch: refetchHostSummary } = useHostRatingSummary(group?.host_user_id);
@@ -560,14 +556,6 @@ const GroupDetailPage = () => {
                   {m.role === "host" && (
                     <Crown className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                   )}
-                  {isMember && !isMe && menuItems.filter(i => i.available).length > 0 && (
-                    <button
-                      onClick={() => { setGiftTarget({ id: m.user_id, name: m.display_name || t("common.unknown") }); setDrinkGiftOpen(true); }}
-                      className="h-6 px-2 rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[10px] font-semibold hover:bg-orange-500/20 flex items-center gap-1"
-                    >
-                      <Coffee className="h-3 w-3" />
-                    </button>
-                  )}
                   {isHost && !isMe && (
                     <button onClick={() => handleRemove(m.user_id)} className="text-[10px] text-muted-foreground hover:text-destructive px-1.5 py-0.5 rounded transition-colors">
                       {t("groups.remove")}
@@ -642,118 +630,49 @@ const GroupDetailPage = () => {
           </section>
         )}
 
-        {/* Drinks Menu */}
-        {(isHost || (menuItems.filter(i => i.available).length > 0)) && (
-          <section className="space-y-2">
-            <div className="flex items-center justify-between">
+        {/* Đặt món — order F&B from linked venue */}
+        {isMember && (() => {
+          const hasVenue = !!group.venue_id;
+          const publishedServices = venueServices.filter(s => s.is_published);
+          return (
+            <section className="space-y-2">
               <h2 className="text-sm font-display font-bold text-foreground flex items-center gap-2">
                 <Coffee className="h-4 w-4 text-orange-500" />
-                {t("drinks.menuTitle")} {menuItems.length > 0 && `(${menuItems.length})`}
+                {t("groupOrder.section")}
               </h2>
-              {isHost && (
-                <button
-                  onClick={() => { setEditItemForm({ name: "", name_vi: "", emoji: "🧃", price_vnd: 0, available: true, sort_order: menuItems.length }); setMenuEditItem({}); }}
-                  className="text-xs text-primary font-medium flex items-center gap-1"
-                >
-                  <Plus className="h-3.5 w-3.5" /> {t("drinks.addItem")}
-                </button>
-              )}
-            </div>
 
-            {/* Add/Edit form (host only) */}
-            {isHost && menuEditItem !== null && (
-              <Card className="p-3 shadow-card space-y-2 border-primary/20">
-                {/* Image upload */}
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => menuImageRef.current?.click()}
-                    disabled={uploadingImage}
-                    className="h-16 w-16 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-secondary shrink-0 hover:border-primary/50 transition-colors"
-                  >
-                    {uploadingImage ? (
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                    ) : editItemForm.image_url ? (
-                      <img src={editItemForm.image_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-2xl">🧃</span>
-                    )}
-                  </button>
-                  <div className="flex-1 space-y-2">
-                    <input className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemName")} value={editItemForm.name} onChange={e => setEditItemForm(f => ({ ...f, name: e.target.value }))} />
-                    <input type="number" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" placeholder={t("drinks.itemPrice")} value={editItemForm.price_vnd || ""} onChange={e => setEditItemForm(f => ({ ...f, price_vnd: parseInt(e.target.value) || 0 }))} />
+              {!hasVenue ? (
+                <Card className="p-4 shadow-card text-center space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    {isHost ? t("groupOrder.linkVenuePrompt") : t("groupOrder.noVenue")}
+                  </p>
+                  {isHost && (
+                    <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setEditGroupOpen(true)}>
+                      <MapPin className="h-3.5 w-3.5 mr-1.5" /> {t("groupOrder.linkVenue")}
+                    </Button>
+                  )}
+                </Card>
+              ) : publishedServices.length === 0 ? (
+                <Card className="p-4 shadow-card text-center">
+                  <p className="text-xs text-muted-foreground">{t("groupOrder.noMenu")}</p>
+                </Card>
+              ) : (
+                <Card className="p-4 shadow-card space-y-3">
+                  <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                    <Building2 className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{linkedVenue?.name} · {publishedServices.length} {t("groupOrder.items")}</span>
                   </div>
-                  <input ref={menuImageRef} type="file" accept="image/*" className="hidden" onChange={async e => {
-                    const file = e.target.files?.[0];
-                    if (!file || !groupId) return;
-                    setUploadingImage(true);
-                    const { url, error } = await uploadItemImage(groupId, file);
-                    setUploadingImage(false);
-                    if (error) toast.error(error);
-                    else setEditItemForm(f => ({ ...f, image_url: url }));
-                    e.target.value = "";
-                  }} />
-                </div>
-                <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <input type="checkbox" checked={editItemForm.available} onChange={e => setEditItemForm(f => ({ ...f, available: e.target.checked }))} />
-                  {t("drinks.itemAvailable")}
-                </label>
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 rounded-lg h-8" disabled={savingItem || !editItemForm.name || !editItemForm.price_vnd}
-                    onClick={async () => {
-                      if (!groupId) return;
-                      setSavingItem(true);
-                      const { error } = await upsertItem(groupId, { ...editItemForm, id: (menuEditItem as MenuItem).id });
-                      setSavingItem(false);
-                      if (error) toast.error(error);
-                      else { setMenuEditItem(null); }
-                    }}
-                  >
-                    {savingItem ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("drinks.saveItem")}
+                  <Button className="w-full rounded-xl h-11 gap-2" onClick={() => setOrderOpen(true)}>
+                    <Coffee className="h-4 w-4" /> {t("groupOrder.cta")}
                   </Button>
-                  <Button size="sm" variant="ghost" className="rounded-lg h-8" onClick={() => setMenuEditItem(null)}>{t("common.cancel")}</Button>
-                </div>
-              </Card>
-            )}
-
-            {menuItems.length === 0 && !menuLoading ? (
-              <Card className="p-4 shadow-card text-center">
-                <p className="text-xs text-muted-foreground">{isHost ? t("drinks.menuEmpty") : t("drinks.noMenu")}</p>
-              </Card>
-            ) : (
-              <Card className="shadow-card overflow-hidden">
-                {menuItems.map((item, i) => (
-                  <div key={item.id} className={`flex items-center gap-3 px-3.5 py-2.5 ${i < menuItems.length - 1 ? "border-b border-border" : ""} ${!item.available ? "opacity-50" : ""}`}>
-                    <div className="h-10 w-10 rounded-lg overflow-hidden bg-secondary shrink-0 flex items-center justify-center">
-                      {item.image_url
-                        ? <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
-                        : <span className="text-xl">🧃</span>
-                      }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">{item.price_vnd.toLocaleString("vi-VN")}đ · {Math.floor(item.price_vnd / 100)} pts</p>
-                    </div>
-                    {isHost && (
-                      <div className="flex gap-1">
-                        <button onClick={() => { setEditItemForm({ name: item.name, name_vi: item.name_vi ?? "", emoji: item.emoji, image_url: item.image_url ?? null, price_vnd: item.price_vnd, available: item.available, sort_order: item.sort_order }); setMenuEditItem(item); }}
-                          className="h-7 w-7 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:text-foreground">
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button onClick={async () => {
-                          if (!groupId || !confirm(t("drinks.confirmDelete"))) return;
-                          const { error } = await deleteItem(groupId, item.id);
-                          if (error) toast.error(error);
-                        }} className="h-7 w-7 flex items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:text-destructive">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </Card>
-            )}
-          </section>
-        )}
+                  <button onClick={() => navigate("/my-orders")} className="w-full text-xs text-primary font-medium">
+                    {t("groupOrder.myOrders")}
+                  </button>
+                </Card>
+              )}
+            </section>
+          );
+        })()}
         {/* Danger zone — host only */}
         {isHost && group.host_user_id === user?.id && (
           <section className="pt-2">
@@ -840,15 +759,13 @@ const GroupDetailPage = () => {
         />
       )}
 
-      {/* Drink Gift Sheet — pick recipient from members then open */}
-      {drinkGiftOpen && giftTarget && groupId && (
-        <DrinkGiftSheet
-          open={drinkGiftOpen}
-          onOpenChange={setDrinkGiftOpen}
+      {/* Group Order Sheet — order F&B from the linked venue */}
+      {orderOpen && groupId && group.venue_id && (
+        <GroupOrderSheet
+          open={orderOpen}
+          onOpenChange={setOrderOpen}
           groupId={groupId}
-          toUserId={giftTarget.id}
-          toUserName={giftTarget.name}
-          onSent={() => {}}
+          venueId={group.venue_id}
         />
       )}
     </div>

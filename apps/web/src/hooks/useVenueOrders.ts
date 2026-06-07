@@ -24,6 +24,7 @@ export interface VenueOrder {
   id: string;
   venue_id: string;
   session_id: string | null;
+  group_id: string | null;
   player_id: string;
   court_ref: string | null;
   attributed_host_id: string | null;
@@ -48,6 +49,7 @@ export interface CartLine {
 export interface CreateOrderInput {
   venue_id: string;
   session_id?: string | null;
+  group_id?: string | null;
   court_ref?: string | null;
   payment_method: PaymentMethod;
   note?: string | null;
@@ -61,6 +63,7 @@ export const createVenueOrder = async (playerId: string, input: CreateOrderInput
   const { data: order, error } = await sb.from("venue_orders").insert({
     venue_id: input.venue_id,
     session_id: input.session_id ?? null,
+    group_id: input.group_id ?? null,
     player_id: playerId,
     court_ref: input.court_ref ?? null,
     payment_method: input.payment_method,
@@ -86,6 +89,7 @@ interface OrdersFilter {
   venueId?: string;   // venue-staff view: all orders at this venue
   mine?: boolean;     // player view: own orders across venues
   sessionId?: string;
+  groupId?: string;   // orders placed from a group
 }
 
 export const useVenueOrders = (filter: OrdersFilter) => {
@@ -93,7 +97,7 @@ export const useVenueOrders = (filter: OrdersFilter) => {
   const [orders, setOrders] = useState<VenueOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const { venueId, mine, sessionId } = filter;
+  const { venueId, mine, sessionId, groupId } = filter;
 
   const refetch = useCallback(async () => {
     setLoading(true);
@@ -101,11 +105,12 @@ export const useVenueOrders = (filter: OrdersFilter) => {
       .order("created_at", { ascending: false });
     if (venueId) q = q.eq("venue_id", venueId);
     if (sessionId) q = q.eq("session_id", sessionId);
+    if (groupId) q = q.eq("group_id", groupId);
     if (mine && user) q = q.eq("player_id", user.id);
     const { data } = await q;
     setOrders((data as VenueOrder[]) ?? []);
     setLoading(false);
-  }, [venueId, mine, sessionId, user]);
+  }, [venueId, mine, sessionId, groupId, user]);
 
   useEffect(() => { refetch(); }, [refetch]);
 
